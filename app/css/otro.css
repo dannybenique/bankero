@@ -1,0 +1,159 @@
+﻿@media print {
+    body{display:none;}
+}
+
+
+
+/*********************************
+    css para ver en pantalla
+*********************************/
+html, body, form {border:0px;margin:0px;padding:0px;height:100%;width:100%; }
+div, hr, img, ul, li,tr,th,td,iframe {border: 0px;margin: 0px;padding: 0px; }
+ul,li{list-style:none;}
+a {text-decoration:none;color:black;}
+body {font:11px Arial;background:url('../images/interfaz/interfaz.back.jpg');}
+iframe{width:100%;height:100%;}
+
+input::-webkit-input-placeholder { color:#777; }
+input:-moz-placeholder { color:#777; }
+input::-moz-placeholder { color:#777; }
+input:-ms-input-placeholder { color:#777; }
+input[type="text"], input[type="password"] {border: 1px solid gray;padding: 2px 3px 2px 3px;height: 20px;}
+
+
+/*********************************
+    interfaz
+*********************************/
+.ifazlogo      {background:url("../images/interfaz/app.logo.png") no-repeat;width:170px;height:74px;position:absolute;top:20px;}
+.ifazbackAdmin {background:#23282D;height:74px;}
+.ifazbarraLeft {background:#13191C;}
+.ifazbtnExit {background:url('../images/interfaz/app_exit.png');margin:0 auto;width:60px;height:60px;}
+.ifazlblUser {width:170px;text-align:right;position:absolute;top:64px;}
+.ifazlblUser span{color:orange;font:11px flexolight;margin-right:3px;}
+.sublinker {font-family:flexolight_italic,arial;font-size:12px;color:#ffffff;}
+.subactivo {font-family:flexolight_italic,arial;font-size:12px;color:orange;}
+
+
+
+/*********************************
+    dashboard
+*********************************/
+.dashIconHacker{background:url("../images/interfaz/icons/icon48.hacker.png") no-repeat;width:48px;height:48px;}
+.dashIconDocs{background:url("../images/interfaz/icons/icon48.docs.png") no-repeat;width:48px;height:48px;}
+.dashIconWorker{background:url("../images/interfaz/icons/icon48.worker.png") no-repeat;width:48px;height:48px;}
+.dashIconAgency{background:url("../images/interfaz/icons/icon48.agency.png") no-repeat;width:48px;height:48px;}
+.dashIconCamera{background:url("../images/interfaz/icons/icon48.camera.png") no-repeat;width:48px;height:48px;}
+.dashIconDemo{background:url("../images/interfaz/icons/icon48.demo.png") no-repeat;width:48px;height:48px;}
+.dashIconPassw{background:url("../images/interfaz/icons/icon48.passw.png") no-repeat;width:48px;height:48px;}
+.dashIconCumple{background:url("../images/interfaz/icons/icon48.birthday.png") no-repeat;width:48px;height:48px;}
+
+.dashFontColorHeader{color:#555;}
+.dashFontColorFooter{color:#000;}
+.dashFontColorBody1{color:#777;}
+.dashFontColorBody2{color:#777;}
+.dashFontColorLink1{color:black;}
+.dashFontColorLink2{color:#0080D2;}
+.dashTotalGeneralBody{text-align:center;border-bottom:4px solid #0080D2;width:360px;margin:20px auto;}
+.dashBorderHeaderColor{border-bottom:1px solid #777;}
+
+.dashLnkMedios{height:80px;width:110px;text-align:left;font-size:9px;float:left;}
+.dashLnkMedios .icon{height:50px;position:relative;top:0px;}
+.dashLnkMedios .texto{width:100px;height:22px;position:relative;bottom:-5px;}
+
+
+/*********************************
+    Menu admin
+*********************************/
+.menu{font-family:helveticaneue_light,arial;font-size:16px;position:relative;}
+.menu ul li.seleccion{background:url("../images/interfaz/select.png");border:1px solid #25aae1;}
+.menu ul li.seleccion a{color:#25aae1;}
+.menu ul li.nivel1{width:180px;}
+.menu ul li a{display:block;text-decoration:none;border-top:none;padding:8px;position:relative;color:white;}
+.menu ul li:hover {position:relative;background-color:#434C55;color:white;}
+.menu ul li a:hover, 
+.menu ul li:hover a.nivel1 {background:#191E23;color:#00B9EB;position:relative;}
+.menu ul li a.nivel1 {display:block !important;display:none;position:relative;}
+.menu ul li ul {display: none;}
+.menu ul li a:hover ul, 
+.menu ul li:hover ul {display:block;position:absolute;left:180px;top:-1px!important;top: -31px;}
+.menu ul li ul li a {width:180px;background:url("../images/interfaz/transp.Negro.70.png");color:#FFF;}
+.menu ul li ul li a:hover {position:relative;background:#191E23;color:#00B9EB;}
+
+
+
+/*********************************
+    Pages
+*********************************/
+.ToolBar_MiniAdd { background:url('../images/interfaz/toolbar/toolbar17_add.png') no-repeat;width:17px;height:17px;}
+.ToolBar_MiniDel { background:url('../images/interfaz/toolbar/toolbar17_del.png') no-repeat;width:17px;height:17px;}
+.Toolbar_GridCambiar {background:url('../images/interfaz/icons/icon24_cursor.png') no-repeat center center;width:34px;height:34px;border:0;margin:0;padding:0;}
+.ToolBar_GridBuscar  {background:url('../images/interfaz/icons/icon24_buscar.png') no-repeat center center;width:34px;height:34px;border:0;margin:0;padding:0;}
+.ToolBar_GridCancel  {background:url('../images/interfaz/icons/icon24_cancel.png') no-repeat center center;width:34px;height:34px;border:0;margin:0;padding:0;}
+.ToolBar_GridClose   {background:url('../images/interfaz/icons/icon24_close.png') no-repeat center center;width:34px;height:34px;border:0;margin:0;padding:0;}
+
+.GridDatos{width:100%;}
+.GridDatos th{font:12px flexobold;font-weight:normal;color:#000;text-align:left;border-bottom:1px solid #ddd;background:#f1f1f1;}
+.GridDatos td{border-bottom:1px solid #ddd;height:28px;text-align:left;color:#666;}
+.GridDatos td a{color:#0080d2;}
+.Deshabilitado td{background:#f7f7f7; color:#aaa;}
+.Deshabilitado td a{color:#aaa;}
+.Warning td{color:red;}
+.Resaltado td{color:black;}
+.Alerta td{color:darkviolet;}
+.ACuenta td{color:brown;}
+.Normal td{color:#666;}
+
+.DetailsDatos{width:100%;color:#555;}
+.DetailsDatos td{border-bottom:1px solid #eee;height:28px;}
+
+.fontFlexoLight{font-family:flexolight;}
+.fontFlexoRegular{font-family:flexoregular;}
+.fontFlexoBold{font-family:flexobold;}
+.fontHelveticaLight{font-family:helveticaneue_light;}
+.fontHelveticaBold{font-family:helveticaneue_bold;}
+.fontHelveticaMedio{font-family:helveticaneue_medio;}
+
+
+/*** blacklist ***/
+.GridBlackList{width:100%;}
+.GridBlackList th{font:12px flexobold;font-weight:normal;color:darkred;text-align:left;border-bottom:1px solid #ddd;background:#f1f1f1;}
+.GridBlackList td{border-bottom:1px solid #ddd;height:28px;text-align:left;color:#FF6969;}
+.GridBlackList td a{color:red;}
+
+
+/*** configUsuarios ***/
+.usrPasswImage{background:url("../images/interfaz/icons/icon16_gridPass.png");height:16px;width:16px;}
+.usrCoopSUDImage{background:url("../images/interfaz/icons/icon16_gridCoopSUD.png");height:16px;width:16px;}
+.carCoopSUDMora{background:url("../images/interfaz/icons/icon16_gridFolder2.png");height:16px;width:16px;}
+
+/*** documentos ***/
+.cssDocTexto{font:11px fontFlexoRegular;}
+.cssFirma{display:none !important;}
+.cssPanelDoc{display:block;margin-top:16px;margin-left:10px;margin-right:10px;overflow:hidden;background:white;color:black;-moz-box-shadow: 0px 0px 5px #23282D;-webkit-box-shadow: 0px 0px 5px #23282D;box-shadow: 0px 0px 5px #23282D;}
+
+
+/*********************************
+    Varios
+*********************************/
+.backNegro20 {background:url("../images/interfaz/transp.Negro.20.png"); }
+.backNegro50 {background:url("../images/interfaz/transp.Negro.50.png"); }
+.backNegro60 {background:url("../images/interfaz/transp.Negro.60.png"); }
+.backNegro70 {background:url("../images/interfaz/transp.Negro.70.png"); }
+.backNegro80 {background:url("../images/interfaz/transp.Negro.80.png"); }
+.backNegro90 {background:url("../images/interfaz/transp.Negro.90.png"); }
+
+
+
+/*********************************
+    modal
+*********************************/
+.modalBack { display:block;position:absolute;top:0%;left:0%;width:100%;height:100%;background:url("../images/interfaz/transp.Negro.50.png");z-index:2001;text-align:center; }
+.modalContent{ display:block;position:absolute;top:50%;left:50%;}
+
+
+
+/*********************************
+    AJAX
+*********************************/
+.divAjax {background: url('../images/transpBlanco_90.png');text-align: center;position: absolute;width: 100%;height: 100%;}
+.divAjax img {position:absolute;left:50%;top:50%;margin-left:-32px;margin-top:-32px;}

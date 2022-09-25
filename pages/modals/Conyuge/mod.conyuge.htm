@@ -1,0 +1,61 @@
+<div class="modal-dialog modal-lg">
+  <div class="modal-content">
+    <div class="modal-header" style="background:#f9f9f9;padding:8px;">
+      <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+      <h4 id="modConyTitulo" class="modal-title fontFlexoRegular">Datos Conyugales</h4>
+    </div>
+    <div class="modal-body">
+      <div class="row" id="modConyFormEdit">
+        <div class="col-md-12">
+          <form class="form-horizontal" autocomplete="off">
+            <div>
+              <div>
+                <div class="col-md-6">
+                  <div class="box-body">
+                    <div class="form-Cony">
+                      <strong><a href="javascript:Conyuge.lnkConyuge();"><i class="fa fa-heart"></i> Conyuge</a></strong>
+                      <p class="text-muted" style="margin-bottom:25px;">
+                        Nombres: <a id="lbl_modConyNombres"></a><br>
+                        Apellidos: <a id="lbl_modConyApellidos"></a><br>
+                        DNI: <a id="lbl_modConyNroDNI"></a><br>
+                        Fecha Nac: <a id="lbl_modConyFechaNac"></a><br>
+                        Estado Civil: <a id="lbl_modConyEcivil"></a>
+                      </p>
+                      <strong><i class="fa fa-tags"></i> Relacion</strong>
+                      <div id="div_modConyTiempoRel" class="form-group">
+                        <div class="input-group">
+                          <span class="input-group-addon">Tiempo de Relacion (años)</span>
+                          <input id="txt_modConyTiempoRel" name="txt_modConyTiempoRel" type="number" class="form-control" placeholder="Tiempo..." style="text-transform:uppercase;"/>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="box-body">
+                    <div class="form-Cony">
+                      <strong><a href="javascript:Conyuge.lnkLaboral();" id="btn_modConyLaboral"><i class="fa fa-truck"></i> Laborales</a></strong>
+                      <p id="div_ConyLaboral" class="text-muted">
+                        Condicion: <a id="lbl_modConyEmprCondicion"></a><br>
+                        Empresa: <a id="lbl_modConyEmprRazonSocial"></a><br>
+                        RUC: <a id="lbl_modConyEmprRUC"></a><br>
+                        Rubro: <a id="lbl_modConyEmprRubro"></a><br>
+                        Telefono: <a id="lbl_modConyEmprFono"></a><br><br>
+                      </p>
+                    </div>
+                    <div class="box-body pull-right">
+                      <input type="hidden" id="hid_modConyPermisoID" value="0">
+                      <button type="button" class="btn btn-default btn-sm" data-dismiss="modal"><i class="fa fa-close"></i> Cerrar</button>
+                      <button id="btn_modConyInsert" type="button" class="btn btn-primary btn-sm"><i class="fa fa-save"></i> Guardar</button>
+                      <button id="btn_modConyUpdate" type="button" class="btn btn-info btn-sm"><i class="fa fa-save"></i> Actualizar</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,15 @@
+﻿@page {
+    size:A4 portrait;   /* auto es el valor inicial */
+    margin:20mm;  /* afecta el margen en la configuración de impresión */
+    content:'hola danny';
+}
+
+@media print {
+    .ifazbarraLeft{display:none;}
+    .cssBotones{display:none;}
+    .cssFirma{text-align:center;position:relative;}
+    #docTitle{display:none;}
+    #pnDoc{display:none !important;}
+    .DocTexto{display:block;font:12pt serif;color:black;}
+    .saltoPagina{page-break-before:always;}
+}
