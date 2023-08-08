@@ -1,2 +1,2 @@
 # bankero
-app para cooperativas con PHP + javascript + SQL server
+app para cooperativas con PHP + javascript + posgresql
