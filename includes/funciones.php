@@ -37,15 +37,17 @@
       $whr = "";
       $tabla = array();
       //demo
-      $buscar = pg_escape_string(strtoupper($buscar));
-      $whr = " and (persona like '%".$buscar."%' or nro_dui like '%".$buscar."%') ";
-      $qryCount = $db->query("select count(*) as cuenta from vw_personas where id>1 ".$whr.";");
-      $rsCount = $db->fetch_array($qryCount);
+      $buscar = "'%".strtoupper($buscar)."%'";
+      //$whr = " and (persona like '%".$buscar."%' or nro_dui like '%".$buscar."%') ";
+      $whr = " and (persona like :buscar or nro_dui like :buscar) ";
+      $params = ["buscar"=>("'%".strtoupper($buscar)."%'")];
+      $sql = "select count(*) as cuenta from vw_personas where id>1 ".$whr.";";
+      $qryCount = $db->query_all($sql,$params);
+      foreach($qryCount as $rs) { $rsCount = $rs["cuenta"]; }
 
-      $qry = $db->query("select * from vw_personas where id>1 ".$whr." order by persona limit 25 offset $pos;");
-      if ($db->num_rows($qry)) {
-        for($xx = 0; $xx<$db->num_rows($qry); $xx++){
-          $rs = $db->fetch_array($qry);
+      $qry = $db->prepare("select * from vw_personas where id>1 ".$whr." order by persona limit 25 offset $pos;",$params);
+      if ($qry) {
+        foreach($qry as $rs){
           $tabla[] = array(
             "ID" => $rs["id"],
             "DNI"=> str_replace($buscar, '<span style="background:yellow;">'.$buscar.'</span>', $rs["nro_dui"]),
@@ -55,7 +57,7 @@
           );
         }
       }
-      return array("cuenta"=>$rsCount["cuenta"],"tabla"=>$tabla);
+      return array("cuenta"=>$sql,"tabla"=>$tabla);
     }
     public function getEditPersona($personaID) {
       $db = $GLOBALS["db"];
