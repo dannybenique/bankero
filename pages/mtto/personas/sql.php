@@ -64,9 +64,11 @@
           $persona = false; //indica que existe en personas
           $activo = false; //indica que encontro en tabla personas
           
-          $qry = $db->query_params("select id from personas where (nro_dui=$1);",array($data->nroDNI));
-          if($db->num_rows($qry)){
-            $rs = $db->fetch_array($qry);
+          $sql = "select id from personas where (nro_dui=:dui);";
+          $params = [":dui"=>$data->nroDNI];
+          $qry = $db->query_all($sql,$params);
+          if($qry){
+            $rs = reset($qry);
             $tablaPers = $fn->getViewPersona($rs["id"]);
             $persona = true;
             $activo = true;

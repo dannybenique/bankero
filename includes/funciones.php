@@ -15,10 +15,9 @@
     public function getComboBox($cadSQL) {
       $db = $GLOBALS["db"];
       $tabla = array();
-      $qry = $db->query($cadSQL);
-      if ($db->num_rows($qry)>0) {
-        for($xx=0; $xx<$db->num_rows($qry); $xx++){
-          $rs = $db->fetch_array($qry);
+      $qry = $db->query_all($cadSQL);
+      if ($qry) {
+        foreach($qry as $rs){
           $tabla[] = array(
             "ID" => $rs["id"],
             "nombre" => $rs["nombre"]
@@ -56,7 +55,7 @@
           );
         }
       }
-      return array("cuenta"=>$rsCount,"tabla"=>$tabla,"sql"=>$params);
+      return array("cuenta"=>$rsCount,"tabla"=>$tabla);
     }
     public function getEditPersona($personaID) {
       $db = $GLOBALS["db"];
@@ -74,12 +73,11 @@
   
       //obtener datos personales
       $sql = "select p.*,id_distrito,id_provincia,id_region from personas p,vw_ubigeo u where p.id_ubigeo=u.id_distrito and p.id=:id";
-      $params = [":id"=>'%'.$buscar.'%'];
-      $params = array($personaID);
-      $qry = $db->query_params($sql,$params);
+      $params = [":id"=>$personaID];
+      $qry = $db->query_all($sql,$params);
       
-      if ($db->num_rows($qry)) {
-          $rs = $db->fetch_array($qry);
+      if ($qry) {
+          $rs = reset($qry);
           $tabla = array(
             "ID" => ($rs["id"]),
             "tipoPersona" => ($rs["tipo_persona"]),
@@ -140,55 +138,55 @@
       //else { $permisoPersona = array("ID"=>0,"estado"=>0); }
   
       //obtener datos personales
-      $sql = "select p.*,fn_get_persona(p.tipo_persona,p.ap_paterno,p.ap_materno,p.nombres) AS persona,du.nombre as dui,gi.nombre as ginstruc,ec.nombre as ecivil,sx.nombre as sexo,tv.nombre as tipovivienda,be.nombrecorto,ps.nombre as pais_nac,u.id_region,u.region,u.id_provincia,u.provincia,u.id_distrito,u.distrito from personas p join personas_tipos_aux du on p.id_dui=du.id join personas_tipos_aux gi on p.id_ginstruccion=gi.id join personas_tipos_aux ec on p.id_ecivil=ec.id join personas_tipos_aux sx on p.id_sexo=sx.id join personas_tipos_aux tv on p.id_tipovivienda=tv.id join bn_empleados be on p.sys_user=be.id_empleado join sis_ubigeo ps on p.id_paisnac=ps.id join vw_ubigeo u on p.id_ubigeo=u.id_distrito where p.id=$1";
-      $params = array($personaID);
-      $qry = $db->query_params($sql,$params);
+      $sql = "select p.*,fn_get_persona(p.tipo_persona,p.ap_paterno,p.ap_materno,p.nombres) AS persona,du.nombre as dui,gi.nombre as ginstruc,ec.nombre as ecivil,sx.nombre as sexo,tv.nombre as tipovivienda,be.nombrecorto,ps.nombre as pais_nac,u.id_region,u.region,u.id_provincia,u.provincia,u.id_distrito,u.distrito from personas p join personas_tipos_aux du on p.id_dui=du.id join personas_tipos_aux gi on p.id_ginstruccion=gi.id join personas_tipos_aux ec on p.id_ecivil=ec.id join personas_tipos_aux sx on p.id_sexo=sx.id join personas_tipos_aux tv on p.id_tipovivienda=tv.id join bn_empleados be on p.sys_user=be.id_empleado join sis_ubigeo ps on p.id_paisnac=ps.id join vw_ubigeo u on p.id_ubigeo=u.id_distrito where p.id=:id";
+      $params = [':id'=>$personaID];
+      $qry = $db->query_all($sql,$params);
       
-      if ($db->num_rows($qry)) {
-          $rs = $db->fetch_array($qry);
-          $tabla = array(
-            "ID" => ($rs["id"]),
-            "tipoPersona" => ($rs["tipo_persona"]),
-            "persona" => ($rs["persona"]),
-            "urlfoto" => ($rs["urlfoto"]),
-            "nombres" => ($rs["nombres"]),
-            "ap_paterno" => ($rs["ap_paterno"]),
-            "ap_materno" => ($rs["ap_materno"]),
-            "id_dui" => $rs["id_dui"],
-            "tipoDUI" => $rs["dui"],
-            "nroDUI" => ($rs["nro_dui"]),
-            "celular" => ($rs["celular"]),
-            "telefijo" => ($rs["telefijo"]),
-            "correo" => ($rs["email"]),
-            "profesion" => ($rs["profesion"]),
-            "ocupacion" => ($rs["ocupacion"]),
-            "fechanac" => ($rs["fecha_nac"]),
-            "lugarnac" => ($rs["lugar_nac"]),
-            "paisnac" => ($rs["pais_nac"]),
-            "id_ginstruc" => ($rs["id_ginstruccion"]),
-            "ginstruc" => ($rs["ginstruc"]),
-            "id_ecivil" => ($rs["id_ecivil"]),
-            "ecivil" => ($rs["ecivil"]),
-            "id_sexo" => ($rs["id_sexo"]),
-            "sexo" => ($rs["sexo"]),
-            "id_region" => ($rs["id_region"]),
-            "region" => ($rs["region"]),
-            "id_provincia" => ($rs["id_provincia"]),
-            "provincia" => ($rs["provincia"]),
-            "id_distrito" => ($rs["id_distrito"]),
-            "distrito" => ($rs["distrito"]),
-            "direccion" => ($rs["direccion"]),
-            "referencia" => ($rs["referencia"]),
-            "medidorluz" => ($rs["medidorluz"]),
-            "medidoragua" => ($rs["medidoragua"]),
-            "id_tipovivienda" => $rs["id_tipovivienda"],
-            "tipovivienda" => $rs["tipovivienda"],
-            "observPers" => ($rs["observac"]),
-            "sysuserPers" => ($rs["nombrecorto"]),
-            "sysfechaPers" => ($rs["sys_fecha"])
-            //"permisoPersona"=>$permisoPersona,
-            //"tablaUser" => $tablaUser
-          );
+      if ($qry) {
+        $rs = reset($qry);
+        $tabla = array(
+          "ID" => ($rs["id"]),
+          "tipoPersona" => ($rs["tipo_persona"]),
+          "persona" => ($rs["persona"]),
+          "urlfoto" => ($rs["urlfoto"]),
+          "nombres" => ($rs["nombres"]),
+          "ap_paterno" => ($rs["ap_paterno"]),
+          "ap_materno" => ($rs["ap_materno"]),
+          "id_dui" => $rs["id_dui"],
+          "tipoDUI" => $rs["dui"],
+          "nroDUI" => ($rs["nro_dui"]),
+          "celular" => ($rs["celular"]),
+          "telefijo" => ($rs["telefijo"]),
+          "correo" => ($rs["email"]),
+          "profesion" => ($rs["profesion"]),
+          "ocupacion" => ($rs["ocupacion"]),
+          "fechanac" => ($rs["fecha_nac"]),
+          "lugarnac" => ($rs["lugar_nac"]),
+          "paisnac" => ($rs["pais_nac"]),
+          "id_ginstruc" => ($rs["id_ginstruccion"]),
+          "ginstruc" => ($rs["ginstruc"]),
+          "id_ecivil" => ($rs["id_ecivil"]),
+          "ecivil" => ($rs["ecivil"]),
+          "id_sexo" => ($rs["id_sexo"]),
+          "sexo" => ($rs["sexo"]),
+          "id_region" => ($rs["id_region"]),
+          "region" => ($rs["region"]),
+          "id_provincia" => ($rs["id_provincia"]),
+          "provincia" => ($rs["provincia"]),
+          "id_distrito" => ($rs["id_distrito"]),
+          "distrito" => ($rs["distrito"]),
+          "direccion" => ($rs["direccion"]),
+          "referencia" => ($rs["referencia"]),
+          "medidorluz" => ($rs["medidorluz"]),
+          "medidoragua" => ($rs["medidoragua"]),
+          "id_tipovivienda" => $rs["id_tipovivienda"],
+          "tipovivienda" => $rs["tipovivienda"],
+          "observPers" => ($rs["observac"]),
+          "sysuserPers" => ($rs["nombrecorto"]),
+          "sysfechaPers" => ($rs["sys_fecha"])
+          //"permisoPersona"=>$permisoPersona,
+          //"tablaUser" => $tablaUser
+        );
       }
       return $tabla; 
     }
@@ -197,10 +195,9 @@
       //todos los laborales
       $tablaLabo = array();
       $sql = "select * from personas_labo where estado=1 and id_persona=".$personaID." order by empresa;";
-      $qry = $db->query($sql);
-      if ($db->num_rows($qry)>0) {
-        for($xx = 0; $xx<$db->num_rows($qry); $xx++){
-          $rs = $db->fetch_array($qry);
+      $qry = $db->query_all($sql);
+      if ($qry) {
+        foreach($qry as $rs){
           $tablaLabo[] = array(
             "ID" => $rs["id"],
             "condicion" => $rs["condicion"],
@@ -218,12 +215,12 @@
       $fn = $GLOBALS["fn"];
 
       //obtener datos laborales
-      $sql = "select p.*,id_distrito,id_provincia,id_region from personas_labo p,vw_ubigeo u where p.id_ubigeo=u.id_distrito and p.id=$1";
-      $params = array($laboralID);
-      $qry = $db->query_params($sql,$params);
+      $sql = "select p.*,id_distrito,id_provincia,id_region from personas_labo p,vw_ubigeo u where p.id_ubigeo=u.id_distrito and p.id=:id";
+      $params = [":id"=>$laboralID];
+      $qry = $db->query_all($sql,$params);
   
-      if ($db->num_rows($qry)) {
-        $rs = $db->fetch_array($qry);
+      if ($qry) {
+        $rs = reset($qry);
         $tabla = array(
           "ID" => ($rs["id"]),
           "id_persona" => ($rs["id_persona"]),
@@ -267,11 +264,11 @@
       */
 
       //cargar datos laborales
-      $sql = "select p.*,be.nombrecorto,u.id_region,u.region,u.id_provincia,u.provincia,u.id_distrito,u.distrito from personas_labo p,bn_empleados be,vw_ubigeo u where p.sys_user=be.id_empleado and u.id_distrito=p.id_ubigeo and p.id=$1";
-      $params = array($laboralID);
-      $qry = $db->query_params($sql,$params);
-      if ($db->num_rows($qry)) {
-        $rs = $db->fetch_array($qry);
+      $sql = "select p.*,be.nombrecorto,u.id_region,u.region,u.id_provincia,u.provincia,u.id_distrito,u.distrito from personas_labo p,bn_empleados be,vw_ubigeo u where p.sys_user=be.id_empleado and u.id_distrito=p.id_ubigeo and p.id=:id";
+      $params = [":id"=>$laboralID];
+      $qry = $db->query_all($sql,$params);
+      if ($qry) {
+        $rs = reset($qry);
         $tabla = array(
           "id_persona" => ($rs["id_persona"]),
           "condicion" => ($rs["condicion"]),
@@ -312,12 +309,12 @@
       */
   
       //verificar si la persona tiene conyuge
-      $qry1 =  $db->query("select * from personas_rela where id_persona1=".$personaID);
-      $qry2 =  $db->query("select * from personas_rela where id_persona2=".$personaID);
+      $qry1 =  $db->query_all("select * from personas_rela where id_persona1=".$personaID);
+      $qry2 =  $db->query_all("select * from personas_rela where id_persona2=".$personaID);
   
-      if ($db->num_rows($qry1) || $db->num_rows($qry2)) {
-        if ($db->num_rows($qry1)) { $rs = $db->fetch_array($qry1); $conyugeID = $rs["id_persona2"]; }
-        else { $rs = $db->fetch_array($qry2); $conyugeID = $rs["id_persona1"]; }
+      if ($qry1 || $qry2) {
+        if ($qry1) { $rs = reset($qry1); $conyugeID = $rs["id_persona2"]; }
+        else { $rs = reset($qry2); $conyugeID = $rs["id_persona1"]; }
         $tabla = array(
           "id_conyuge" => ($conyugeID),
           "persona" => $fn->getViewPersona($conyugeID),

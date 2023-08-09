@@ -45,12 +45,12 @@
           break;
         case "newPersona":
           //obtener fecha actual de operacion
-          $rs = $db->fetch_array($db->query("select cast(now() as date) as fecha"));
-          $fechaHoy = $rs["fecha"];
+          $qry = $db->query_all("select cast(now() as date) as fecha");
+          $fechaHoy = reset($qry)["fecha"];
 
           //comboBox inicial
           $rpta = array(
-            "fecha"=>$fechaHoy,
+            "fecha" => $fechaHoy,
             "comboPais" => ($fn->getComboBox("select id,nombre from sis_ubigeo where tipo=1 order by nombre;")),
             "comboDUI" => ($fn->getComboBox("select id,nombre from personas_tipos_aux where id_padre=5 order by orden;")),
             "comboSexo" => ($fn->getComboBox("select id,nombre from personas_tipos_aux where id_padre=1 order by orden;")),
