@@ -25,14 +25,21 @@
     public function query_all($sql, $params = []) {
       try {
         $stmt = $this->conn->prepare($sql);
-        $stmt->execute($params);
+        foreach ($params as $key => $value) {
+          if (is_string($value) && strpos($sql, $key) !== false) {
+              $stmt->bindParam($key, $params[$key], PDO::PARAM_STR);
+          } else {
+              $stmt->bindParam($key, $params[$key]);
+          }
+        }
+        $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
       } catch (PDOException $e) {
         die("Error en la consulta: " . $e->getMessage());
       }
     }
 
-    public function query($sql, $params = []) {
+    public function queryXX($sql, $params = []) {
       try {
         $stmt = $this->conn->prepare($sql);
         $stmt->execute($params);

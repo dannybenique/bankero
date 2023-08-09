@@ -7,6 +7,7 @@ function appPersonasGrid(){
   let txtBuscar = document.querySelector("#txtBuscar").value.toUpperCase();
   let datos = { TipoQuery: 'selPersonas', buscar:txtBuscar };
   appFetch(datos,rutaSQL).then(resp => {
+    console.log(resp);
     let disabledDelete = (resp.rolID===resp.rootID) ? "" : "disabled";
     document.querySelector("#chk_All").disabled = (resp.rolID===resp.rootID) ? false : true;
     if(resp.tabla.length>0){

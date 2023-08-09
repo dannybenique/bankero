@@ -5,8 +5,8 @@
       include_once('db_database.php');
       include_once('web_config.php');
       $data = json_decode($_POST['frmLogin']);
-      $sql = "select * from vw_usuarios where login=:login and passw=:passw and id_coopac in(5,:coopac)";
-      $params = ['login'=>$data->login,'passw'=>$data->passw,'coopac'=>$web->coopacID]; // el 100=representa a la coopac de este site
+      $sql = "select * from vw_usuarios where login=:dblogin and passw=:dbpassw and id_coopac in(5,:dbcoopac)";
+      $params = [':dblogin'=>$data->login,':dbpassw'=>$data->passw,':dbcoopac'=>$web->coopacID]; // el 100=representa a la coopac de este site
       $qry = $db->query_all($sql,$params);
       if($qry){
         foreach($qry as $rs){

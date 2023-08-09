@@ -36,16 +36,15 @@
       //cargar datos de Personas
       $whr = "";
       $tabla = array();
-      //demo
-      $buscar = "'%".strtoupper($buscar)."%'";
-      //$whr = " and (persona like '%".$buscar."%' or nro_dui like '%".$buscar."%') ";
-      $whr = " and (persona like :buscar or nro_dui like :buscar) ";
-      $params = ["buscar"=>("'%".strtoupper($buscar)."%'")];
+      $buscar = strtoupper($buscar);
+      $whr = " and (persona LIKE :buscar or nro_dui LIKE :buscar) ";
+      $params = [":buscar"=>'%'.$buscar.'%'];
       $sql = "select count(*) as cuenta from vw_personas where id>1 ".$whr.";";
       $qryCount = $db->query_all($sql,$params);
       foreach($qryCount as $rs) { $rsCount = $rs["cuenta"]; }
 
-      $qry = $db->prepare("select * from vw_personas where id>1 ".$whr." order by persona limit 25 offset $pos;",$params);
+      $sql = "select * from vw_personas where id>1 ".$whr." order by persona limit 25 offset $pos;";
+      $qry = $db->query_all($sql,$params);
       if ($qry) {
         foreach($qry as $rs){
           $tabla[] = array(
@@ -57,7 +56,7 @@
           );
         }
       }
-      return array("cuenta"=>$sql,"tabla"=>$tabla);
+      return array("cuenta"=>$rsCount,"tabla"=>$tabla,"sql"=>$params);
     }
     public function getEditPersona($personaID) {
       $db = $GLOBALS["db"];
@@ -74,7 +73,8 @@
       //else { $permisoPersona = array("ID"=>0,"estado"=>0); }
   
       //obtener datos personales
-      $sql = "select p.*,id_distrito,id_provincia,id_region from personas p,vw_ubigeo u where p.id_ubigeo=u.id_distrito and p.id=$1";
+      $sql = "select p.*,id_distrito,id_provincia,id_region from personas p,vw_ubigeo u where p.id_ubigeo=u.id_distrito and p.id=:id";
+      $params = [":id"=>'%'.$buscar.'%'];
       $params = array($personaID);
       $qry = $db->query_params($sql,$params);
       
