@@ -72,23 +72,50 @@
           break;
         case "insSocio":
           //ingresar datos del socio
-          $codagenc = $db->fetch_array($db->query("select codigo from bn_bancos where id=".$data->socAgenciaID.";"))["codigo"];
-          $codsocio = $db->fetch_array($db->query("select right('000000'||cast(coalesce(max(right(codigo,6)::integer)+1,1) as text),6) as code from bn_socios where id_agencia=".$data->socAgenciaID.";"))["code"];
-          $sql = "insert into bn_socios values($1,$2,$3,null,null,$4,$5,$6,$7,$8,now(),$9);";
-          $params = array( $data->socioID, $web->coopacID, $data->socAgenciaID, $codagenc."-".$codsocio, $data->socFecha, 1, $fn->getClientIP(), $_SESSION['usr_ID'], $data->socObservac );
-          $exec = $db->fetch_array($db->query_params($sql,$params));
+          $qry = $db->query_all("select codigo from bn_bancos where id=".$data->socAgenciaID.";");
+          $codagenc = ($qry) ? (reset($qry)["codigo"]) : (null);
+          $qry = $db->query_all("select right('000000'||cast(coalesce(max(right(codigo,6)::integer)+1,1) as text),6) as code from bn_socios where id_agencia=".$data->socAgenciaID.";");
+          $codsocio = ($qry) ? (reset($qry)["code"]) : (null);
+          $sql = "insert into bn_socios values(:socioID,:coopacID,:agenciaID,null,null,:codsocio,:fecha,:estado,:sysIP,:userID,now(),:observac);";
+          $params = [
+            ":socioID"=>$data->socioID,
+            ":coopacID"=>$web->coopacID,
+            ":agenciaID"=>$data->socAgenciaID,
+            ":codsocio"=>$codagenc."-".$codsocio,
+            ":fecha"=>$data->socFecha,
+            ":estado"=>1, 
+            ":sysIP"=>$fn->getClientIP(),
+            ":userID"=>$_SESSION['usr_ID'], 
+            ":observac"=>$data->socObservac
+          ];
+          $qry = $db->query_all($sql,$params);
+          $rs = ($qry) ? (reset($qry)) : (null);
 
           //verificar e ingresar en SALDOS los productos obligatorios
-          $qry = $db->query_params("select * from bn_productos where id_tipo_oper=121 and obliga=1 and id_coopac=$1",array($web->coopacID));
-          if ($db->num_rows($qry)) {
-            for($xx = 0; $xx<$db->num_rows($qry); $xx++){
-              $rs = $db->fetch_array($qry);
-              $id = $db->fetch_array($db->query("select coalesce(max(id)+1,1) as code from bn_saldos;"))["code"];
-              $cod_prod = $db->fetch_array($db->query_params("select concat(to_char(now(),'YYYYMMDD'),'-',right('000000'||cast(coalesce(max(right(cod_prod,4)::integer)+1,1) as text),4)) as code from bn_saldos where left(cod_prod,8)=to_char(now(),'YYYYMMDD') and id_coopac=$1;",array($web->coopacID)))["code"];
+          $qry = $db->query_all("select * from bn_productos where id_tipo_oper=121 and obliga=1 and id_coopac=".$web->coopacID);
+          if ($qry) {
+            foreach($qry as $rs){
+              $xry = $db->query_all("select coalesce(max(id)+1,1) as code from bn_saldos;");
+              $id = reset($xry)["code"];
+              $xry = $db->query_all("select concat(to_char(now(),'YYYYMMDD'),'-',right('000000'||cast(coalesce(max(right(cod_prod,4)::integer)+1,1) as text),4)) as code from bn_saldos where left(cod_prod,8)=to_char(now(),'YYYYMMDD') and id_coopac=".$web->coopacID);
+              $cod_prod = reset($xry)["code"];
               
-              $sql = "insert into bn_saldos values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,now())";
-              $params = array($id,$web->coopacID,$data->socioID,$rs["id_tipo_oper"],$rs["id"],111,$cod_prod,0,1,$fn->getClientIP(),$_SESSION['usr_ID']);
-              $exec = $db->fetch_array($db->query_params($sql,$params));
+              $sql = "insert into bn_saldos values(:id,:coopacID,:socioID,:operID,:productoID,:monedaID,:codprod,:saldo,:estado,:sysIP,:userID,now());";
+              $params = [
+                ":id"=>$id,
+                ":coopacID"=>$web->coopacID,
+                ":socioID"=>$data->socioID,
+                ":operID"=>$rs["id_tipo_oper"],
+                ":productoID"=>$rs["id"],
+                ":monedaID"=>111,
+                ":codprod"=>$cod_prod,
+                ":saldo"=>0,
+                ":estado"=>1,
+                ":sysIP"=>$fn->getClientIP(),
+                ":userID"=>$_SESSION['usr_ID']
+              ];
+              $xry = $db->query_all($sql,$params);
+              $rs = ($xry) ? (reset($xry)) : (null);
             }
           }
 
@@ -97,17 +124,16 @@
           echo json_encode($rpta);
           break;
         case "updSocio":
-          $sql = "update bn_socios set id_agencia=$3,observac=$4,sys_ip=$5,sys_user=$6,sys_fecha=now() where id_socio=$1 and id_coopac=$2;";
-          $params = array(
-            $data->socioID, 
-            $web->coopacID, 
-            $data->socAgenciaID, 
-            $data->socObservac, 
-            $fn->getClientIP(), 
-            $_SESSION['usr_ID']
-          );
-          $qry = $db->query_params($sql,$params);
-          $xx = $db->fetch_array($qry);
+          $sql = "update bn_socios set id_agencia=:agenciaID,observac=:observac,sys_ip=:sysIP,sys_user=:userID,sys_fecha=now() where id_socio=:socioID and id_coopac=:coopacID;";
+          $params = [
+            ":agenciaID"=>$data->socAgenciaID,
+            ":observac"=>$data->socObservac,
+            ":sysIP"=>$fn->getClientIP(),
+            ":userID"=>$_SESSION['usr_ID'],
+            "socioID"=>$data->socioID,
+            "coopacID"=>$web->coopacID];
+          $qry = $db->query_all($sql,$params);
+          $rs = ($qry) ? (reset($qry)) : (null);
           
           //respuesta
           $rpta = array("error"=>false, "update"=>1);
@@ -116,9 +142,14 @@
         case "delSocios":
           $params = array();
           for($i=0; $i<count($data->arr); $i++){
-            $sql = "update bn_socios set estado=0,sys_ip=$2,sys_user=$3,sys_fecha=now() where id_socio=$1";
-            $params = array($data->arr[$i],$fn->getClientIP(),$_SESSION['usr_ID']);
-            $qry = $db->query_params($sql,$params);
+            $sql = "update bn_socios set estado=0,sys_ip=:sysIP,sys_user=:userID,sys_fecha=now() where id_socio=:socioID";
+            $params = [
+              ":socioID"=>$data->arr[$i],
+              ":sysIP"=>$fn->getClientIP(),
+              "userID"=>$_SESSION['usr_ID']
+            ];
+            $qry = $db->query_all($sql,$params);
+            $rs = ($qry) ? (reset($qry)) : (null);
           }
           //respuesta
           $rpta = array("error"=>false, "delete"=>$data->arr);
@@ -161,8 +192,9 @@
             $persona = true;
             
             //verificar en Socios
+            $sql = "select id_socio from bn_socios where id_coopac=:coopacID and id_socio=:socioID;";
             $paramSocio = [":coopacID"=>$web->coopacID,":socioID"=>$rs["id"]];
-            $qrySocio = $db->query_all("select id_socio from bn_socios where id_coopac=:coopacID and id_socio=:socioID;",$paramSocio);
+            $qrySocio = $db->query_all($sql,$paramSocio);
             $activo = ($qrySocio) ? true : false;
           }
 
