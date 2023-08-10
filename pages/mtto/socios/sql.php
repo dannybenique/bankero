@@ -17,12 +17,12 @@
         $web = $GLOBALS["web"]; //web-config
         
         //obtener datos personales
-        $sql = "select s.*,b.nombre as agencia,e.nombrecorto as usermod from bn_socios s,bn_bancos b,bn_empleados e where s.estado=1 and e.id_empleado=s.sys_user and s.id_agencia=b.id and s.id_socio=$1 and s.id_coopac=$2";
-        $params = array($personaID,$web->coopacID);
-        $qry = $db->query_params($sql,$params);
+        $sql = "select s.*,b.nombre as agencia,e.nombrecorto as usermod from bn_socios s,bn_bancos b,bn_empleados e where s.estado=1 and e.id_empleado=s.sys_user and s.id_agencia=b.id and s.id_socio=:socioID and s.id_coopac=:coopacID";
+        $params = [":socioID"=>$personaID,"coopacID"=>$web->coopacID];
+        $qry = $db->query_all($sql,$params);
         
-        if ($db->num_rows($qry)) {
-            $rs = $db->fetch_array($qry);
+        if ($qry) {
+            $rs = reset($qry);
             $tabla = array(
               "ID" => ($rs["id_socio"]),
               "coopacID" => ($rs["id_coopac"]),
@@ -41,29 +41,33 @@
       }
       switch ($data->TipoQuery) {
         case "selSocios":
-          $whr = "";
           $tabla = array();
-          $data->buscar = pg_escape_string(strtoupper($data->buscar));
-          $whr = " and id_coopac=".$web->coopacID." and (persona like '%".$data->buscar."%' or nro_dui like '%".$data->buscar."%') ";
-          $rsCount = $db->fetch_array($db->query("select count(*) as cuenta from vw_socios where estado in(1,2) ".$whr.";"));
+          $buscar = strtoupper($data->buscar);
+          $whr = " and id_coopac=".$web->coopacID." and (persona LIKE :buscar or nro_dui LIKE :buscar) ";
+          $params = [":buscar"=>'%'.$buscar.'%'];
+          $sql = "select count(*) as cuenta from vw_socios where estado in(1,2) ".$whr;
+          $qryCount = $db->query_all($sql,$params);
+          $rsCount = ($qryCount) ? reset($qryCount)["cuenta"] : (0);
 
-          $qry = $db->query("select * from vw_socios where estado in(1,2) ".$whr." order by persona limit 25 offset 0;");
-          if ($db->num_rows($qry)) {
-            for($xx = 0; $xx<$db->num_rows($qry); $xx++){
-              $rs = $db->fetch_array($qry);
+          $sql = "select * from vw_socios where estado in(1,2) ".$whr." order by persona limit 25 offset 0;";
+          $qry = $db->query_all($sql,$params);
+          if($qry) {
+            foreach($qry as $rs){
               $tabla[] = array(
                 "ID" => $rs["id_socio"],
                 "codigo" => $rs["codigo"],
                 "fecha" => $rs["fecha"],
                 "DUI" => $rs["dui"],
-                "nro_dui"=> str_replace($data->buscar, '<span style="background:yellow;">'.$data->buscar.'</span>', $rs["nro_dui"]),
-                "socio" => str_ireplace($data->buscar, '<span style="background:yellow;">'.$data->buscar.'</span>', $rs["persona"]),
+                "nro_dui"=> str_replace($buscar, '<span style="background:yellow;">'.$buscar.'</span>', $rs["nro_dui"]),
+                "socio" => str_ireplace($buscar, '<span style="background:yellow;">'.$buscar.'</span>', $rs["persona"]),
                 "url" => $rs["urlfoto"],
                 "direccion" => ($rs["direccion"])
               );
             }
           }
-          $rpta = array("tabla"=>$tabla,"cuenta"=>$rsCount["cuenta"],"rolID" => (int)$_SESSION["usr_data"]["rolID"]);
+
+          //respuesta
+          $rpta = array("tabla"=>$tabla,"cuenta"=>$rsCount,"rolID" => (int)$_SESSION["usr_data"]["rolID"]);
           echo json_encode($rpta);
           break;
         case "insSocio":
@@ -123,7 +127,9 @@
         case "viewSocio":
           switch($data->fullQuery){
             case 0: //datos personales
-              $rpta = array('tablaSocio'=> getViewSocio($data->personaID),'tablaPers'=>$fc->getViewPersona($data->personaID));
+              $rpta = array(
+                'tablaSocio'=> getViewSocio($data->personaID),
+                'tablaPers'=>$fc->getViewPersona($data->personaID));
               break;
             case 1: //datos personales + laborales
               $rpta = array(
@@ -147,14 +153,17 @@
           $activo = false; //indica que encontro en tabla de socios
           
           //verificar en Personas
-          $qry = $db->query_params("select id from personas where (nro_dui=$1);",array($data->nroDNI));
-          if($db->num_rows($qry)){
-            $rs = $db->fetch_array($qry);
+          $params = [":nrodni"=>$data->nroDNI];
+          $qry = $db->query_all("select id from personas where (nro_dui=:nrodni);",$params);
+          if($qry){
+            $rs = reset($qry);
             $tablaPers = $fn->getViewPersona($rs["id"]);
             $persona = true;
+            
             //verificar en Socios
-            $qrySocio = $db->query_params("select id_socio from bn_socios where id_coopac=$1 and id_socio=$2;",array($web->coopacID,$rs["id"]));
-            $activo = ($db->num_rows($qrySocio)) ? true : false;
+            $paramSocio = [":coopacID"=>$web->coopacID,":socioID"=>$rs["id"]];
+            $qrySocio = $db->query_all("select id_socio from bn_socios where id_coopac=:coopacID and id_socio=:socioID;",$paramSocio);
+            $activo = ($qrySocio) ? true : false;
           }
 
           //respuesta
@@ -166,10 +175,15 @@
           echo json_encode($rpta);
           break;
         case "startSocio":
+          //obtener fecha actual de operacion
+          $qry = $db->query_all("select cast(now() as date) as fecha");
+          if($qry){ $rs = reset($qry); }
+          $fechaHoy = $rs["fecha"];
+          
           //respuesta
           $rpta = array(
             "comboAgencias" => $fn->getComboBox("select id,nombre from bn_bancos where estado=1 and id_padre=".$web->coopacID),
-            "fecha" => $db->fetch_array($db->query("select now() as fecha;"))["fecha"],
+            "fecha" => $fechaHoy,
             "coopac" => $web->coopacID);
           echo json_encode($rpta);
           break;

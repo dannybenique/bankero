@@ -66,8 +66,11 @@
         case "insPersona":
           try {
             $sql = cadSQL($data);
-            $rs = $db->fetch_array($db->query($sql));
-            $rpta = array("error"=>false, $data->commandSQL=>1, "sql"=>$sql, "tablaPers"=>$fn->getViewPersona($rs["nro"]));
+            $qry = $db->query_all($sql);
+            $rs = ($qry) ? (reset($qry)) : (null); 
+            
+            //respuesta
+            $rpta = array("error"=>false, $data->commandSQL=>1, "sql"=>$sql, "tablaPers"=>$fn->getViewPersona($rs["nro"])); 
             echo json_encode($rpta);
           } catch(Exception $e) {
             echo json_encode($e->getMessage());
@@ -89,8 +92,11 @@
 
             //datos para DB
             $sql = cadSQL($data);
-            $rs = $db->fetch_array($db->query($sql));
-            $rpta = array("error"=>false, $data->commandSQL=>1, "sql"=>$sql, "tablaPers"=>$fn->getViewPersona($rs["nro"]));
+            $qry = $db->query_all($sql);
+            $rs = ($qry) ? (reset($qry)) : (null); 
+            
+            //respuesta
+            $rpta = array("error"=>false, $data->commandSQL=>1, "sql"=>$sql, "tablaPers"=>$fn->getViewPersona($rs["nro"])); 
             echo json_encode($rpta);
           } catch(Exception $e) {
             echo json_encode($e->getMessage());

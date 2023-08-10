@@ -27,14 +27,19 @@
             $data->tiempoRelacion.",'".
             $fn->getClientIP()."',".
             $_SESSION['usr_ID'].") as nro";
+          $qry = $db->query_all($sql);
+          $rs = ($qry) ? (reset($qry)) : (null);
 
-          $rs = $db->fetch_array($db->query($sql));
+          //respuesta
           $rpta = array("error"=>false,$data->commandSQL=>1,"sql"=>$sql,"tablaCony"=>$fn->getViewConyuge($data->personaID));
           echo json_encode($rpta);
           break;
         case "delConyuge":
           $sql = "select sp_personas_rela ('".$data->commandSQL."',".$data->personaID.",0,601,0,'".$fn->getClientIP()."',".$_SESSION['usr_ID'].") as nro;";
-          $rs = $db->fetch_array($db->query($sql));
+          $qry = $db->query_all($sql);
+          $rs = ($qry) ? (reset($qry)) : (null);
+
+          //respuesta
           $rpta = array("error"=>false,"sql"=>$sql);
           echo json_encode($rpta);
           break;
@@ -44,15 +49,17 @@
           $activo = false; //indica que encontro en conyuges
 
           //verificar en Personas
-          $qryPers = $db->query("select id from personas where (nro_dui='".$data->nroDNI."');");
-          if($db->num_rows($qryPers)>0){
-            $rsPers = $db->fetch_array($qryPers);
+          $sql = "select id from personas where (nro_dui=:dui);";
+          $params = [":dui"=>$data->nroDNI];
+          $qryPers = $db->query_all($sql,$params);
+          if($qryPers){
+            $rsPers = reset($qryPers);
             $tablaPers = $fn->getViewPersona($rsPers["id"]);
             $persona = true;
             //verificar en Conyuges
-            $qryConyuge1 = $db->query("select id_persona1 from personas_rela where (id_persona1=".$rsPers["id"].");");
-            $qryConyuge2 = $db->query("select id_persona2 from personas_rela where (id_persona2=".$rsPers["id"].");");
-            $activo = (($db->num_rows($qryConyuge1)>0) || ($db->num_rows($qryConyuge2)>0))? (true):(false);
+            $qryConyuge1 = $db->query_all("select id_persona1 from personas_rela where (id_persona1=".$rsPers["id"].");");
+            $qryConyuge2 = $db->query_all("select id_persona2 from personas_rela where (id_persona2=".$rsPers["id"].");");
+            $activo = (($qryConyuge1) || ($qryConyuge2))? (true):(false);
           }
 
           //respuesta

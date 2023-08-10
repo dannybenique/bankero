@@ -13,7 +13,8 @@
           break;
         case "newLaboral":
           //obtener fecha actual de operacion
-          $rs = $db->fetch_array($db->query("select cast(now() as date) as fecha"));
+          $qry = $db->query_all("select cast(now() as date) as fecha");
+          if($qry){ $rs = reset($qry); }
           $fechaHoy = $rs["fecha"];
 
           $rpta = array(
@@ -46,15 +47,19 @@
             ($data->estado).",'".
             $fn->getClientIP()."',".
             $_SESSION['usr_ID'].") as nro;";
+          $qry = $db->query_all($sql);
+          $rs = ($qry) ? (reset($qry)) : (null);
 
-          $rs = $db->fetch_array($db->query($sql));
+          //respuesta
           $rpta = array("error"=>false, $data->commandSQL=>1, "sql"=>$sql, "tablaLabo"=>$fn->getAllLaborales($data->personaID));
           echo json_encode($rpta);
           break;
         case "ersLaboral": //borrar un registro de forma logica
           $sql = "select sp_personas_labo ('".$data->commandSQL."',".$data->laboralID.",".$data->personaID.",0,'','','','',0,'','',0,now()::date,'',0,'".$fn->getClientIP()."',".$_SESSION['usr_ID'].") as nro;";
-          $rs = $db->fetch_array($db->query($sql));
+          $qry = $db->query_all($sql);
+          $rs = ($qry) ? (reset($qry)) : (null);
           
+          //respuesta
           $rpta = array("error"=>false, $data->commandSQL=>1, "sql"=>$sql, "tablaLabo"=>$fn->getAllLaborales($data->personaID));
           echo json_encode($rpta);
           break;

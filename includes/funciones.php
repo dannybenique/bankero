@@ -33,14 +33,13 @@
       //$rsusr = $db->fetch_array($qryusr);
 
       //cargar datos de Personas
-      $whr = "";
       $tabla = array();
       $buscar = strtoupper($buscar);
       $whr = " and (persona LIKE :buscar or nro_dui LIKE :buscar) ";
       $params = [":buscar"=>'%'.$buscar.'%'];
       $sql = "select count(*) as cuenta from vw_personas where id>1 ".$whr.";";
       $qryCount = $db->query_all($sql,$params);
-      foreach($qryCount as $rs) { $rsCount = $rs["cuenta"]; }
+      $rsCount = ($qryCount) ? reset($qryCount)["cuenta"] : (0);
 
       $sql = "select * from vw_personas where id>1 ".$whr." order by persona limit 25 offset $pos;";
       $qry = $db->query_all($sql,$params);
