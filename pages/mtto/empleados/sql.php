@@ -53,13 +53,13 @@
         $web = $GLOBALS["web"]; //web-config
 
         //obtener datos usuario
-        $sql = "select * from bn_usuarios where id_usuario=:usuarioID and id_coopac=:coopacID;";
-        $params = [":usuarioID"=>$personaID,":coopacID"=>$web->coopacID];
+        $sql = "select * from bn_usuarios where id=:id and id_coopac=:coopacID;";
+        $params = [":id"=>$personaID,":coopacID"=>$web->coopacID];
         $qry = $db->query_all($sql,$params);
         if ($qry) {
           $rs = reset($qry);
           $tabla = array(
-            "ID" => ($rs["id_usuario"]*1),
+            "ID" => ($rs["id"]*1),
             "coopacID" => ($rs["id_coopac"]*1),
             "rolID" => ($rs["id_rol"]*1),
             "login" => ($rs["login"]),
@@ -131,20 +131,21 @@
           echo json_encode($rpta);
           break;
         case "updWorker":
-          $sql = "update bn_empleados set id_agencia=$3,id_cargo=$4,nombrecorto=$5,correo=$6,observac=$7,sys_ip=$8,sys_user=$9,sys_fecha=now() where id_empleado=$1 and id_coopac=$2;";
-          $params = array(
-            $data->workerID, 
-            $web->coopacID, 
-            $data->agenciaID, 
-            $data->cargoID, 
-            pg_escape_string($data->nombrecorto), 
-            $data->correo,
-            pg_escape_string($data->observac), 
-            $fn->getClientIP(), 
-            $_SESSION['usr_ID']
-          );
-          $qry = $db->query_params($sql,$params);
-          $xx = $db->fetch_array($qry);
+          $sql = "update bn_empleados set id_agencia=:agenciaID,id_cargo=:cargoID,nombrecorto=:nombrecorto,correo=:correo,observac=:observac,sys_ip=:sysIP,sys_user=:userID,sys_fecha=now() where id_empleado=:id and id_coopac=:coopacID;";
+          $params = [
+            ":id"=>$data->workerID,
+            ":coopacID"=>$web->coopacID,
+            ":agenciaID"=>$data->agenciaID,
+            ":cargoID"=>$data->cargoID,
+            ":nombrecorto"=>$data->nombrecorto,
+            ":correo"=>$data->correo,
+            ":observac"=>$data->observac,
+            ":sysIP"=>$fn->getClientIP(), 
+            ":userID"=>$_SESSION['usr_ID']
+          ];
+          $qry = $db->query_all($sql,$params);
+          $rs = ($qry) ? (reset($qry)) : (null);
+
           //respuesta
           $rpta = array("error"=>false, "update"=>1);
           echo json_encode($rpta);
@@ -152,10 +153,16 @@
         case "delWorkers":
           $params = array();
           for($i=0; $i<count($data->arr); $i++){
-            $sql = "update bn_empleados set estado=0,sys_ip=$2,sys_user=$3,sys_fecha=now() where id_empleado=$1";
-            $params = array($data->arr[$i],$fn->getClientIP(),$_SESSION['usr_ID']);
-            $qry = $db->query_params($sql,$params);
+            $sql = "update bn_empleados set estado=0,sys_ip=:sysIP,sys_user=:userID,sys_fecha=now() where id_empleado=:id";
+            $params = [
+              ":id"=>$data->arr[$i],
+              ":sysIP"=>$fn->getClientIP(),
+              ":userID"=>$_SESSION['usr_ID']
+            ];
+            $qry = $db->query_all($sql,$params);
+            $rs = ($qry) ? (reset($qry)) : (null);
           }
+
           //respuesta
           $rpta = array("error"=>false, "delete"=>$data->arr);
           echo json_encode($rpta);
@@ -209,12 +216,11 @@
           break;
         case "selMenu":
           //cargar Ubigeo
-          $pID = (array_key_exists('id',$_REQUEST)) ? ($pID = $_REQUEST['id']) : (0);
-          $qry = $db->query("select * from sis_ubigeo where id_padre=".$pID." order by id;");
-          if ($db->num_rows($qry)>0) {
-            $tabla = array();
-            for($xx = 0; $xx<$db->num_rows($qry); $xx++){
-              $rs = $db->fetch_array($qry);
+          $tabla = array();
+          $pID = (array_key_exists('id',$_REQUEST)) ? ($_REQUEST['id']) : (0);
+          $qry = $db->query_all("select * from sis_ubigeo where id_padre=".$pID." order by id;");
+          if ($qry) {
+            foreach($qry as $rs){
               //$rscount = $db->fetch_array($db->query("select count(*) as cuenta from sis_ubigeo where id_padre=".$rs["id"]));
               $tabla[] = array(
                 "id" => ($rs["id"]),
@@ -224,6 +230,7 @@
               );
             }
           }
+
           //respuesta
           echo json_encode($tabla);
           break;
