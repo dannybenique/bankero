@@ -336,17 +336,23 @@
       $db = $GLOBALS["db"];
       //extraes data
       $tabla = array();
-      $params = array($importe,$tasa_cred,$tasa_desgr,$nroCuotas,$fecha,$pivot);
+      $params = [
+        ":importe"=>$importe,
+        ":tasacred"=>$tasa_cred,
+        ":tasadesgr"=>$tasa_desgr,
+        ":nrocuotas"=>$nroCuotas,
+        ":fecha"=>$fecha,
+        ":pivot"=>$pivot
+      ];
 
       switch($TipoCredito){
-        case "1": $sql = "select * from fn_get_planpagos_fechafija($1,$2,$3,$4,$5,$6) as (num integer,fecha date,dias integer,tasa_efec float,cuotax numeric,cuota numeric,capital numeric,interes numeric,desgr numeric,saldo numeric)"; break;
-        case "2": $sql = "select * from fn_get_planpagos_plazofijo($1,$2,$3,$4,$5,$6) as (num integer,fecha date,dias integer,tasa_efec float,cuotax numeric,cuota numeric,capital numeric,interes numeric,desgr numeric,saldo numeric)"; break;
+        case "1": $sql = "select * from fn_get_planpagos_fechafija(:importe,:tasacred,:tasadesgr,:nrocuotas,:fecha,:pivot) as (num integer,fecha date,dias integer,tasa_efec float,cuotax numeric,cuota numeric,capital numeric,interes numeric,desgr numeric,saldo numeric)"; break;
+        case "2": $sql = "select * from fn_get_planpagos_plazofijo(:importe,:tasacred,:tasadesgr,:nrocuotas,:fecha,:pivot) as (num integer,fecha date,dias integer,tasa_efec float,cuotax numeric,cuota numeric,capital numeric,interes numeric,desgr numeric,saldo numeric)"; break;
       }
       
-      $qry = $db->query_params($sql,$params);
-      if ($db->num_rows($qry)>0) {
-        for($xx = 0; $xx<$db->num_rows($qry); $xx++){
-          $rs = $db->fetch_array($qry);
+      $qry = $db->query_all($sql,$params);
+      if ($qry) {
+        foreach($qry as $rs){
           $tabla[] = array(
             "nro" => $rs["num"],
             "dias" => $rs["dias"],

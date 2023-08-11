@@ -17,12 +17,12 @@
         $web = $GLOBALS["web"]; //web-config
         
         //obtener datos personales
-        $sql = "select s.*,b.nombre as agencia from bn_socios s,bn_bancos b where s.estado=1 and s.id_agencia=b.id and s.id_socio=$1 and s.id_coopac=$2";
-        $params = array($personaID,$web->coopacID);
-        $qry = $db->query_params($sql,$params);
+        $sql = "select s.*,b.nombre as agencia from bn_socios s,bn_bancos b where s.estado=1 and s.id_agencia=b.id and s.id_socio=:socioID and s.id_coopac=:coopacID";
+        $params = [":socioID"=>$personaID,"coopacID"=>$web->coopacID];
+        $qry = $db->query_all($sql,$params);
         
-        if ($db->num_rows($qry)) {
-            $rs = $db->fetch_array($qry);
+        if ($qry) {
+            $rs = reset($qry);
             $tabla = array(
               "ID" => ($rs["id_socio"]),
               "coopacID" => ($rs["id_coopac"]),
@@ -40,23 +40,24 @@
       }
       switch ($data->TipoQuery) {
         case "selSoliCred":
-          $whr = "";
           $tabla = array();
-          $data->buscar = pg_escape_string(strtoupper($data->buscar));
-          $whr = " and id_coopac=".$web->coopacID." and (socio like '%".$data->buscar."%' or nro_dui like '%".$data->buscar."%') ";
-          $rsCount = $db->fetch_array($db->query("select count(*) as cuenta from vw_prestamos_min where estado=3 ".$whr.";"));
+          $buscar = strtoupper($data->buscar);
+          $whr = " and id_coopac=:coopacID and (socio LIKE :buscar or nro_dui LIKE :buscar) ";
+          $params = [":coopacID"=>$web->coopacID,":buscar"=>'%'.$buscar.'%'];
+          $qry = $db->query_all("select count(*) as cuenta from vw_prestamos_min where estado=3 ".$whr.";",$params);
+          $rsCount = reset($qry);
 
-          $qry = $db->query("select * from vw_prestamos_min where estado=3 ".$whr." order by socio limit 25 offset 0;");
-          if ($db->num_rows($qry)) {
-            for($xx = 0; $xx<$db->num_rows($qry); $xx++){
-              $rs = $db->fetch_array($qry);
+          $sql = "select * from vw_prestamos_min where estado=3 ".$whr." order by socio limit 25 offset 0;";
+          $qry = $db->query_all($sql,$params);
+          if ($qry) {
+            foreach($qry as $rs){
               $tabla[] = array(
                 "ID" => $rs["id"],
                 "codigo" => $rs["codigo"],
                 "fecha" => $rs["fecha_solicred"],
                 "otorga" => $rs["fecha_otorga"],
-                "nro_dui"=> str_replace($data->buscar, '<span style="background:yellow;">'.$data->buscar.'</span>', $rs["nro_dui"]),
-                "socio" => str_ireplace($data->buscar, '<span style="background:yellow;">'.$data->buscar.'</span>', $rs["socio"]),
+                "nro_dui"=> str_replace($buscar, '<span style="background:yellow;">'.$buscar.'</span>', $rs["nro_dui"]),
+                "socio" => str_ireplace($buscar, '<span style="background:yellow;">'.$buscar.'</span>', $rs["socio"]),
                 "tipo_oper" => $rs["tipo_oper"],
                 "producto" => $rs["producto"],
                 "mon_abrevia" => $rs["mon_abrevia"],
@@ -72,44 +73,48 @@
           echo json_encode($rpta);
           break;
         case "insSoliCred":
-          //inicialmente el estado debe ser 3 (en bn_prestamos)
-          $id = $db->fetch_array($db->query("select coalesce(max(id)+1,1)as maxi from bn_prestamos"))["maxi"];
-          $codigo = $data->fecha_solicred."-".$db->fetch_array($db->query("select right('0000'||cast(coalesce(max(right(codigo,4)::integer)+1,1) as text),4) as maxi from bn_prestamos where id_coopac=".$web->coopacID." and fecha_solicred='".$data->fecha_solicred."';"))["maxi"];
-          $sql = "insert into bn_prestamos values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,now(),$30);";
-          $params = array(
-            $id, 
-            $codigo, 
-            $data->socioID, 
-            $web->coopacID, 
-            $data->agenciaID, 
-            $data->promotorID, 
-            $data->analistaID, 
-            null, 
-            $data->productoID, 
-            $data->tiposbsID, 
-            $data->destsbsID, 
-            $data->clasificaID, 
-            $data->condicionID, 
-            $data->monedaID, 
-            $data->importe, 
-            $data->saldo, 
-            $data->tasa, 
-            $data->mora, 
-            $data->desgr, 
-            $data->nrocuotas, 
-            $data->fecha_solicred,
-            null,
-            $data->fecha_otorga, 
-            $data->fecha_pricuota,
-            $data->tipocredID,
-            ($data->tipocredID==2)?$data->frecuencia:null, 
-            3, 
-            $fn->getClientIP(), 
-            $_SESSION['usr_ID'], 
-            $data->observac
-          );
+          //inicialmente el estado debe ser 3 en bn_prestamos
+          $qry = $db->query_all("select coalesce(max(id)+1,1)as maxi from bn_prestamos;");
+          $id = reset($qry)["maxi"];
+          $params = [":coopacID"=>$web->coopacID,":fecha"=>$data->fecha_solicred];
+          $qry = $db->query("select right('0000'||cast(coalesce(max(right(codigo,4)::integer)+1,1) as text),4) as maxi from bn_prestamos where id_coopac=:coopacID and fecha_solicred=:fecha;",$params);
+          $codigo = $data->fecha_solicred."-".reset($qry)["maxi"];
           
-          $qry = $db->query_params($sql,$params);
+          $sql = "insert into bn_prestamos values(:id,:codigo,:socioID,:coopacID,agenciaID,:promotorID,:analistaID,:apruebaID,:productoID,:tiposbsID,:destsbsID,:clasificaID,:condicionID,:monedaID,:importe,:saldo,:tasa,:mora,:desgr,:nrocuotas,:fechaSoli,:fechaApru,:fechaOtor,:fechaPriC,:tipocredID,:frecuencia,:estado,:sysIP,:userID,now(),:observac);";
+          $params = [
+            ":id"=>$id,
+            ":codigo"=>$codigo,
+            ":socioID"=>$data->socioID,
+            ":coopacID"=>$web->coopacID,
+            ":agenciaID"=>$data->agenciaID,
+            ":promotorID"=>$data->promotorID,
+            ":analistaID"=>$data->analistaID,
+            ":apruebaID"=>null,
+            ":productoID"=>$data->productoID,
+            ":tiposbsID"=>$data->tiposbsID,
+            ":destsbsID"=>$data->destsbsID,
+            ":clasificaID"=>$data->clasificaID,
+            ":condicionID"=>$data->condicionID,
+            ":monedaID"=>$data->monedaID,
+            ":importe"=>$data->importe,
+            ":saldo"=>$data->saldo,
+            ":tasa"=>$data->tasa,
+            ":mora"=>$data->mora,
+            ":desgr"=>$data->desgr,
+            ":nrocuotas"=>$data->nrocuotas,
+            ":fechaSoli"=>$data->fecha_solicred,
+            ":fechaApru"=>null,
+            ":fechaOtor"=>$data->fecha_otorga,
+            ":fechaPriC"=>$data->fecha_pricuota,
+            ":tipocredID"=>$data->tipocredID,
+            ":frecuencia"=>($data->tipocredID==2)?$data->frecuencia:null,
+            ":estado"=>3,
+            ":sysIP"=>$fn->getClientIP(),
+            ":userID"=>$_SESSION['usr_ID'],
+            ":observac"=>$data->observac
+          ];
+          
+          $qry = $db->query_all($sql,$params);
           if($qry){
             $xx = $db->fetch_array($qry);
             $rpta = array("error"=>false, "insert"=>1);
@@ -124,13 +129,13 @@
           $sql = "update bn_prestamos set id_socio=$2,id_agencia=$3,id_promotor=$4,id_analista=$5,id_producto=$6,id_tiposbs=$7,id_destsbs=$8,id_clasifica=$9,id_condicion=$10,id_moneda=$11,importe=$12,saldo=$13,tasa_cred=$14,tasa_mora=$15,tasa_desgr=$16,nro_cuotas=$17,fecha_solicred=$18,fecha_otorga=$19,fecha_pricuota=$20,id_tipocred=$21,frecuencia=$22,sys_ip=$23,sys_user=$24,sys_fecha=now(),observac=$25 where id=$1;";
           $params = array(
             $data->ID, 
-            $data->socioID, 
-            $data->agenciaID, 
-            $data->promotorID, 
+            $data->socioID,
+            $data->agenciaID,
+            $data->promotorID,
             $data->analistaID,
-            $data->productoID, 
-            $data->tiposbsID, 
-            $data->destsbsID, 
+            $data->productoID,
+            $data->tiposbsID,
+            $data->destsbsID,
             $data->clasificaID, 
             $data->condicionID, 
             $data->monedaID, 
@@ -177,7 +182,7 @@
             "comboClasifica" => $fn->getComboBox("select id,nombre from sis_tipos where id_padre=3 order by id;"), //clasificacion crediticia
             "comboCondicion" => $fn->getComboBox("select id,nombre from sis_tipos where id_padre=4 order by id;"), //condicion credito
             "comboMoneda" => $fn->getComboBox("select id,nombre from sis_tipos where id_padre=1 order by id;"), //tipos moneda
-            "fecha" => $db->fetch_array($db->query("select now() as fecha;"))["fecha"],
+            "fecha" => $fn->getFechaActualDB(),
             "coopac" => $web->coopacID);
           echo json_encode($rpta);
           break;
@@ -285,9 +290,11 @@
           $activo = false; //indica que encontro en tabla de prestamos
           
           //verificar en Personas
-          $qry = $db->query_params("select p.id from personas p, bn_socios s where p.id=s.id_socio and (p.nro_dui=$1) and (s.id_coopac=$2);",array($data->nroDNI,$web->coopacID));
-          if($db->num_rows($qry)){
-            $rs = $db->fetch_array($qry);
+          $sql = "select p.id from personas p, bn_socios s where p.id=s.id_socio and (p.nro_dui=:nrodni) and (s.id_coopac=:coopacID);";
+          $params = [":nrodni"=>$data->nroDNI,":coopacID"=>$web->coopacID];
+          $qry = $db->query_all($sql,$params);
+          if($qry){
+            $rs = reset($qry);
             $tablaPers = $fn->getViewPersona($rs["id"]);
             $persona = true;
             $activo = true;
@@ -320,10 +327,11 @@
           );
 
           //tasas
-          $ss = $db->fetch_array($db->query("select fn_get_tem(".$data->TEA.") as tem,fn_get_ted(".$data->TEA.") as  ted;"));
-          $rpta = array("error"=>false,"tabla"=>$tabla[1], "tea"=>$data->TEA, "tem"=>$ss["tem"], "ted"=>$ss["ted"]);
+          $qry = $db->query_all("select fn_get_tem(".$data->TEA.") as tem,fn_get_ted(".$data->TEA.") as  ted;");
+          $rs = reset($qry);
           
           //respuesta
+          $rpta = array("error"=>false,"tabla"=>$tabla[1], "tea"=>$data->TEA, "tem"=>$rs["tem"], "ted"=>$rs["ted"]);
           echo json_encode($rpta);
           break;
         case "aprobarSoliCred":

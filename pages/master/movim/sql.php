@@ -14,15 +14,15 @@
       switch ($data->TipoQuery) {
         case "selMovims":
           $tabla = array();
-          $data->buscar = pg_escape_string($data->buscar);
-          $sql = "select m.* from sis_mov m where m.nombre ilike'%".$data->buscar."%' order by m.id;";
-          $qry = $db->query($sql);
-          if ($db->num_rows($qry)>0) {
-            for($xx = 0; $xx<$db->num_rows($qry); $xx++){
-              $rs = $db->fetch_array($qry);
+          $buscar = strtoupper($data->buscar);
+          $sql = "select m.* from sis_mov m where m.nombre LIKE :buscar order by m.id;";
+          $params = [":buscar"=>'%'.$buscar.'%'];
+          $qry = $db->query_all($sql,$params);
+          if ($qry) {
+            foreach($qry as $rs){
               $tabla[] = array(
                 "ID" => $rs["id"],
-                "nombre" => str_ireplace($data->buscar, '<span style="background:yellow;">'.$data->buscar.'</span>', $rs["nombre"]),
+                "nombre" => str_ireplace($buscar, '<span style="background:yellow;">'.$buscar.'</span>', $rs["nombre"]),
                 "codigo" => $rs["codigo"],
                 "abrevia" => $rs["abrevia"],
                 "tipo_operID" => $rs["id_tipo_oper"],
@@ -35,9 +35,9 @@
           echo json_encode($rpta);
           break;
         case "viewMovim":
-          $qry = $db->query_params("select * from sis_mov where id=$1;",array($data->ID));
-          if ($db->num_rows($qry)) {
-            $rs = $db->fetch_array($qry);
+          $qry = $db->query_all("select * from sis_mov where id=".$data->ID);
+          if ($qry) {
+            $rs = reset($qry);
             $tipo = array(
               "ID" => $rs["id"],
               "nombre" => $rs["nombre"],

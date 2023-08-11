@@ -24,7 +24,8 @@
           );
 
           //tasas
-          $rs = $db->fetch_array($db->query("select fn_get_tem(".$data->TEA.") as tem,fn_get_ted(".$data->TEA.") as  ted;"));
+          $qry = $db->query_all("select fn_get_tem(".$data->TEA.") as tem,fn_get_ted(".$data->TEA.") as  ted;");
+          $rs = reset($qry);
           $TEM = $rs["tem"];
           $TED = $rs["ted"];
           //respuesta

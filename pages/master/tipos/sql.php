@@ -14,12 +14,12 @@
       switch ($data->TipoQuery) {
         case "selTipos":
           $tabla = array();
-          $data->buscar = pg_escape_string($data->buscar);
-          $sql = "select s.*,b.id_tipo,x.nombre as nivel from sis_tipos s join sis_tipos x on (s.id_padre=x.id) left join bn_tipos b on (s.id=b.id_tipo and b.id_coopac=".$web->coopacID.") where s.id_padre=".$data->tipo." and s.nombre ilike'%".$data->buscar."%' order by s.id;";
-          $qry = $db->query($sql);
-          if ($db->num_rows($qry)>0) {
-            for($xx = 0; $xx<$db->num_rows($qry); $xx++){
-              $rs = $db->fetch_array($qry);
+          $buscar = strtoupper($data->buscar);
+          $sql = "select s.*,b.id_tipo,x.nombre as nivel from sis_tipos s join sis_tipos x on (s.id_padre=x.id) left join bn_tipos b on (s.id=b.id_tipo and b.id_coopac=:coopacID) where s.id_padre=:tipoID and s.nombre LIKE :buscar order by s.id;";
+          $params = [":coopacID"=>$web->coopacID,":tipoID"=>$data->tipo,":buscar"=>'%'.$buscar.'%'];
+          $qry = $db->query_all($sql,$params);
+          if ($qry) {
+            foreach($qry as $rs){
               $tabla[] = array(
                 "ID" => $rs["id"],
                 "tipoID" => $rs["id_tipo"], //este dato esta configurado en bn_tipos
@@ -37,9 +37,9 @@
           break;
         case "viewTipo":
           //cabecera
-          $qry = $db->query_params("select * from sis_tipos where id=$1;",array($data->ID));
-          if ($db->num_rows($qry)) {
-            $rs = $db->fetch_array($qry);
+          $qry = $db->query_all("select * from sis_tipos where id=".$data->ID);
+          if ($qry) {
+            $rs = reset($qry);
             $tipo = array(
               "ID" => $rs["id"],
               "codigo" => $rs["codigo"],
