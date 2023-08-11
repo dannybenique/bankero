@@ -215,7 +215,7 @@
           //respuesta
           $rpta = array(
             "comboAgencias" => $fn->getComboBox("select id,nombre from bn_bancos where estado=1 and id_padre=".$web->coopacID),
-            "fecha" => $fechaHoy,
+            "fecha" => $fn->getFechaActualDB(),
             "coopac" => $web->coopacID);
           echo json_encode($rpta);
           break;

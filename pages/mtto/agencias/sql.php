@@ -14,12 +14,12 @@
       switch ($data->TipoQuery) {
         case "selAgencias":
           $tabla = array();
-          $data->buscar = pg_escape_string(strtoupper($data->buscar));
-          $sql = "select b.*,x.region,x.provincia,x.distrito from bn_bancos b,vw_ubigeo x where b.estado=1 and b.id_ubigeo=x.id_distrito and b.id_padre=".$web->coopacID." and b.nombre like'%".$data->buscar."%' order by codigo;";
-          $qry = $db->query($sql);
-          if ($db->num_rows($qry)>0) {
-            for($xx = 0; $xx<$db->num_rows($qry); $xx++){
-              $rs = $db->fetch_array($qry);
+          $buscar = strtoupper($data->buscar);
+          $sql = "select b.*,x.region,x.provincia,x.distrito from bn_bancos b,vw_ubigeo x where b.estado=1 and b.id_ubigeo=x.id_distrito and b.id_padre=:coopacID and b.nombre LIKE :buscar order by codigo;";
+          $params = [":coopacID"=>$web->coopacID,":buscar"=>'%'.$buscar.'%'];
+          $qry = $db->query_all($sql,$params);
+          if ($qry) {
+            foreach($qry as $rs){
               $tabla[] = array(
                 "ID" => $rs["id"],
                 "codigo" => $rs["codigo"],
@@ -32,6 +32,8 @@
               );
             }
           }
+
+          //respuesta
           $rpta = array("agencias"=>$tabla);
           echo json_encode($rpta);
           break;
@@ -48,9 +50,9 @@
           break;
         case "editAgencia":
           //cargar datos de la persona
-          $qry = $db->query("select b.*,id_distrito,id_provincia,id_region from bn_bancos b,vw_ubigeo u where b.id_ubigeo=u.id_distrito and b.id=".$data->agenciaID);
-          if ($db->num_rows($qry)>0) {
-            $rs = $db->fetch_array($qry);
+          $qry = $db->query_all("select b.*,id_distrito,id_provincia,id_region from bn_bancos b,vw_ubigeo u where b.id_ubigeo=u.id_distrito and b.id=".$data->agenciaID);
+          if ($qry) {
+            $rs = reset($qry);
             $rpta = array(
               "ID" => $rs["id"],
               "codigo" => $rs["codigo"],
@@ -70,63 +72,69 @@
               "rootID" => 101
             );
           }
+
           //respuesta
           echo json_encode($rpta);
           break;
         case "insAgencia":
           //obteniendo nuevo ID
-          $id = $db->fetch_array($db->query("select max(id)+1 as maxi from bn_bancos where id_padre=".$web->coopacID))["maxi"];
+          $qry = $db->query_all("select max(id)+1 as maxi from bn_bancos;");
+          $id = reset($qry)["maxi"];
 
           //agregando a la tabla
-          $sql = "insert into bn_bancos values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,now())";
-          $params = array(
-            $id,
-            pg_escape_string($data->codigo),
-            pg_escape_string($data->nombre),
-            pg_escape_string($data->abrev),
-            null,
-            pg_escape_string($data->telefonos),
-            pg_escape_string($data->ciudad),
-            pg_escape_string($data->direccion),
-            $data->ubigeoID,
-            $web->coopacID,
-            pg_escape_string($data->observac),
-            1,
-            $fn->getClientIP(),
-            $_SESSION['usr_ID']
-          );
+          $sql = "insert into bn_bancos values (:id,:codigo,:nombre,:abrevia,null,:telefonos,:ciudad,:direccion,:ubigeoID,:coopacID,:estado,:sysIP,:userID,now(),:observac)";
+          $params = [
+            ":id"=>$id,
+            ":codigo"=>$data->codigo,
+            ":nombre"=>$data->nombre,
+            ":abrevia"=>$data->abrev,
+            ":telefonos"=>$data->telefonos,
+            ":ciudad"=>$data->ciudad,
+            ":direccion"=>$data->direccion,
+            ":ubigeoID"=>$data->ubigeoID,
+            ":coopacID"=>$web->coopacID,
+            ":estado"=>1,
+            ":sysIP"=>$fn->getClientIP(),
+            ":userID"=>$_SESSION['usr_ID'],
+            ":observac"=>$data->observac
+          ];
+          $qry = $db->query_all($sql,$params);
+          $rs = ($qry) ? (reset($qry)) : (null);
 
-          $qry = $db->query_params($sql,$params);
+          //respuesta
           $rpta = array("error" => false,"ingresados" => 1);
           echo json_encode($rpta);
           break;
         case "updAgencia":
-          $sql = "update bn_bancos set codigo=$2,nombre=$3,abrev=$4,telefonos=$5,ciudad=$6,direccion=$7,observac=$8,id_ubigeo=$9,sys_ip=$10,sys_user=$11,sys_fecha=now() where id=$1";
-          $params = array(
-            $data->ID,
-            pg_escape_string($data->codigo),
-            pg_escape_string($data->nombre),
-            pg_escape_string($data->abrev),
-            pg_escape_string($data->telefonos),
-            pg_escape_string($data->ciudad),
-            pg_escape_string($data->direccion),
-            pg_escape_string($data->observac),
-            $data->ubigeoID,
-            $fn->getClientIP(),
-            $_SESSION['usr_ID']
-          );
+          $sql = "update bn_bancos set codigo=:codigo,nombre=:nombre,abrev=:abrev,telefonos=:telefonos,ciudad=:ciudad,direccion=:direccion,observac=:observac,id_ubigeo=:ubigeoID,sys_ip=:sysIP,sys_user=:userID,sys_fecha=now() where id=:id";
+          $params = [
+            ":id"=>$data->ID,
+            ":codigo"=>$data->codigo,
+            ":nombre"=>$data->nombre,
+            ":abrev"=>$data->abrev,
+            ":telefonos"=>$data->telefonos,
+            ":ciudad"=>$data->ciudad,
+            ":direccion"=>$data->direccion,
+            ":observac"=>$data->observac,
+            ":ubigeoID"=>$data->ubigeoID,
+            ":sysIP"=>$fn->getClientIP(),
+            ":userID"=>$_SESSION['usr_ID']
+          ];
+          $qry = $db->query_all($sql,$params);
+          $rs = ($qry) ? (reset($qry)) : (null);
 
-          $qry = $db->query_params($sql,$params);
+          //respuesta
           $rpta = array("error" => false,"actualizados" => 1);
           echo json_encode($rpta);
           break;
         case "delAgencias":
-          $params = array();
           for($i=0; $i<count($data->arr); $i++){
-            $sql = "update bn_bancos set estado=0,sys_ip=$2,sys_user=$3,sys_fecha=now() where id=$1";
-            $params = array($data->arr[$i],$fn->getClientIP(),$_SESSION['usr_ID']);
-            $qry = $db->query_params($sql,$params);
+            $sql = "update bn_bancos set estado=0,sys_ip=:sysIP,sys_user=:userID,sys_fecha=now() where id=:id";
+            $params = [":id"=>$data->arr[$i],":sysIP"=>$fn->getClientIP(),":userID"=>$_SESSION['usr_ID']];
+            $qry = $db->query_all($sql,$params);
+            $rs = ($qry) ? (reset($qry)) : (null);
           }
+
           //respuesta
           $rpta = array("error" => false,"borrados" => count($data->arr));
           echo json_encode($rpta);

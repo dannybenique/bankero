@@ -17,12 +17,12 @@
         $web = $GLOBALS["web"]; //web-config
         
         //obtener datos personales
-        $sql = "select s.*,b.nombre as agencia,e.nombrecorto as usermod from bn_empleados s join bn_bancos b on s.id_agencia=b.id join bn_empleados e on e.id_empleado=s.sys_user where s.estado=1 and s.id_empleado=$1 and s.id_coopac=$2;";
-        $params = array($personaID,$web->coopacID);
-        $qry = $db->query_params($sql,$params);
+        $sql = "select s.*,b.nombre as agencia,e.nombrecorto as usermod from bn_empleados s join bn_bancos b on s.id_agencia=b.id join bn_empleados e on e.id_empleado=s.sys_user where s.estado=1 and s.id_empleado=:personaID and s.id_coopac=:coopacID;";
+        $params = [":personaID"=>$personaID,":coopacID"=>$web->coopacID];
+        $qry = $db->query_all($sql,$params);
         
-        if ($db->num_rows($qry)) {
-            $rs = $db->fetch_array($qry);
+        if ($qry) {
+            $rs = reset($qry);
             $tabla = array(
               "ID" => ($rs["id_empleado"]),
               "coopacID" => ($rs["id_coopac"]),
@@ -53,12 +53,11 @@
         $web = $GLOBALS["web"]; //web-config
 
         //obtener datos usuario
-        $tabla = null;
-        $sql = "select * from bn_usuarios where id_usuario=$1 and id_coopac=$2;";
-        $params = array($personaID,$web->coopacID);
-        $qry = $db->query_params($sql,$params);
-        if ($db->num_rows($qry)) {
-          $rs = $db->fetch_array($qry);
+        $sql = "select * from bn_usuarios where id_usuario=:usuarioID and id_coopac=:coopacID;";
+        $params = [":usuarioID"=>$personaID,":coopacID"=>$web->coopacID];
+        $qry = $db->query_all($sql,$params);
+        if ($qry) {
+          $rs = reset($qry);
           $tabla = array(
             "ID" => ($rs["id_usuario"]*1),
             "coopacID" => ($rs["id_coopac"]*1),
@@ -79,21 +78,21 @@
       }
       switch ($data->TipoQuery) {
         case "selWorkers":
-          $whr = "";
           $tabla = array();
-          $data->buscar = pg_escape_string(strtoupper($data->buscar));
-          $whr = " and id_coopac=".$web->coopacID." and (empleado like '%".$data->buscar."%' or nro_dui like '%".$data->buscar."%') ";
-          $rsCount = $db->fetch_array($db->query("select count(*) as cuenta from vw_empleados where estado=1 ".$whr.";"));
+          $buscar = strtoupper($data->buscar);
+          $whr = " and id_coopac=:coopacID and (empleado LIKE :buscar or nro_dui LIKE :buscar) ";
+          $params = [":coopacID"=>$web->coopacID,":buscar"=>'%'.$buscar.'%'];
+          $qryCount = $db->query_all("select count(*) as cuenta from vw_empleados where estado=1 ".$whr.";",$params);
+          $rsCount = ($qryCount) ? reset($qryCount)["cuenta"] : (0);
 
-          $qry = $db->query("select * from vw_empleados where estado=1 ".$whr." order by empleado limit 25 offset 0;");
-          if ($db->num_rows($qry)) {
-            for($xx = 0; $xx<$db->num_rows($qry); $xx++){
-              $rs = $db->fetch_array($qry);
+          $qry = $db->query_all("select * from vw_empleados where estado=1 ".$whr." order by empleado limit 25 offset 0;",$params);
+          if ($qry) {
+            foreach($qry as $rs){
               $tabla[] = array(
                 "ID" => $rs["id_empleado"],
                 "codigo" => $rs["codigo"],
-                "nro_dui"=> str_replace($data->buscar, '<span style="background:yellow;">'.$data->buscar.'</span>', $rs["nro_dui"]),
-                "empleado" => str_ireplace($data->buscar, '<span style="background:yellow;">'.$data->buscar.'</span>', $rs["empleado"]),
+                "nro_dui"=> str_replace($buscar, '<span style="background:yellow;">'.$buscar.'</span>', $rs["nro_dui"]),
+                "empleado" => str_ireplace($buscar, '<span style="background:yellow;">'.$buscar.'</span>', $rs["empleado"]),
                 "nombrecorto" => $rs["nombrecorto"],
                 "agencia" => ($rs["agencia"]),
                 "cargo" => ($rs["cargo"]),
@@ -101,27 +100,32 @@
               );
             }
           }
-          $rpta = array("tabla"=>$tabla,"cuenta"=>$rsCount["cuenta"],"rolID" => (int)$_SESSION["usr_data"]["rolID"]);
+
+          //respuesta
+          $rpta = array("tabla"=>$tabla,"cuenta"=>$rsCount,"rolID" => (int)$_SESSION["usr_data"]["rolID"]);
           echo json_encode($rpta);
           break;
         case "insWorker":
-          $codworker = $db->fetch_array($db->query("select right('000000'||cast(coalesce(max(right(codigo,4)::integer)+1,1) as text),4) as code from bn_empleados where id_coopac=".$web->coopacID.";"))["code"];
-          $sql = "insert into bn_empleados values($1,$2,$3,$4,$5,$6,$7,$8,null,null,null,$9,$10,$11,now(),$12);";
-          $params = array(
-            $data->workerID, 
-            $web->coopacID, 
-            $data->agenciaID, 
-            $data->cargoID, 
-            $codworker, 
-            pg_escape_string($data->nombrecorto),
-            pg_escape_string($data->correo),
-            $data->fecha, 1,
-            $fn->getClientIP(), 
-            $_SESSION['usr_ID'],
-            pg_escape_string($data->observac)
-          );
-          $qry = $db->query_params($sql,$params);
-          $xx = $db->fetch_array($qry);
+          $qry = $db->query_all("select right('000000'||cast(coalesce(max(right(codigo,4)::integer)+1,1) as text),4) as code from bn_empleados where id_coopac=".$web->coopacID.";");
+          $codworker = reset($qry)["code"];
+          $sql = "insert into bn_empleados values(:id,:coopacID,:agenciaID,:cargoID,:codworker,:nombrecorto,:correo,:fecha,null,null,null,:estado,:sysIP,:userID,now(),:observac);";
+          $params = [
+            ":id"=>$data->workerID,
+            ":coopacID"=>$web->coopacID, 
+            ":agenciaID"=>$data->agenciaID, 
+            ":cargoID"=>$data->cargoID, 
+            ":codworker"=>$codworker, 
+            ":nombrecorto"=>$data->nombrecorto,
+            ":correo"=>$data->correo,
+            ":fecha"=>$data->fecha,
+            ":estado"=>1,
+            ":sysIP"=>$fn->getClientIP(), 
+            ":userID"=>$_SESSION['usr_ID'],
+            ":observac"=>$data->observac
+          ];
+          $qry = $db->query_all($sql,$params);
+          $rs = ($qry) ? (reset($qry)) : (null);
+
           //respuesta
           $rpta = array("error"=>false, "insert"=>1);
           echo json_encode($rpta);
@@ -157,7 +161,12 @@
           echo json_encode($rpta);
           break;
         case "viewWorker":
-          $rpta = array('tablaPers'=>$fn->getViewPersona($data->personaID),'tablaWorker'=> getViewWorker($data->personaID),'tablaUser'=>getViewUser($data->personaID));
+          //respuesta
+          $rpta = array(
+            'tablaPers'=>$fn->getViewPersona($data->personaID),
+            'tablaWorker'=> getViewWorker($data->personaID),
+            'tablaUser'=>getViewUser($data->personaID)
+          );
           echo json_encode($rpta);
           break;
         case "VerifyWorker":
@@ -166,14 +175,18 @@
           $activo = false; //indica que encontro en tabla de empleados
 
           //verificar en Personas
-          $qry = $db->query_params("select id from personas where (nro_dui=$1);",array($data->nroDNI));
-          if($db->num_rows($qry)){
-            $rs = $db->fetch_array($qry);
+          $sql = "select id from personas where (nro_dui=:nrodni);";
+          $params = [":nrodni"=>$data->nroDNI];
+          $qry = $db->query_all($sql,$params);
+          if($qry){
+            $rs = reset($qry);
             $tablaPers = $fn->getViewPersona($rs["id"]);
             $persona = true;
             //verificar en Empleados
-            $qryEmpleado = $db->query_params("select id_empleado from bn_empleados where id_coopac=$1 and id_empleado=$2;",array($web->coopacID,$rs["id"]));
-            $activo = ($db->num_rows($qryEmpleado)) ? true : false;
+            $sql = "select id_empleado from bn_empleados where id_coopac=:coopacID and id_empleado=:id;";
+            $params = [":coopacID"=>$web->coopacID,":id"=>$rs["id"]];
+            $qryEmpleado = $db->query_all($sql,$params);
+            $activo = ($qryEmpleado) ? true : false;
           }
 
           //respuesta
@@ -190,7 +203,7 @@
             "comboAgencias" => $fn->getComboBox("select id,nombre from bn_bancos where estado=1 and id_padre=".$web->coopacID),
             "comboCargos" => $fn->getComboBox("select id,nombre from sis_tipos where id_padre=7 order by id;"),
             "comboRoles" => $fn->getComboBox("select id,nombre from sis_tipos where id_padre=2 order by id;"),
-            "fecha" => $db->fetch_array($db->query("select now() as fecha;"))["fecha"],
+            "fecha" => $fn->getFechaActualDB(),
             "coopac" => $web->coopacID);
           echo json_encode($rpta);
           break;
@@ -215,25 +228,32 @@
           echo json_encode($tabla);
           break;
         case "viewUserPass":
-          $tabla = "";
-          $qry = $db->query("select u.id_usuario,u.login,e.nombrecorto from bn_usuarios u join bn_empleados e on u.id_usuario=e.id_empleado where u.id_usuario=".$data->userID);
-          if ($db->num_rows($qry)==1) {
-            $rs = $db->fetch_array($qry);
+          $qry = $db->query_all("select u.id,u.login,e.nombrecorto from bn_usuarios u join bn_empleados e on u.id=e.id_empleado where u.id=".$data->userID);
+          if ($qry) {
+            $rs = reset($qry);
             $tabla = array(
-              "ID" => $rs["id_usuario"],
+              "ID" => $rs["id"],
               "login" => $rs["login"],
               "nombrecorto" => $rs["nombrecorto"]
             );
           }
+
           //respuesta
           $rpta = $tabla;
           echo json_encode($rpta);
           break;
         case "changeUserPass":
-          $sql = "update bn_usuarios set passw=$3,sys_ip=$4,sys_user=$5,sys_fecha=now() where id_usuario=$1 and id_coopac=$2;";
-          $params = array($data->userID, $web->coopacID, $data->passw, $fn->getClientIP(), $_SESSION['usr_ID']);
-          $qry = $db->query_params($sql,$params);
-          $xx = $db->fetch_array($qry);
+          $sql = "update bn_usuarios set passw=:passw,sys_ip=:sysIP,sys_user=:userID,sys_fecha=now() where id=:id and id_coopac=:coopacID;";
+          $params = [
+            ":id"=>$data->userID, 
+            ":coopacID"=>$web->coopacID, 
+            ":passw"=>$data->passw, 
+            ":sysIP"=>$fn->getClientIP(), 
+            ":userID"=>$_SESSION['usr_ID']
+          ];
+          $qry = $db->query_all($sql,$params);
+          $rs = ($qry) ? (reset($qry)) : (null);
+
           //respuesta
           $rpta = array("error"=>false, "update"=>1);
           echo json_encode($rpta);

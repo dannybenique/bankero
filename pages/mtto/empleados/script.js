@@ -370,20 +370,24 @@ function appUserCambioPassw(userID){
 }
 
 function modUserBotonUpdatePassw(){
-  if(document.querySelector("#txt_userPassNew").value===document.querySelector("#txt_userPassRe").value){
-    let datos = {
-      TipoQuery:"changeUserPass",
-      userID : document.querySelector("#hid_userID").value,
-      passw : SHA1(document.querySelector("#txt_userPassNew").value).toString().toUpperCase()
-    }
-    appFetch(datos,rutaSQL).then(resp => {
-      if (!resp.error) { 
-        alert("El PASSWORD se modifico correctamente");
-        $("#modalChangePassw").modal("hide");
+  if(document.querySelector("#txt_PassPassNew").value!=""){
+    if(document.querySelector("#txt_PassPassNew").value===document.querySelector("#txt_PassPassRe").value){
+      let datos = {
+        TipoQuery:"changeUserPass",
+        userID : document.querySelector("#hid_PassID").value,
+        passw : SHA1(document.querySelector("#txt_PassPassNew").value).toString().toUpperCase()
       }
-    });
+      appFetch(datos,rutaSQL).then(resp => {
+        if (!resp.error) { 
+          alert("El PASSWORD se modifico correctamente");
+          $("#modalChangePassw").modal("hide");
+        }
+      });
+    } else {
+      alert("!!!El PASSWORD es distintos en ambos campos!!!");
+    }
   } else {
-    alert("!!!El PASSWORD es distintos en ambos campos!!!");
+    alert("!!!NO pueden quedar vacios los campos!!!");
   }
 }
 

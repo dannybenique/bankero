@@ -26,6 +26,14 @@
       }
       return $tabla; 
     }
+    public function getFechaActualDB(){
+      $db = $GLOBALS["db"];
+      //obtener fecha actual de operacion
+      $qry = $db->query_all("select cast(now() as date) as fecha");
+      $rs = reset($qry);
+      return $rs["fecha"];
+    }
+    //funciones para persona
     public function getAllPersonas($buscar,$pos){
       $db = $GLOBALS["db"];
       //verificar usuario
