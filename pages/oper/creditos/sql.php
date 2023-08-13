@@ -15,14 +15,15 @@
         case "selCreditos":
           $whr = "";
           $tabla = array();
-          $data->buscar = pg_escape_string(strtoupper($data->buscar));
-          $whr = " and id_coopac=".$web->coopacID." and (socio like '%".$data->buscar."%' or nro_dui like '%".$data->buscar."%') ";
-          $rsCount = $db->fetch_array($db->query("select count(*) as cuenta from vw_prestamos_min where estado=1 and saldo>0 ".$whr.";"));
+          $buscar = strtoupper($data->buscar);
+          $whr = " and id_coopac=:coopacID and (socio LIKE :buscar or nro_dui LIKE :buscar) ";
+          $params = [":coopacID"=>$web->coopacID,":buscar"=>'%'.$buscar.'%'];
+          $qry = $db->query_all("select count(*) as cuenta from vw_prestamos_min where estado=1 and saldo>0 ".$whr.";",$params);
+          $rsCount = reset($qry);
 
-          $qry = $db->query("select * from vw_prestamos_min where estado=1 and saldo>0 ".$whr." order by socio limit 25 offset 0;");
-          if ($db->num_rows($qry)) {
-            for($xx = 0; $xx<$db->num_rows($qry); $xx++){
-              $rs = $db->fetch_array($qry);
+          $qry = $db->query_all("select * from vw_prestamos_min where estado=1 and saldo>0 ".$whr." order by socio limit 25 offset 0;",$params);
+          if($qry) {
+            foreach($qry as $rs){
               $tabla[] = array(
                 "ID" => $rs["id"],
                 "codigo" => $rs["codigo"],
@@ -41,15 +42,17 @@
               );
             }
           }
+
+          //respuesta
           $rpta = array("tabla"=>$tabla,"cuenta"=>$rsCount["cuenta"]);
           echo json_encode($rpta);
           break;
         case "viewCredito":
           //cabecera
           $prestamo = 0;
-          $qry = $db->query_params("select * from vw_prestamos_ext where id=$1",array($data->prestamoID));
-          if ($db->num_rows($qry)) {
-            $rs = $db->fetch_array($qry);
+          $qry = $db->query_all("select * from vw_prestamos_ext where id=:id",[":id"=>$data->prestamoID]);
+          if($qry) {
+            $rs = reset($qry);
             
             $cabecera = array(
               "ID" => $rs["id"],
@@ -85,10 +88,9 @@
 
           //detalle
           $detalle = array();
-          $qry = $db->query_params("select *,capital+interes+otros as total,case capital-pg_capital when 0 then atraso else extract(days from (now()-fecha)) end as atraso2,extract(days from now()-fecha)::float*(".$cabecera["mora"]."*0.01/360)*capital as mora from bn_prestamos_det where id_prestamo=$1 order by numero;",array($data->prestamoID));
-          if ($db->num_rows($qry)) {
-            for($xx = 0; $xx<$db->num_rows($qry); $xx++){
-              $rs = $db->fetch_array($qry);
+          $qry = $db->query_all("select *,capital+interes+otros as total,case capital-pg_capital when 0 then atraso else extract(days from (now()-fecha)) end as atraso2,extract(days from now()-fecha)::float*(".$cabecera["mora"]."*0.01/360)*capital as mora from bn_prestamos_det where id_prestamo=:id order by numero;",[":id"=>$data->prestamoID]);
+          if ($qry) {
+            foreach($qry as $rs){
               $detalle[] = array(
                 "numero" => $rs["numero"]*1,
                 "fecha" => $rs["fecha"],

@@ -1,5 +1,4 @@
 <?php
-  
   include_once('../../../includes/sess_verifica.php');
 
   if(isset($_SESSION["usr_ID"])){
@@ -18,12 +17,12 @@
         $web = $GLOBALS["web"]; //web-config
         
         //obtener datos personales
-        $sql = "select s.*,b.nombre as agencia from bn_socios s,bn_bancos b where s.estado=1 and s.id_agencia=b.id and s.id_socio=$1 and s.id_coopac=$2";
-        $params = array($personaID,$web->coopacID);
-        $qry = $db->query_params($sql,$params);
+        $sql = "select s.*,b.nombre as agencia from bn_socios s join bn_bancos b on (s.id_agencia=b.id) where s.estado=1 and s.id_socio=:socioID and s.id_coopac=:coopacID";
+        $params = [":socioID"=>$personaID,":coopacID"=>$web->coopacID];
+        $qry = $db->query_all($sql,$params);
         
-        if ($db->num_rows($qry)) {
-            $rs = $db->fetch_array($qry);
+        if ($qry) {
+            $rs = reset($qry);
             $tabla = array(
               "ID" => ($rs["id_socio"]),
               "coopacID" => ($rs["id_coopac"]),
@@ -43,21 +42,22 @@
         case "selDesembolsos":
           $whr = "";
           $tabla = array();
-          $data->buscar = pg_escape_string(strtoupper($data->buscar));
-          $whr = " and id_coopac=".$web->coopacID." and (socio like '%".$data->buscar."%' or nro_dui like '%".$data->buscar."%') ";
-          $rsCount = $db->fetch_array($db->query("select count(*) as cuenta from vw_prestamos_min where estado=2 ".$whr.";"));
+          $buscar = strtoupper($data->buscar);
+          $whr = " and id_coopac=:coopacID and (socio LIKE :buscar or nro_dui LIKE :buscar) ";
+          $params = [":coopacID"=>$web->coopacID,":buscar"=>'%'.$buscar.'%'];
+          $qry = $db->query_all("select count(*) as cuenta from vw_prestamos_min where estado=2 ".$whr.";",$params);
+          $rsCount = reset($qry);
 
-          $qry = $db->query("select * from vw_prestamos_min where estado=2 ".$whr." order by socio limit 25 offset 0;");
-          if ($db->num_rows($qry)) {
-            for($xx = 0; $xx<$db->num_rows($qry); $xx++){
-              $rs = $db->fetch_array($qry);
+          $qry = $db->query_all("select * from vw_prestamos_min where estado=2 ".$whr." order by socio limit 25 offset 0;",$params);
+          if ($qry) {
+            foreach($qry as $rs){
               $tabla[] = array(
                 "ID" => $rs["id"],
                 "codigo" => $rs["codigo"],
                 "fecha" => $rs["fecha_solicred"],
                 "otorga" => $rs["fecha_otorga"],
-                "nro_dui"=> str_replace($data->buscar, '<span style="background:yellow;">'.$data->buscar.'</span>', $rs["nro_dui"]),
-                "socio" => str_ireplace($data->buscar, '<span style="background:yellow;">'.$data->buscar.'</span>', $rs["socio"]),
+                "nro_dui"=> str_replace($buscar, '<span style="background:yellow;">'.$buscar.'</span>', $rs["nro_dui"]),
+                "socio" => str_ireplace($buscar, '<span style="background:yellow;">'.$buscar.'</span>', $rs["socio"]),
                 "tipo_oper" => $rs["tipo_oper"],
                 "producto" => $rs["producto"],
                 "mon_abrevia" => $rs["mon_abrevia"],
@@ -69,15 +69,18 @@
               );
             }
           }
+
+          //respuesta
           $rpta = array("tabla"=>$tabla,"cuenta"=>$rsCount["cuenta"]);
           echo json_encode($rpta);
           break;
         case "delDesembolsos":
           $params = array();
           for($i=0; $i<count($data->arr); $i++){
-            $sql = "update bn_prestamos set estado=3,id_aprueba=null,sys_ip=$2,sys_user=$3,sys_fecha=now() where id=$1";
-            $params = array($data->arr[$i],$fn->getClientIP(),$_SESSION['usr_ID']);
-            $qry = $db->query_params($sql,$params);
+            $sql = "update bn_prestamos set estado=3,id_aprueba=null,sys_ip=:sysIP,sys_user=:userID,sys_fecha=now() where id=:id";
+            $params = [":id"=>$data->arr[$i],":sysIP"=>$fn->getClientIP(),":userID"=>$_SESSION['usr_ID']];
+            $qry = $db->query_all($sql,$params);
+            $rs = reset($qry);
           }
           //respuesta
           $rpta = array("error"=>false, "delete"=>$data->arr);
@@ -86,9 +89,9 @@
         case "viewDesembolso":
           $tabla = 0;
           $socioID = 0;
-          $qry = $db->query("select *,now() as fecha_desemb from vw_prestamos_ext where id=".$data->SoliCredID);
-          if ($db->num_rows($qry)) {
-            $rs = $db->fetch_array($qry);
+          $qry = $db->query_all("select *,now() as fecha_desemb from vw_prestamos_ext where id=".$data->SoliCredID);
+          if ($qry) {
+            $rs = reset($qry);
             $socioID = $rs["id_socio"];
             $date = new DateTime($rs["fecha_pricuota"]);
             $pivot = ($rs["id_tipocred"]==1)?($date->format('Ymd')):($rs["frecuencia"]);
@@ -140,76 +143,94 @@
           $tipo_operID = 124; //creditos
           $tipo_pagoID = 164; //en efectivo
           $estado = 1; //activo
-          $clientIP = $fn->getClientIP();
           $userID = $_SESSION['usr_ID'];
+          $clientIP = $fn->getClientIP();
 
           /******agregamos bn_movim*******/
           /*******************************/
-          $movimID = $db->fetch_array($db->query("select coalesce(max(id)+1,1) as code from bn_movim;"))["code"];
-          $movimCode = $userID."-".$db->fetch_array($db->query("select right('0000000'||cast(coalesce(max(right(codigo,7)::integer)+1,1) as text),7) as code from bn_movim where id_cajera=".$userID))["code"];
-          $sql = "insert into bn_movim values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,now(),$11,$12,$13,$14,$15,now(),$16)";
-          $params = array(
-            $movimID,
-            $web->coopacID,
-            $data->agenciaID,
-            $tipo_operID,
-            $tipo_pagoID,
-            $data->monedaID,
-            $data->socioID,
-            $data->prestamoID,
-            $data->productoID,
-            $userID,
-            $movimCode,
-            $data->importe,
-            $estado,
-            $clientIP,
-            $userID,
-            $data->observac);
-          $rs = $db->fetch_array($db->query_params($sql,$params));
+          $qry = $db->query_all("select coalesce(max(id)+1,1) as code from bn_movim;");
+          $movimID = reset($qry)["code"];
+          $qry = $db->query_all("select right('0000000'||cast(coalesce(max(right(codigo,7)::integer)+1,1) as text),7) as code from bn_movim where id_cajera=".$userID);
+          $movimCode = reset($qry)["code"];
+          $sql = "insert into bn_movim values(:id,:coopacID,:agenciaID,:operID,:pagoID,:monedaID,:socioID,:prestamoID,:productoID,:userID,now(),:movimCode,:importe,:estado,:sysIP,:userID,now(),:observac)";
+          $params = [
+            ":id"=>$movimID,
+            ":coopacID"=>$web->coopacID,
+            ":agenciaID"=>$data->agenciaID,
+            ":operID"=>$tipo_operID,
+            ":pagoID"=>$tipo_pagoID,
+            ":monedaID"=>$data->monedaID,
+            ":socioID"=>$data->socioID,
+            ":prestamoID"=>$data->prestamoID,
+            ":productoID"=>$data->productoID,
+            ":userID"=>$userID,
+            ":movimCode"=>$userID."-".$movimCode,
+            ":importe"=>$data->importe,
+            ":estado"=>$estado,
+            ":sysIP"=>$clientIP,
+            ":observac"=>$data->observac
+          ];
+          $qry = $db->query_all($sql,$params);
+          $rs = reset($qry);
           //agregamos bn_movim_det
-          $detalleID = $db->fetch_array($db->query("select coalesce(max(id)+1,1) as code from bn_movim_det;"))["code"];
+          $qry = $db->query_all("select coalesce(max(id)+1,1) as code from bn_movim_det;");
+          $detalleID = reset($qry)["code"];
           $tipo_movID = 9; 
           $item = 1;
-          $sql = "insert into bn_movim_det values($1,$2,$3,$4,$5);";
-          $params = array($detalleID,$movimID,$tipo_movID,$item,$data->importe);
-          $rs = $db->fetch_array($db->query_params($sql,$params));
+          $sql = "insert into bn_movim_det values(:id,:cabeceraID,:tipomovID,:item,:importe);";
+          $params = [
+            ":id"=>$detalleID,
+            ":cabeceraID"=>$movimID,
+            ":tipomovID"=>$tipo_movID,
+            ":item"=>$item,
+            ":importe"=>$data->importe
+          ];
+          $qry = $db->query_all($sql,$params);
+          $rs = reset($qry);
 
-          
+
           /******agregamos bn_saldos*******/
           /********************************/
-          $saldoID = $db->fetch_array($db->query("select coalesce(max(id)+1,1) as code from bn_saldos;"))["code"];
-          $sql = "insert into bn_saldos values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,now())";
-          $params = array(
-            $saldoID,
-            $web->coopacID,
-            $data->socioID,
-            $tipo_operID,
-            $data->productoID,
-            $data->monedaID,
-            $data->cod_prod,
-            $data->importe*(-1),
-            $estado, $clientIP, $userID );
-          $rs = $db->fetch_array($db->query_params($sql,$params));
-          
+          $qry = $db->query_all("select coalesce(max(id)+1,1) as code from bn_saldos;");
+          $saldoID = reset($qry)["code"];
+          $sql = "insert into bn_saldos values(:id,:coopacID,:socioID,:operID,:productoID,:monedaID,:codprod,:importe,:estado,:sysIP,:userID,now())";
+          $params = [
+            ":id"=>$saldoID,
+            ":coopacID"=>$web->coopacID,
+            ":socioID"=>$data->socioID,
+            ":operID"=>$tipo_operID,
+            ":productoID"=>$data->productoID,
+            ":monedaID"=>$data->monedaID,
+            ":codprod"=>$data->cod_prod,
+            ":importe"=>$data->importe*(-1),
+            ":estado"=>$estado, 
+            ":sysIP"=>$clientIP, 
+            ":userID"=>$userID
+          ];
+          $qry = $db->query_all($sql,$params);
+          $rs = reset($qry);
+
 
           /******actualizar bn_prestamos******/
           /***********************************/
           //actualizar cabecera de prestamo
-          $sql = "update bn_prestamos set estado=$2,sys_ip=$3,sys_user=$4,sys_fecha=now() where id=$1;";
-          $params = array($data->prestamoID,1,$clientIP,$userID);
-          $rs = $db->fetch_array($db->query_params($sql,$params));
+          $sql = "update bn_prestamos set estado=:estado,sys_ip=:sysIP,sys_user=:userID,sys_fecha=now() where id=:id;";
+          $params = [":id"=>$data->prestamoID,":estado"=>1,":sysIP"=>$clientIP,":userID"=>$userID];
+          $qry = $db->query_all($sql,$params);
+          $rs = reset($qry);
           //agregar detalle de prestamo
           $genPlanPagos = ($data->tipocredID=="1")?("fn_get_planpagos_fechafija"):("fn_get_planpagos_plazofijo");
-          $sql = "insert into bn_prestamos_det select ".$data->prestamoID.",num,fecha,capital,interes,otros,saldo,0,0,0,0,concat('[{\"id\":13,\"descri\":\"PAGO SEGURO DESGR\",\"monto\":',otros::float,'}]'),0,null,null from ".$genPlanPagos."($1,$2,$3,$4,$5,$6) as (num integer,fecha date,dias integer,tasa_efec float,cuotax numeric,cuota numeric,capital numeric,interes numeric,otros numeric,saldo numeric)";
-          $params = array(
-            $data->importe,
-            $data->tasa_cred,
-            $data->tasa_desgr,
-            $data->nro_cuotas,
-            $data->fecha_otorga,
-            $data->pivot
-          );
-          $rs = $db->fetch_array($db->query_params($sql,$params));
+          $sql = "insert into bn_prestamos_det select ".$data->prestamoID.",num,fecha,capital,interes,otros,saldo,0,0,0,0,concat('[{\"id\":13,\"descri\":\"PAGO SEGURO DESGR\",\"monto\":',otros::float,'}]'),0,null,null from ".$genPlanPagos."(:importe,tasa,:desgr,:nrocuotas,fechaOtor,:pivot) as (num integer,fecha date,dias integer,tasa_efec float,cuotax numeric,cuota numeric,capital numeric,interes numeric,otros numeric,saldo numeric)";
+          $params = [
+            ":importe"=>$data->importe,
+            ":tasa"=>$data->tasa_cred,
+            ":desgr"=>$data->tasa_desgr,
+            ":nrocuotas"=>$data->nro_cuotas,
+            ":fechaOtor"=>$data->fecha_otorga,
+            ":pivot"=>$data->pivot
+          ];
+          $qry = $db->query_all($sql,$params);
+          $rs = reset($qry);
 
           //respuesta
           $rpta = array("error"=>false, "movimID"=>$movimID);

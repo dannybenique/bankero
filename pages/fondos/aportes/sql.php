@@ -14,7 +14,8 @@
       switch ($data->TipoQuery) {
         case "selAportes":
           //producto tipo aporte
-          $qry = $db->query_all("select obliga from bn_productos where id_coopac=100 and id_tipo_oper=121;");
+          $params = [":coopacID"=>$web->coopacID,":operID"=>121];
+          $qry = $db->query_all("select obliga from bn_productos where id_coopac=:coopacID and id_tipo_oper=:operID;",$params);
           $rsapo = ($qry) ? reset($qry) : null;
           
           //cuenta de saldos

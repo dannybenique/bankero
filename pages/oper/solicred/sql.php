@@ -77,10 +77,10 @@
           $qry = $db->query_all("select coalesce(max(id)+1,1)as maxi from bn_prestamos;");
           $id = reset($qry)["maxi"];
           $params = [":coopacID"=>$web->coopacID,":fecha"=>$data->fecha_solicred];
-          $qry = $db->query("select right('0000'||cast(coalesce(max(right(codigo,4)::integer)+1,1) as text),4) as maxi from bn_prestamos where id_coopac=:coopacID and fecha_solicred=:fecha;",$params);
+          $qry = $db->query_all("select right('0000'||cast(coalesce(max(right(codigo,4)::integer)+1,1) as text),4) as maxi from bn_prestamos where id_coopac=:coopacID and fecha_solicred=:fecha;",$params);
           $codigo = $data->fecha_solicred."-".reset($qry)["maxi"];
           
-          $sql = "insert into bn_prestamos values(:id,:codigo,:socioID,:coopacID,agenciaID,:promotorID,:analistaID,:apruebaID,:productoID,:tiposbsID,:destsbsID,:clasificaID,:condicionID,:monedaID,:importe,:saldo,:tasa,:mora,:desgr,:nrocuotas,:fechaSoli,:fechaApru,:fechaOtor,:fechaPriC,:tipocredID,:frecuencia,:estado,:sysIP,:userID,now(),:observac);";
+          $sql = "insert into bn_prestamos values(:id,:codigo,:socioID,:coopacID,:agenciaID,:promotorID,:analistaID,:apruebaID,:productoID,:tiposbsID,:destsbsID,:clasificaID,:condicionID,:monedaID,:importe,:saldo,:tasa,:mora,:desgr,:nrocuotas,:fechaSoli,:fechaApru,:fechaOtor,:fechaPriC,:tipocredID,:frecuencia,:estado,:sysIP,:userID,now(),:observac);";
           $params = [
             ":id"=>$id,
             ":codigo"=>$codigo,
@@ -116,7 +116,7 @@
           
           $qry = $db->query_all($sql,$params);
           if($qry){
-            $xx = $db->fetch_array($qry);
+            $rs = reset($qry);
             $rpta = array("error"=>false, "insert"=>1);
           } else {
             $rpta = array("error"=>true, "insert"=>0);
@@ -126,36 +126,37 @@
           echo json_encode($rpta);
           break;
         case "updSoliCred":
-          $sql = "update bn_prestamos set id_socio=$2,id_agencia=$3,id_promotor=$4,id_analista=$5,id_producto=$6,id_tiposbs=$7,id_destsbs=$8,id_clasifica=$9,id_condicion=$10,id_moneda=$11,importe=$12,saldo=$13,tasa_cred=$14,tasa_mora=$15,tasa_desgr=$16,nro_cuotas=$17,fecha_solicred=$18,fecha_otorga=$19,fecha_pricuota=$20,id_tipocred=$21,frecuencia=$22,sys_ip=$23,sys_user=$24,sys_fecha=now(),observac=$25 where id=$1;";
-          $params = array(
-            $data->ID, 
-            $data->socioID,
-            $data->agenciaID,
-            $data->promotorID,
-            $data->analistaID,
-            $data->productoID,
-            $data->tiposbsID,
-            $data->destsbsID,
-            $data->clasificaID, 
-            $data->condicionID, 
-            $data->monedaID, 
-            $data->importe, 
-            $data->saldo, 
-            $data->tasa, 
-            $data->mora, 
-            $data->desgr, 
-            $data->nrocuotas, 
-            $data->fecha_solicred,
-            $data->fecha_otorga, 
-            $data->fecha_pricuota,
-            $data->tipocredID, 
-            ($data->tipocredID==2)?$data->frecuencia:null, 
-            $fn->getClientIP(), 
-            $_SESSION['usr_ID'], 
-            $data->observac
-          );
-          $qry = $db->query_params($sql,$params);
-          $xx = $db->fetch_array($qry);
+          $sql = "update bn_prestamos set id_socio=:socioID,id_agencia=:agenciaID,id_promotor=:promotorID,id_analista=:analistaID,id_producto=:productoID,id_tiposbs=:tiposbsID,id_destsbs=:destsbsID,id_clasifica=:clasificaID,id_condicion=:condicionID,id_moneda=:monedaID,importe=:importe,saldo=:saldo,tasa_cred=:tasa,tasa_mora=:mora,tasa_desgr=:desgr,nro_cuotas=:nrocuotas,fecha_solicred=:fechaSoli,fecha_otorga=:fechaOtor,fecha_pricuota=:fechaPriC,id_tipocred=:tipocredID,frecuencia=:frecuencia,sys_ip=:sysIP,sys_user=:userID,sys_fecha=now(),observac=:observac where id=:id;";
+          $params = [
+            ":id"=>$data->ID, 
+            ":socioID"=>$data->socioID,
+            ":agenciaID"=>$data->agenciaID,
+            ":promotorID"=>$data->promotorID,
+            ":analistaID"=>$data->analistaID,
+            ":productoID"=>$data->productoID,
+            ":tiposbsID"=>$data->tiposbsID,
+            ":destsbsID"=>$data->destsbsID,
+            ":clasificaID"=>$data->clasificaID, 
+            ":condicionID"=>$data->condicionID, 
+            ":monedaID"=>$data->monedaID, 
+            ":importe"=>$data->importe, 
+            ":saldo"=>$data->saldo, 
+            ":tasa"=>$data->tasa, 
+            ":mora"=>$data->mora, 
+            ":desgr"=>$data->desgr, 
+            ":nrocuotas"=>$data->nrocuotas, 
+            ":fechaSoli"=>$data->fecha_solicred,
+            ":fechaOtor"=>$data->fecha_otorga, 
+            ":fechaPriC"=>$data->fecha_pricuota,
+            ":tipocredID"=>$data->tipocredID, 
+            ":frecuencia"=>($data->tipocredID==2)?$data->frecuencia:null, 
+            ":sysIP"=>$fn->getClientIP(), 
+            ":userID"=>$_SESSION['usr_ID'], 
+            ":observac"=>$data->observac
+          ];
+          $qry = $db->query_all($sql,$params);
+          $rs = ($qry) ? (reset($qry)) : (null);
+
           //respuesta
           $rpta = array("error"=>false, "update"=>1);
           echo json_encode($rpta);
@@ -163,10 +164,16 @@
         case "delSoliCred":
           $params = array();
           for($i=0; $i<count($data->arr); $i++){
-            $sql = "update bn_prestamos set estado=0,sys_ip=$2,sys_user=$3,sys_fecha=now() where id=$1";
-            $params = array($data->arr[$i],$fn->getClientIP(),$_SESSION['usr_ID']);
-            $qry = $db->query_params($sql,$params);
+            $sql = "update bn_prestamos set estado=0,sys_ip=:sysIP,sys_user=:userID,sys_fecha=now() where id=:id";
+            $params = [
+              ":id"=>$data->arr[$i],
+              ":sysIP"=>$fn->getClientIP(),
+              ":userID"=>$_SESSION['usr_ID']
+            ];
+            $qry = $db->query_all($sql,$params);
+            $rs = ($qry) ? (reset($qry)) : (null);
           }
+
           //respuesta
           $rpta = array("error"=>false, "delete"=>$data->arr);
           echo json_encode($rpta);
@@ -189,9 +196,9 @@
         case "viewSoliCred":
           $tabla = 0;
           $socioID = 0;
-          $qry = $db->query("select * from bn_prestamos where id=".$data->SoliCredID);
-          if ($db->num_rows($qry)) {
-            $rs = $db->fetch_array($qry);
+          $qry = $db->query_all("select * from bn_prestamos where id=".$data->SoliCredID);
+          if ($qry) {
+            $rs = reset($qry);
             $socioID = $rs["id_socio"];
             $date = new DateTime($rs["fecha_pricuota"]);
             $pivot = ($rs["id_tipocred"]==1)?($date->format('Ymd')):($rs["frecuencia"]);
@@ -241,9 +248,9 @@
           echo json_encode($rpta);
           break;
         case "viewApruebaSoliCred":
-          $qry = $db->query("select * from vw_prestamos_ext where id=".$data->SoliCredID);
-          if ($db->num_rows($qry)) {
-            $rs = $db->fetch_array($qry);
+          $qry = $db->query_all("select * from vw_prestamos_ext where id=:id",[":id"=>$data->SoliCredID]);
+          if ($qry) {
+            $rs = reset($qry);
             $date = new DateTime($rs["fecha_pricuota"]);
             $pivot = ($rs["id_tipocred"]==1)?($date->format('Ymd')):($rs["frecuencia"]);
             $cuota = $fn->getSimulacionCredito($rs["id_tipocred"],$rs["importe"],$rs["tasa_cred"],$rs["tasa_desgr"],$rs["nro_cuotas"],$rs["fecha_otorga"],$pivot);
@@ -280,6 +287,7 @@
               "estado" => ($rs["estado"]*1)
             );
           }
+
           //respuesta
           $rpta = $tabla;
           echo json_encode($rpta);
@@ -335,15 +343,16 @@
           echo json_encode($rpta);
           break;
         case "aprobarSoliCred":
-          $sql = "update bn_prestamos set estado=$2,id_aprueba=$3,fecha_aprueba=now(),sys_ip=$4,sys_user=$3,sys_fecha=now() where id=$1";
-          $params = array(
-            $data->SoliCredID,
-            2,
-            $_SESSION['usr_ID'],
-            $fn->getClientIP()
-          );
-          $qry = $db->query_params($sql,$params);
-          $xx = $db->fetch_array($qry);
+          $sql = "update bn_prestamos set estado=:estado,id_aprueba=:userID,fecha_aprueba=now(),sys_ip=:sysIP,sys_user=:userID,sys_fecha=now() where id=:id";
+          $params = [
+            ":id"=>$data->SoliCredID,
+            ":estado"=>2,
+            ":sysIP"=>$fn->getClientIP(),
+            ":userID"=>$_SESSION['usr_ID']
+          ];
+          $qry = $db->query_all($sql,$params);
+          $rs = ($qry) ? (reset($qry)) : (null);
+
           //respuesta
           $rpta = array("error"=>false, "update"=>1);
           echo json_encode($rpta);
