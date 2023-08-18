@@ -106,6 +106,7 @@
           echo json_encode($rpta);
           break;
         case "insWorker":
+          //ingresar empleado
           $qry = $db->query_all("select right('000000'||cast(coalesce(max(right(codigo,4)::integer)+1,1) as text),4) as code from bn_empleados where id_coopac=".$web->coopacID.";");
           $codworker = reset($qry)["code"];
           $sql = "insert into bn_empleados values(:id,:coopacID,:agenciaID,:cargoID,:codworker,:nombrecorto,:correo,:fecha,null,null,null,:estado,:sysIP,:userID,now(),:observac);";
@@ -124,13 +125,32 @@
             ":observac"=>$data->observac
           ];
           $qry = $db->query_all($sql,$params);
-          $rs = ($qry) ? (reset($qry)) : (null);
+          $rs = reset($qry);
+
+          //ingresar usuario
+          if($data->usuario!=null){
+            $sql = "insert into bn_usuarios values(:id,:coopacID,:rolID,:login,:passw,:estado,:menu,:sysIP,:userID,now());";
+            $params = [
+              ":id"=>$data->workerID,
+              ":coopacID"=>$web->coopacID,
+              ":rolID"=>$data->usuario->cargoID,
+              ":login"=>$data->usuario->login,
+              ":passw"=>$data->usuario->passw,
+              ":estado"=>1,
+              ":menu"=>$data->usuario->menu,
+              ":sysIP"=>$fn->getClientIP(), 
+              ":userID"=>$_SESSION['usr_ID']
+            ];
+            $qry = $db->query_all($sql,$params);
+            $rs = reset($qry);
+          }
 
           //respuesta
           $rpta = array("error"=>false, "insert"=>1);
           echo json_encode($rpta);
           break;
         case "updWorker":
+          //actualiza empleado
           $sql = "update bn_empleados set id_agencia=:agenciaID,id_cargo=:cargoID,nombrecorto=:nombrecorto,correo=:correo,observac=:observac,sys_ip=:sysIP,sys_user=:userID,sys_fecha=now() where id_empleado=:id and id_coopac=:coopacID;";
           $params = [
             ":id"=>$data->workerID,
@@ -144,7 +164,27 @@
             ":userID"=>$_SESSION['usr_ID']
           ];
           $qry = $db->query_all($sql,$params);
-          $rs = ($qry) ? (reset($qry)) : (null);
+          $rs = reset($qry);
+
+          //actualiza usuario
+          if($data->usuario!=null){
+            $sql = "update bn_usuarios set id_rol=:rolID,login=:login,menu=:menu,sys_ip=:sysIP,sys_user=:userID,sys_fecha=now() where id=:id;";
+            $params = [
+              ":id"=>$data->workerID,
+              ":rolID"=>$data->usuario->rolID,
+              ":login"=>$data->usuario->login,
+              ":menu"=>$data->usuario->menu,
+              ":sysIP"=>$fn->getClientIP(), 
+              ":userID"=>$_SESSION['usr_ID']
+            ];
+            $qry = $db->query_all($sql,$params);
+            $rs = reset($qry);
+          } else {
+            $sql = "delete from bn_usuarios where id=:id";
+            $params = [":id"=>$data->workerID];
+            $qry = $db->query_all($sql,$params);
+            $rs = reset($qry);
+          }
 
           //respuesta
           $rpta = array("error"=>false, "update"=>1);
@@ -201,7 +241,12 @@
             "tablaPers" => $tablaPers,
             "persona" => $persona,
             "activo" => $activo,
-            "mensajeNOadd" => "ya es EMPLEADO ACTIVO...");
+            "mensajeNOadd" => "ya es EMPLEADO ACTIVO...",
+            "comboAgencias" => $fn->getComboBox("select id,nombre from bn_bancos where estado=1 and id_padre=".$web->coopacID),
+            "comboCargos" => $fn->getComboBox("select id,nombre from sis_tipos where id_padre=7 order by id;"),
+            "comboRoles" => $fn->getComboBox("select id,nombre from sis_tipos where id_padre=2 order by id;"),
+            "fecha" => $fn->getFechaActualDB(),
+            "coopac" => $web->coopacID);
           echo json_encode($rpta);
           break;
         case "startWorker":
@@ -214,27 +259,20 @@
             "coopac" => $web->coopacID);
           echo json_encode($rpta);
           break;
-        case "selMenu":
-          //cargar Ubigeo
-          $tabla = array();
-          $pID = (array_key_exists('id',$_REQUEST)) ? ($_REQUEST['id']) : (0);
-          $qry = $db->query_all("select * from sis_ubigeo where id_padre=".$pID." order by id;");
+        case "selSisMenu":
+          //obtener menu de los perfiles => tabla sis_menu
+          $menu = "";
+          $qry = $db->query_all("select * from sis_menu where id=".$data->perfilID);
           if ($qry) {
-            foreach($qry as $rs){
-              //$rscount = $db->fetch_array($db->query("select count(*) as cuenta from sis_ubigeo where id_padre=".$rs["id"]));
-              $tabla[] = array(
-                "id" => ($rs["id"]),
-                "pId" => ($pID),
-                "name" => ($rs["codigo"])." - ".($rs["nombre"]),
-                "isParent"=>(strlen($rs["id"])<6 ? true : false)
-              );
-            }
+            $rs = reset($qry);
+            $menu = $rs["json"];
           }
 
           //respuesta
-          echo json_encode($tabla);
+          $rpta = array("menu"=>$menu);
+          echo json_encode($rpta);
           break;
-        case "viewUserPass":
+        case "selUserPass":
           $qry = $db->query_all("select u.id,u.login,e.nombrecorto from bn_usuarios u join bn_empleados e on u.id=e.id_empleado where u.id=".$data->userID);
           if ($qry) {
             $rs = reset($qry);

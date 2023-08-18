@@ -1,5 +1,24 @@
 const rutaSQL = "pages/mtto/empleados/sql.php";
 var menu = "";
+var zTreeObj = null;
+var zMnuEmpleado = null;
+var zSetting = { 
+  check : {
+    enable : true
+  },
+  view : {
+    addDiyDom : null,
+    showIcon : showIconForTree
+  },
+  callback: {
+    beforeDrag : beforeDrag
+  },
+  edit: {
+    enable : true,
+    showRemoveBtn : true,
+    showRenameBtn : true
+  }
+};
 
 //=========================funciones============================
 function appWorkersGrid(){
@@ -36,15 +55,11 @@ function appWorkersGrid(){
 
 function appWorkersReset(){
   appFetch({ TipoQuery:'selDataUser' },"includes/sess_interfaz.php").then(resp => {
+    //configurar treeview
+    zTreeObj = $.fn.zTree.init($("#appTreeView"), zSetting, null);
+    
+    //otros controles
     menu = JSON.parse(resp.menu);
-    //console.log(menu);
-    mnuTree = "";
-    /*
-    for(let prop in menu){
-      console.log(prop+':'+menu[prop]);
-    };
-    */
-
     document.querySelector("#btn_DEL").style.display = (menu.mtto.submenu.empleados.cmdDelete==1)?('inline'):('none');
     document.querySelector("#btn_NEW").style.display = (menu.mtto.submenu.empleados.cmdInsert==1)?('inline'):('none');
 
@@ -68,9 +83,10 @@ function appWorkersBotonCancel(){
 
 function appWorkersBotonInsert(){
   let datos = appWorkerGetDatosToDatabase();
-  
-  if(datos!=""){
+
+  if(datos!=null){
     datos.TipoQuery = "insWorker";
+    datos.usuario = appUserGetDatosToDatabase();
     appFetch(datos,rutaSQL).then(resp => {
       appWorkersBotonCancel();
     });
@@ -78,17 +94,15 @@ function appWorkersBotonInsert(){
 }
 
 function appWorkersBotonUpdate(){
-  // let datos = appWorkerGetDatosToDatabase();
-
-  // if(datos!=""){
-  //   datos.TipoQuery = "updWorker";
-  //   datos.workerID = document.querySelector("#lbl_ID").innerHTML;
-  //   appFetch(datos,rutaSQL).then(resp => {
-  //     appWorkersBotonCancel();
-  //   });
-  // }
-  let xx = getTreeJSON($.fn.zTree.getZTreeObj("appTreeView"));
-  console.log(JSON.stringify(xx));
+  let datos = appWorkerGetDatosToDatabase();
+  
+  if(datos!=null){
+    datos.TipoQuery = "updWorker";
+    datos.usuario = appUserGetDatosToDatabase();
+    appFetch(datos,rutaSQL).then(resp => {
+      appWorkersBotonCancel();
+    });
+  }
 }
 
 function appWorkerBotonNuevo(){
@@ -97,10 +111,13 @@ function appWorkerBotonNuevo(){
     if(Persona.sinErrores()){ //sin errores
       Persona.ejecutaSQL().then(resp => {
         appPersonaSetData(resp.tablaPers);
-        appWorkerClear();
-        document.querySelector('#grid').style.display = 'none';
-        document.querySelector('#edit').style.display = 'block';
-        Persona.close();
+        appFetch({TipoQuery : 'startWorker'},rutaSQL).then(resp => {
+          appWorkerClear(resp);
+          appUserClear(resp);
+          document.querySelector('#grid').style.display = 'none';
+          document.querySelector('#edit').style.display = 'block';
+          Persona.close();
+        });
       });
     } else {
       alert("!!!Faltan llenar Datos!!!");
@@ -116,10 +133,13 @@ function appWorkerBotonNuevo(){
     }
     appFetch(datos,'pages/mtto/personas/sql.php').then(resp => {
       appPersonaSetData(Persona.tablaPers); //pestaña Personales
-      appWorkerClear();
-      document.querySelector('#grid').style.display = 'none';
-      document.querySelector('#edit').style.display = 'block';
-      Persona.close();
+      appFetch({TipoQuery : 'startWorker'},rutaSQL).then(resp => {
+        appWorkerClear(resp);
+        appUserClear(resp);
+        document.querySelector('#grid').style.display = 'none';
+        document.querySelector('#edit').style.display = 'block';
+        Persona.close();
+      });
     });
     e.stopImmediatePropagation();
     $('#btn_modPersAddToForm').off('click');
@@ -150,9 +170,8 @@ function appWorkerView(personaID){
   };
   
   appFetch(datos,rutaSQL).then(resp => {
-    //console.log(resp);
-    appWorkerSetData(resp.tablaWorker);  //pestaña Empleado
     appPersonaSetData(resp.tablaPers); //pestaña Personales
+    appWorkerSetData(resp.tablaWorker);  //pestaña Empleado
     appUserSetData(resp.tablaUser); //pestaña usuario
 
     //tabs default en primer tab
@@ -185,10 +204,7 @@ function appWorkerSetData(data){
   document.querySelector("#lbl_WorkerSysUser").innerHTML = (data.usermod);
 }
 
-function appWorkerClear(){
-  let datos = {
-    TipoQuery : 'startWorker'
-  }
+function appWorkerClear(data){
   //todos los inputs sin error y panel error deshabilitado
   $('.form-group').removeClass('has-error');
   document.querySelector("#div_WorkerAuditoria").style.display = 'none';
@@ -201,24 +217,25 @@ function appWorkerClear(){
   $('a[href="#datosWorker"]').closest('li').addClass('active');
   $('#datosWorker').addClass('active');
 
-  appFetch(datos,rutaSQL).then(resp => {
-    //pestaña de Empleado
-    appLlenarDataEnComboBox(resp.comboAgencias,"#cbo_WorkerAgencia",0);
-    appLlenarDataEnComboBox(resp.comboCargos,"#cbo_WorkerCargo",0);
-    document.querySelector('#txt_WorkerFechaIng').value = (moment(resp.fecha).format("DD/MM/YYYY"));
-    document.querySelector("#txt_WorkerCodigo").placeholder = ("00-000000");
-    document.querySelector("#txt_WorkerCodigo").value = ("");
-    document.querySelector("#txt_WorkerNombreCorto").value = ("");
-    document.querySelector("#txt_WorkerObserv").value = ("");
-    appUserClear(resp.comboRoles);
-  });
+  //pestaña de Empleado
+  appLlenarDataEnComboBox(data.comboAgencias,"#cbo_WorkerAgencia",0);
+  appLlenarDataEnComboBox(data.comboCargos,"#cbo_WorkerCargo",0);
+  document.querySelector('#txt_WorkerFechaIng').value = (moment(data.fecha).format("DD/MM/YYYY"));
+  document.querySelector("#txt_WorkerCodigo").placeholder = ("00-000000");
+  document.querySelector("#txt_WorkerCodigo").value = ("");
+  document.querySelector("#txt_WorkerNombreCorto").value = ("");
+  document.querySelector("#txt_WorkerObserv").value = ("");
 }
 
 function appWorkerGetDatosToDatabase(){
-  let rpta = "";
+  let rpta = null;
   let esError = false;
   $('.form-group').removeClass('has-error');
-  if(document.querySelector("#txt_WorkerNombreCorto").value=="") { document.querySelector("#div_WorkerNombreCorto").className = "form-group has-error"; esError = true; }
+  if(document.querySelector("#txt_WorkerNombreCorto").value=="") { 
+    document.querySelector("#div_WorkerNombreCorto").className = "form-group has-error"; 
+    esError = true; 
+    alert("!!!Falta Nombre Corto en el Empleado!!!");
+  }
 
   if(!esError){
     rpta = {
@@ -228,7 +245,8 @@ function appWorkerGetDatosToDatabase(){
       nombrecorto : document.querySelector("#txt_WorkerNombreCorto").value,
       correo : document.querySelector("#txt_WorkerCorreo").value,
       fecha : appConvertToFecha(document.querySelector("#txt_WorkerFechaIng").value,""),
-      observac : document.querySelector("#txt_WorkerObserv").value
+      observac : document.querySelector("#txt_WorkerObserv").value,
+      usuario : null
     }
   }
   return rpta;
@@ -311,53 +329,33 @@ function appUserSetData(data){
   if(data.ID!=null){
     document.querySelector("#chk_UserEsUsuario").checked = true;
     document.querySelector("#txt_UserLogin").value = (data.login);
-    document.querySelector("#div_UserPassword").style.display = 'none';
-    document.querySelector("#div_UserRePassword").style.display = 'none';
+    document.querySelector("#txt_UserRePassword").value = document.querySelector("#txt_UserPassword").value = 'demo';
+    document.querySelector("#div_UserRePassword").style.display = document.querySelector("#div_UserPassword").style.display = 'none';
     appLlenarDataEnComboBox(data.comboRoles,"#cbo_UserRol",data.rolID);
-    
-    data.menu = JSON.parse(data.menu);
-    let setting = { 
-      check : {
-        enable : true
-      },
-      view : {
-        addDiyDom : null,
-        showIcon : showIconForTree
-      },
-      callback: {
-        beforeDrag : beforeDrag
-      },
-      edit: {
-        enable : true,
-        showRemoveBtn : true,
-        showRenameBtn : true
-      }
-    };
 
-    $.fn.zTree.init($("#appTreeView"), setting, transformData(data.menu));
-
-    // Obtener el arbol y convertirlo a JSON
-    //var zTreeObj = $.fn.zTree.getZTreeObj("appTreeView");
-    //getTreeJSON(zTreeObj);
-  } else {
-    appUserClear(data.comboRoles);
+    zMnuEmpleado = data.menu = JSON.parse(data.menu);
+    appUserEsUsuario();
+  } else { //no tiene usuario
+    zMnuEmpleado = null;
+    appUserClear(data);
   }
 }
 
 function appUserClear(data){
-  appLlenarDataEnComboBox(data,"#cbo_UserRol",0);
+  appLlenarDataEnComboBox(data.comboRoles,"#cbo_UserRol",0);
   document.querySelector("#chk_UserEsUsuario").checked = false;
   document.querySelector('#txt_UserLogin').value = ("");
   document.querySelector('#txt_UserPassword').value = ("");
   document.querySelector('#txt_UserRePassword').value = ("");
   document.querySelector("#div_UserPassword").style.display = 'block';
   document.querySelector("#div_UserRePassword").style.display = 'block';
+  appUserEsUsuario();
 }
 
 function appUserCambioPassw(userID){
   $("#modalChangePassw").modal("show");
   let datos = {
-    TipoQuery:"viewUserPass",
+    TipoQuery:"selUserPass",
     userID:userID
   }
   appFetch(datos,rutaSQL).then(resp => {
@@ -392,7 +390,58 @@ function modUserBotonUpdatePassw(){
 }
 
 function appUserEsUsuario(){
+  let estado = document.querySelector("#chk_UserEsUsuario").checked;
+  document.querySelector("#txt_UserLogin").disabled = !estado;
+  document.querySelector("#txt_UserPassword").disabled = !estado;
+  document.querySelector("#txt_UserRePassword").disabled = !estado;
+  document.querySelector("#cbo_UserRol").disabled = !estado;
+  document.querySelector("#btn_UserPerfilRoot").disabled = !estado;
+  document.querySelector("#btn_UserPerfilCaja").disabled = !estado;
   
+  //menu
+  zTreeObj = $.fn.zTree.init($("#appTreeView"), zSetting, (estado==false)?(null):(transformData(zMnuEmpleado)));
+}
+
+function appUserGetDatosToDatabase(){
+  let rpta = null;
+  let esError = false;
+  let esUsuario = document.querySelector("#chk_UserEsUsuario").checked;
+
+  $('.form-group').removeClass('has-error');
+  if(esUsuario){
+    if(document.querySelector("#txt_UserLogin").value=="") { document.querySelector("#div_UserLogin").className = "form-group has-error"; esError = true; }
+    if(document.querySelector("#txt_UserPassword").value=="") { document.querySelector("#div_UserPassword").className = "form-group has-error"; esError = true; }
+    if(document.querySelector("#txt_UserRePassword").value != document.querySelector("#txt_UserPassword").value) { 
+      document.querySelector("#div_UserPassword").className = "form-group has-error";
+      document.querySelector("#div_UserRePassword").className = "form-group has-error";
+      alert("el Password NO coincide");
+      esError = true;
+    }
+    if(zTreeObj.getNodes().length==0) { alert("Debe configurar un PERFIL de usuario"); esError = true; }
+    
+  }
+
+  if(esError==false && esUsuario==true){
+    rpta = {
+      login : document.querySelector("#txt_UserLogin").value,
+      passw : document.querySelector("#txt_UserPassword").value,
+      rolID : document.querySelector("#cbo_UserRol").value,
+      menu : JSON.stringify(getTreeJSON(zTreeObj))
+    }
+  }
+  return rpta;
+}
+
+function appUserPerfilMenu(perfilID){
+  let datos = {
+    TipoQuery : "selSisMenu",
+    perfilID : perfilID
+  }
+  
+  appFetch(datos,rutaSQL).then(resp => {
+    let mnu = JSON.parse(resp.menu);
+    zTreeObj = $.fn.zTree.init($("#appTreeView"), zSetting, transformData(mnu));
+  });
 }
 
 //menu

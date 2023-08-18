@@ -233,7 +233,7 @@
                     <div class="form-group">
                       <div class="input-group">
                         <span class="input-group-addon pull-left" style="border:1px solid #D2D6DD;width:100%;padding:9px 10px 9px 10px;">
-                          <input id="chk_UserEsUsuario" type="checkbox" value="0" onchange="appUserEsUsuario(this.checked);"> Si, es usuario del sistema
+                          <input id="chk_UserEsUsuario" type="checkbox" value="0" onchange="appUserEsUsuario();"> Si, es usuario del sistema
                         </span>
                       </div>
                     </div>
@@ -242,7 +242,7 @@
                 <div class="col-md-5">
                   <div class="box-body">
                     <strong><i class="fa fa-user"></i> Usuario</strong>
-                    <div class="form-group" style="margin-bottom:5px;">
+                    <div id="div_UserLogin" class="form-group" style="margin-bottom:5px;">
                       <div class="input-group">
                         <span class="input-group-addon" style="width:100px;background:#eeeeee;"><b>Login</b></span>
                         <input id="txt_UserLogin" type="email" class="form-control" placeholder="login..." maxlength="50" autocomplete="off"/>
@@ -271,8 +271,12 @@
                 <div class="col-md-7">
                   <div class="box-body">
                     <strong><i class="fa fa-sliders"></i> Menu</strong>
-                    <div class="box-body table-responsive no-padding" style="border:1px solid #ccc;">
-                      <ul id="appTreeView" class="ztree"></ul>
+                    <div class="box-body" style="padding-left:0px">
+                      <button id="btn_UserPerfilRoot" type="button" class="btn btn-primary btn-xs" onclick="javascript:appUserPerfilMenu(1);"><i class="fa fa-user"></i> Root</button>
+                      <button id="btn_UserPerfilCaja" type="button" class="btn btn-primary btn-xs" onclick="javascript:appUserPerfilMenu(2);"><i class="fa fa-user"></i> Caja</button>
+                    </div>
+                    <div id="div_UserMenu" class="box-body table-responsive no-padding" style="border:1px solid #ccc;">
+                        <ul id="appTreeView" class="ztree"></ul>
                     </div>
                   </div>
                 </div>
