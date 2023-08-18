@@ -168,21 +168,20 @@
 
           //actualiza usuario
           if($data->usuario!=null){
+            $usuario = $data->usuario;
             $sql = "update bn_usuarios set id_rol=:rolID,login=:login,menu=:menu,sys_ip=:sysIP,sys_user=:userID,sys_fecha=now() where id=:id;";
             $params = [
               ":id"=>$data->workerID,
-              ":rolID"=>$data->usuario->rolID,
-              ":login"=>$data->usuario->login,
-              ":menu"=>$data->usuario->menu,
+              ":rolID"=>$usuario->rolID,
+              ":login"=>$usuario->login,
+              ":menu"=>$usuario->menu,
               ":sysIP"=>$fn->getClientIP(), 
               ":userID"=>$_SESSION['usr_ID']
             ];
             $qry = $db->query_all($sql,$params);
             $rs = reset($qry);
           } else {
-            $sql = "delete from bn_usuarios where id=:id";
-            $params = [":id"=>$data->workerID];
-            $qry = $db->query_all($sql,$params);
+            $qry = $db->query_all("delete from bn_usuarios where id=".$data->workerID);
             $rs = reset($qry);
           }
 
