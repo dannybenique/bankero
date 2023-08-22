@@ -150,18 +150,19 @@
           echo json_encode($rpta);
           break;
         case "updWorker":
+          $coopacID = $web->coopacID;
           //actualiza empleado
           $sql = "update bn_empleados set id_agencia=:agenciaID,id_cargo=:cargoID,nombrecorto=:nombrecorto,correo=:correo,observac=:observac,sys_ip=:sysIP,sys_user=:userID,sys_fecha=now() where id_empleado=:id and id_coopac=:coopacID;";
           $params = [
-            ":id"=>$data->workerID,
-            ":coopacID"=>$web->coopacID,
-            ":agenciaID"=>$data->agenciaID,
-            ":cargoID"=>$data->cargoID,
-            ":nombrecorto"=>$data->nombrecorto,
-            ":correo"=>$data->correo,
-            ":observac"=>$data->observac,
-            ":sysIP"=>$fn->getClientIP(), 
-            ":userID"=>$_SESSION['usr_ID']
+            ":id" => $data->workerID,
+            ":coopacID" => $web->coopacID,
+            ":agenciaID" => $data->agenciaID,
+            ":cargoID" => $data->cargoID,
+            ":nombrecorto" => $data->nombrecorto,
+            ":correo" => $data->correo,
+            ":observac" => $data->observac,
+            ":sysIP" => $fn->getClientIP(), 
+            ":userID" => $_SESSION['usr_ID']
           ];
           $qry = $db->query_all($sql,$params);
           $rs = reset($qry);
@@ -169,17 +170,34 @@
           //actualiza usuario
           if($data->usuario!=null){
             $usuario = $data->usuario;
-            $sql = "update bn_usuarios set id_rol=:rolID,login=:login,menu=:menu,sys_ip=:sysIP,sys_user=:userID,sys_fecha=now() where id=:id;";
-            $params = [
-              ":id"=>$data->workerID,
-              ":rolID"=>$usuario->rolID,
-              ":login"=>$usuario->login,
-              ":menu"=>$usuario->menu,
-              ":sysIP"=>$fn->getClientIP(), 
-              ":userID"=>$_SESSION['usr_ID']
-            ];
-            $qry = $db->query_all($sql,$params);
-            $rs = reset($qry);
+            
+            //verificamos que el usuario esta agregado en usuarios
+            $qry = $db->query_all("select * from bn_usuarios where id=".$data->workerID);
+            if($qry) { //actualizamos datos
+              $paramx = [
+                ":id" => $data->workerID,
+                ":rolID" => $usuario->rolID,
+                ":login" => $usuario->login,
+                ":menu" => $usuario->menu,
+                ":sysIP" => $fn->getClientIP(), 
+                ":userID" => $_SESSION['usr_ID']
+              ];
+              $xql = "update bn_usuarios set id_rol=:rolID,login=:login,menu=:menu,sys_ip=:sysIP,sys_user=:userID,sys_fecha=now() where id=:id;";
+            } else { //insertamos nuevo usuario
+              $paramx = [
+                ":id" => $data->workerID,
+                ":coopacID" => $web->coopacID,
+                ":rolID" => $usuario->rolID,
+                ":login" => $usuario->login,
+                ":passw" => $usuario->passw,
+                ":menu" => $usuario->menu,
+                ":sysIP" => $fn->getClientIP(), 
+                ":userID" => $_SESSION['usr_ID']
+              ];
+              $xql = "insert into bn_usuarios values(:id,:coopacID,:rolID,:login,:passw,1,:menu,:sysIP,:userID,now())";
+            }
+            $qrx = $db->query_all($xql,$paramx);
+            $rs = reset($qrx);
           } else {
             $qry = $db->query_all("delete from bn_usuarios where id=".$data->workerID);
             $rs = reset($qry);
