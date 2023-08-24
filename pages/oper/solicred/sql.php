@@ -182,7 +182,7 @@
           //respuesta
           $rpta = array(
             "comboAgencias" => $fn->getComboBox("select id,nombre from bn_bancos where estado=1 and id_padre=".$web->coopacID),
-            "comboEmpleados" => $fn->getComboBox("select id_empleado as id,empleado as nombre from vw_empleados where estado=1 and id_coopac=".$web->coopacID),
+            "comboEmpleados" => $fn->getComboBox("select id_empleado as id,upper(nombrecorto) as nombre from vw_empleados where estado=1 and id_coopac=".$web->coopacID),
             "comboProductos" => $fn->getComboBox("select id,nombre from bn_productos where estado=1 and id_padre=4 and id_coopac=".$web->coopacID),
             "comboTipoSBS" => $fn->getComboBox("select s.id,s.nombre from sis_tipos s join bn_tipos b on(b.id_tipo=s.id) where s.id_padre=5 and b.id_coopac=".$web->coopacID), //tipos credito SBS
             "comboDestSBS" => $fn->getComboBox("select id,nombre from sis_tipos where id_padre=6 order by id;"), //destino credito SBS

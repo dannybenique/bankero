@@ -176,13 +176,12 @@
           $qry = $db->query_all("select coalesce(max(id)+1,1) as code from bn_movim_det;");
           $detalleID = reset($qry)["code"];
           $tipo_movID = 9; 
-          $item = 1;
           $sql = "insert into bn_movim_det values(:id,:cabeceraID,:tipomovID,:item,:importe);";
           $params = [
             ":id"=>$detalleID,
             ":cabeceraID"=>$movimID,
             ":tipomovID"=>$tipo_movID,
-            ":item"=>$item,
+            ":item"=>1,
             ":importe"=>$data->importe
           ];
           $qry = $db->query_all($sql,$params);
@@ -220,7 +219,7 @@
           $rs = reset($qry);
           //agregar detalle de prestamo
           $genPlanPagos = ($data->tipocredID=="1")?("fn_get_planpagos_fechafija"):("fn_get_planpagos_plazofijo");
-          $sql = "insert into bn_prestamos_det select ".$data->prestamoID.",num,fecha,capital,interes,otros,saldo,0,0,0,0,concat('[{\"id\":13,\"descri\":\"PAGO SEGURO DESGR\",\"monto\":',otros::float,'}]'),0,null,null from ".$genPlanPagos."(:importe,tasa,:desgr,:nrocuotas,fechaOtor,:pivot) as (num integer,fecha date,dias integer,tasa_efec float,cuotax numeric,cuota numeric,capital numeric,interes numeric,otros numeric,saldo numeric)";
+          $sql = "insert into bn_prestamos_det select ".$data->prestamoID.",num,fecha,capital,interes,otros,saldo,0,0,0,0,concat('[{\"id\":13,\"descri\":\"PAGO SEGURO DESGR\",\"monto\":',otros::float,'}]'),0,null,null from ".$genPlanPagos."(:importe,:tasa,:desgr,:nrocuotas,:fechaOtor,:pivot) as (num integer,fecha date,dias integer,tasa_efec float,cuotax numeric,cuota numeric,capital numeric,interes numeric,otros numeric,saldo numeric)";
           $params = [
             ":importe"=>$data->importe,
             ":tasa"=>$data->tasa_cred,

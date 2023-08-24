@@ -3,15 +3,17 @@
   include_once("../../../includes/web_config.php");
   $movimID = $_REQUEST["movimID"];
   //bancos
-  $rs = $db->fetch_array($db->query_params("select * from bn_bancos where id=$1",array($web->coopacID)));
+  $qry = $db->query_all("select * from bn_bancos where id=".$web->coopacID);
+  $rs = reset($qry);
   $banco_nombre = strtoupper($rs["nombre"]);
   $banco_ruc = $rs["ruc"];
 
+  $params = [":movimID"=>$movimID];
   //cabecera movim
-  $sql = "select m.*,b.nombre as agencia,pr.nombre as producto,t.nombre as tipo_oper,o.nombre as moneda,to_char(fecha,'DD/MM/YYYY HH24:MI:SS') as fechamov,fn_get_persona(p.tipo_persona, p.ap_paterno, p.ap_materno, p.nombres) AS socio,p.nro_dui from bn_movim m join bn_bancos b on m.id_agencia=b.id join bn_productos pr on m.id_producto=pr.id join sis_tipos t on m.id_tipo_oper=t.id join personas p on m.id_socio=p.id join sis_tipos o on m.id_moneda=o.id where m.id=$1;";
-  $qry = $db->query_params($sql,array($movimID));
-  if ($db->num_rows($qry)) { 
-    $rs = $db->fetch_array($qry); 
+  $sql = "select m.*,b.nombre as agencia,pr.nombre as producto,t.nombre as tipo_oper,o.nombre as moneda,to_char(fecha,'DD/MM/YYYY HH24:MI:SS') as fechamov,fn_get_persona(p.tipo_persona, p.ap_paterno, p.ap_materno, p.nombres) AS socio,p.nro_dui from bn_movim m join bn_bancos b on m.id_agencia=b.id join bn_productos pr on m.id_producto=pr.id join sis_tipos t on m.id_tipo_oper=t.id join personas p on m.id_socio=p.id join sis_tipos o on m.id_moneda=o.id where m.id=:movimID;";
+  $qry = $db->query_all($sql,$params);
+  if($qry) {
+    $rs = reset($qry); 
     $mov_agencia = strtoupper($rs["agencia"]);
     $mov_tipo_oper = strtoupper($rs["tipo_oper"]);
     $mov_moneda = strtoupper($rs["moneda"]);
@@ -24,11 +26,10 @@
 
   //detalle movim
   $detalle = "";
-  $sql = "select d.*,mv.nombre as tipo_mov from bn_movim_det d join sis_mov mv on d.id_tipo_mov=mv.id where id_movim=$1 order by item";
-  $qry = $db->query_params($sql,array($movimID));
-  if ($db->num_rows($qry)) {
-    for($xx = 0; $xx<$db->num_rows($qry); $xx++){
-      $rs = $db->fetch_array($qry);
+  $sql = "select d.*,mv.nombre as tipo_mov from bn_movim_det d join sis_mov mv on d.id_tipo_mov=mv.id where id_movim=:movimID order by item";
+  $qry = $db->query_all($sql,$params);
+  if($qry) {
+    foreach($qry as $rs){
       $detalle .= '<tr><td style="text-align:left;">'.$rs["tipo_mov"].'</td><td style="text-align:right;">'.number_format($rs["importe"],2,".",",").'</td></tr>';
     }
   }
@@ -94,20 +95,20 @@
     </main>
     </body>
   </html>';
-  $footer = '<p style="text-align:justify;font-size:8px;">
+  $footer = '<p style="text-align:justify;font-size:6px;">
               <b>NO OLVIDE,</b> pague a tiempo y evite cargos
             </p>';
 
   include_once("../../../libs/pdf.php/vendor/autoload.php");
   $mpdf = new \Mpdf\Mpdf([
     'format' => [55,100],
-    'margin_left' => 3,
-    'margin_right' => 3,
-    'margin_top' => 5,
-    'margin_bottom' => 3
+    'margin_left' => 1,
+    'margin_right' => 1,
+    'margin_top' => 2,
+    'margin_bottom' => 1
   ]);
   $mpdf->WriteHTML($html);
   $mpdf->SetHTMLFooter($footer);
-  $mpdf->Output();
+  $mpdf->Output('voucher.pdf','I');
   exit;
 ?>

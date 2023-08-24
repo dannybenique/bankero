@@ -424,7 +424,7 @@ function appUserGetDatosToDatabase(){
   if(esError==false && esUsuario==true){
     rpta = {
       login : document.querySelector("#txt_UserLogin").value,
-      passw : document.querySelector("#txt_UserPassword").value,
+      passw : SHA1(document.querySelector("#txt_UserPassword").value).toString().toUpperCase(),
       rolID : document.querySelector("#cbo_UserRol").value,
       menu : JSON.stringify(getTreeJSON(zTreeObj))
     }

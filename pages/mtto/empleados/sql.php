@@ -171,7 +171,7 @@
           if($data->usuario!=null){
             $usuario = $data->usuario;
             
-            //verificamos que el usuario esta agregado en usuarios
+            //verificamos que el usuario este agregado en usuarios
             $qry = $db->query_all("select * from bn_usuarios where id=".$data->workerID);
             if($qry) { //actualizamos datos
               $paramx = [
