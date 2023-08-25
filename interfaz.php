@@ -146,6 +146,8 @@
       case "profile": $appPage = "pages/global/profile/profile.php"; break;
       case "cajaDesembolsos" : $menuCaja = 'active menu-open'; $appPage = "pages/caja/desembolsos/page.php"; break;
       case "cajaPagos"       : $menuCaja = 'active menu-open'; $appPage = "pages/caja/pagos/page.php"; break;
+      case "cajaAportes"     : $menuCaja = 'active menu-open'; $appPage = "pages/caja/aportes/page.php"; break;
+      case "cajaAhorros"     : $menuCaja = 'active menu-open'; $appPage = "pages/caja/ahorros/page.php"; break;
       case "cajaExtornos"    : $menuCaja = 'active menu-open'; $appPage = "pages/caja/extornos/page.php"; break;
       case "cajaBilletaje"   : $menuCaja = 'active menu-open'; $appPage = "pages/caja/billetaje/page.php"; break;
       case "operCreditos"        : $menuOper = 'active menu-open'; $appPage = "pages/oper/creditos/page.php"; break;
