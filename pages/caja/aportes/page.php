@@ -25,18 +25,15 @@
           <button type="button" id="btn_RET" class="btn btn-danger btn-sm" onclick="javascript:appAportesBotonRetiro();"><i class="fa fa-minus"></i> Retiro</button>
           <button type="button" class="btn btn-primary btn-sm pull-right" onclick="javascript:appPagosReset();"><i class="fa fa-refresh"></i></button>
         </div>
-      </div>
-      <div class="box box-primary">
-        <div class="box-header with-border">
-          <h3 class="box-title" style="font-family:flexoregular;"><b>Datos</b></h3>
-        </div>
+        <br/><br/>
         <div class="box-body">
           <div class="box-body">
-            <input type="hidden" id="hid_crediID" value="">
+            <input type="hidden" id="hid_aporteSaldo" value=0>
             <input type="hidden" id="hid_aporteProductoID" value="">
             <input type="hidden" id="hid_aporteSocioID" value="">
             Socio: <a id="lbl_aporteSocio"></a><br/>
-            <span id="lbl_aporteTipoDUI">DUI</span>: <a id="lbl_aporteNroDUI"></a><br/><br/><br/>
+            <span id="lbl_aporteTipoDUI">DUI</span>: <a id="lbl_aporteNroDUI"></a><br/><br/>
+            Saldo: <a id="lbl_aporteSaldo"></a><br/>
           </div>
         </div>
       </div>
@@ -78,7 +75,7 @@
                 </div>
               </div>
               <div class="box-body">
-                <button type="button" id="btn_EXEC" class="btn btn-success btn-sm pull-right" onclick="javascript:appPagosBotonPagar();"><i class="fa fa-flash"></i> Pagar Deuda</button>
+                <button type="button" id="btn_EXEC" class="btn btn-success btn-sm pull-right" onclick="javascript:appPagosBotonPagar();"><i class="fa fa-flash"></i> Operacion</button>
               </div>
             </div>
           </div>

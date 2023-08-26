@@ -60,67 +60,25 @@
           $rpta = array("aportes"=>$tabla);
           echo json_encode($rpta);
           break;
-        case "viewCredito":
-          //cabecera
-          $cabecera = 0;
-          $qry = $db->query_all("select p.*,extract(days from (now()-d.fecha)) as atraso from vw_prestamos_ext p join bn_prestamos_det d on (p.id=d.id_prestamo) where p.id=:id and d.numero=(select min(numero) from bn_prestamos_det where id_prestamo=:id and numero>0 and capital>pg_capital)",[":id"=>$data->prestamoID]);
+        case "viewAporte":
+          //saldos
+          $qry = $db->query_all("select * from vw_saldos where id=".$data->saldoID);
           if($qry) {
             $rs = reset($qry);
-            
-            $cabecera = array(
+            $aporte = array(
               "ID" => $rs["id"],
-              "codigo" => $rs["codigo"],
-              "socioID" => $rs["id_socio"],
-              "socio" => $rs["socio"],
-              "dui" => $rs["dui"],
+              "DUI" => $rs["dui"],
               "nro_dui" => $rs["nro_dui"],
-              "agencia" => $rs["agencia"],
-              "promotor" => $rs["promotor"],
-              "analista" => $rs["analista"],
-              "producto" => $rs["producto"],
+              "socio" => $rs["socio"],
               "productoID" => $rs["id_producto"],
-              "tiposbs" => $rs["tiposbs"],
-              "destsbs" => $rs["destsbs"],
-              "clasifica" => $rs["clasifica"],
-              "condicion" => $rs["condicion"],
-              "moneda" => $rs["moneda"],
-              "mon_abrevia" => $rs["mon_abrevia"],
-              "importe" => $rs["importe"],
-              "saldo" => $rs["saldo"],
-              "tasa" => $rs["tasa_cred"],
-              "mora" => $rs["tasa_mora"],
-              "desgr" => $rs["tasa_desgr"],
-              "nrocuotas" => $rs["nro_cuotas"],
-              "fecha_solicred" => $rs["fecha_solicred"],
-              "fecha_otorga" => $rs["fecha_otorga"],
-              "fecha_pricuota" => $rs["fecha_pricuota"],
-              "tipocred" => $rs["tipocred"],
-              "frecuencia" => $rs["frecuencia"],
-              "observac" => ($rs["observac"]),
-              "estado" => ($rs["estado"]*1),
-              "atraso" => (($rs["atraso"]<0)?(0):($rs["atraso"] ))
+              "socioID" => $rs["id_socio"],
+              "saldo" => $rs["saldo"]
             );
-          }
-          
-          //detalle
-          $detalle = 0;
-          $params = [":cabemora"=>$cabecera["mora"],":id"=>$data->prestamoID];
-          $qry = $db->query_all("select sum(capital-pg_capital) as capital,sum(interes-pg_interes) as interes,sum(round((extract(days from now()-fecha)::integer*(:cabemora*0.01/360)::float*(capital))::decimal,2)-pg_mora) as mora,sum(otros-pg_otros) as otros from bn_prestamos_det where extract(days from now()-fecha)>=0 and capital>pg_capital and numero>0 and id_prestamo=:id;",$params);
-          if ($qry) {
-            foreach($qry as $rs){
-              $detalle = array(
-                "capital" => $rs["capital"]*1,
-                "interes" => $rs["interes"]*1,
-                "mora" => $rs["mora"]*1,
-                "otros" => $rs["otros"]*1
-              );
-            }
           }
 
           //respuesta
           $rpta = array(
-            'cabecera'=> $cabecera,
-            'detalle'=> $detalle,
+            "aporte" => $aporte,
             "comboTipoPago" => $fn->getComboBox("select id,nombre from sis_tipos where id_padre=13 order by id;"),
             "comboMonedas" => $fn->getComboBox("select id,nombre from sis_tipos where id_padre=1 order by id;"),
             "fecha" => $fn->getFechaActualDB());
