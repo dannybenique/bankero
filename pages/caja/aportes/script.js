@@ -11,7 +11,6 @@ var aporte = {
   productoID : null,
   socioID : null
 }
-var esObligatorio = null;
 
 //=========================funciones para Personas============================
 function appPagosReset(){
