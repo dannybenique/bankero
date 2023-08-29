@@ -86,7 +86,7 @@
                       <th style="width:25px;" title="Agencia">AG</th>
                       <th style="width:25px;" title="Usuario">US</th>
                       <th style="width:80px;text-align:center;">Fecha</th>
-                      <th style="width:95px;text-align:center;">num_trans</th>
+                      <th style="width:120px;text-align:center;">num_trans</th>
                       <th style="">Detalle</th>
                       <th style="width:95px;text-align:right;">Depositos</th>
                       <th style="width:80px;text-align:right;">Retiros</th>

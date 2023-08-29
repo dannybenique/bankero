@@ -2,24 +2,35 @@ const rutaSQL = "pages/caja/aportes/sql.php";
 const cIngreso = 1;
 const cRetiro = 0;
 var menu = "";
-var agenciaID = 0;
-var tipoOper = null;
+var agenciaID = null;
+var tipoOperAporte = null;
+var aporte = {
+  id : null,
+  saldo : null,
+  esObligatorio : null,
+  productoID : null,
+  socioID : null
+}
+var esObligatorio = null;
 
 //=========================funciones para Personas============================
 function appPagosReset(){
   appFetch({ TipoQuery:'selDataUser' },"includes/sess_interfaz.php").then(resp => {
     menu = JSON.parse(resp.menu);
     agenciaID = resp.agenciaID;
-    tipoOper = null;
+    tipoOperAporte = null;
+    aporte = {
+      id : null,
+      saldo : null,
+      esObligatorio : null,
+      productoID : null,
+      socioID : null
+    }
 
     document.querySelector("#btn_NEW").style.display = (menu.caja.submenu.aportes.cmdInsert==1)?('inline'):('none');
     document.querySelector("#btn_RET").style.display = (menu.caja.submenu.aportes.cmdInsert==1)?('inline'):('none');
     document.querySelector("#btn_EXEC").disabled = true;
     
-    document.querySelector('#hid_aporteSaldo').value = (0);
-    document.querySelector('#hid_aporteProductoID').value = ("");
-    document.querySelector('#hid_aporteSocioID').value = ("");
-
     document.querySelector('#lbl_aporteSocio').innerHTML = ("");
     document.querySelector('#lbl_aporteTipoDUI').innerHTML = ("DUI");
     document.querySelector('#lbl_aporteNroDUI').innerHTML = ("");
@@ -33,47 +44,56 @@ function appPagosReset(){
 }
 
 function appAportesBotonIngreso(){
-  tipoOper = cIngreso;
-  document.querySelector("#modalAporte_Titulo").innerHTML = ("Verificar Aportes por Doc. Identidad");
-  document.querySelector("#modalAporte_Grid").style.display = 'none';
-  document.querySelector("#modalAporte_Wait").innerHTML = ("");
-  document.querySelector("#modalAporte_TxtBuscar").value = ("");
-  $('#modalAporte').modal({keyboard:true});
-  $('#modalAporte').on('shown.bs.modal', ()=> { document.querySelector("#modalAporte_TxtBuscar").focus(); });
+  tipoOperAporte = cIngreso;
+  appPreparaModalPersonas();
 }
 
-function appPagosBotonPagar(){
+function appAportesBotonRetiro(){
+  tipoOperAporte = cRetiro;
+  appPreparaModalPersonas();
+}
+
+function appAportesBotonExec(){
   let importe = appConvertToNumero(document.querySelector("#txt_aporteImporte").value);
-  if(!isNaN(importe)){
-    if(importe>0){
-      if(confirm("¿Esta seguro de continuar con el PAGO?")){
-        let datos = {
-          TipoQuery : 'insPago',
-          agenciaID : agenciaID*1,
-          codprod : document.querySelector("#lbl_crediCodigo").innerHTML,
-          medioPagoID : document.querySelector("#cbo_aporteMedioPago").value*1,
-          productoID : document.querySelector("#hid_aporteProductoID").value*1,
-          socioID : document.querySelector("#hid_aporteSocioID").value*1,
-          monedaID : document.querySelector("#cbo_aporteMonedas").value*1,
-          importe : importe*1
-        };
-        console.log(datos);
-        appFetch(datos,rutaSQL).then(resp => {
-          if (!resp.error) { 
-            if(confirm("¿Desea Imprimir el pago?")){
-              $("#modalPrint").modal("show");
-              let urlServer = appUrlServer()+"pages/caja/aportes/rpt.voucher.php?movimID="+resp.movimID;
-              $("#contenedorFrame").html('<object id="objPDF" type="text/html" data="'+urlServer+'" width="100%" height="500px"></object>');
-            }
-            appPagosReset();
-          }
-        });
-      }
-    } else {
-      alert("el IMPORTE debe ser mayor a cero 0.00");
-    }
-  } else {
+  if(isNaN(importe)){
     alert("el IMPORTE debe ser una cantidad valida");
+  } else {
+    if(importe<=0){
+      alert("el IMPORTE debe ser mayor a cero 0.00");
+    } else {
+      if(tipoOperAporte==cRetiro && importe>aporte.saldo){ //controlamos el saldo mayor a cero
+        alert("!!!NO se puede retirar un monto mayor al SALDO!!!");
+      } else {
+        if(tipoOperAporte==cRetiro && esObligatorio==1 && importe==aporte.saldo){ //controlamos si es obligatorio que tenga saldo
+          alert("!!!El saldo NO puede quedar en CERO 0.00!!!");
+        } else {
+          if(confirm("¿Esta seguro de continuar con la operacion?")){
+            let datos = {
+              TipoQuery : 'insOperacion',
+              agenciaID : agenciaID,
+              productoID : aporte.productoID*1,
+              saldoID: aporte.id*1,
+              socioID : aporte.socioID*1,
+              medioPagoID : document.querySelector("#cbo_aporteMedioPago").value*1,
+              monedaID : document.querySelector("#cbo_aporteMonedas").value*1,
+              tipoOperAporte : tipoOperAporte,
+              importe : importe
+            };
+            // console.log(datos);
+            appFetch(datos,rutaSQL).then(resp => {
+              if (!resp.error) { 
+                if(confirm("¿Desea Imprimir el pago?")){
+                  $("#modalPrint").modal("show");
+                  let urlServer = appUrlServer()+"pages/caja/aportes/rpt.voucher.php?movimID="+resp.movimID;
+                  $("#contenedorFrame").html('<object id="objPDF" type="text/html" data="'+urlServer+'" width="100%" height="500px"></object>');
+                }
+                appPagosReset();
+              }
+            });
+          }
+        }
+      }
+    }
   }
 }
 
@@ -124,9 +144,11 @@ function appAportesOperView(saldoID){
   };
   
   appFetch(datos,rutaSQL).then(resp => {
-    document.querySelector('#hid_aporteSaldo').value = (resp.aporte.saldo);
-    document.querySelector('#hid_aporteProductoID').value = (resp.aporte.productoID);
-    document.querySelector('#hid_aporteSocioID').value = (resp.aporte.socioID);
+    aporte.id = (saldoID);
+    aporte.saldo = (resp.aporte.saldo);
+    aporte.socioID = (resp.aporte.socioID);
+    aporte.productoID = (resp.aporte.productoID);
+    aporte.esObligatorio = (resp.aporte.obliga);
 
     document.querySelector('#lbl_aporteSocio').innerHTML = (resp.aporte.socio);
     document.querySelector('#lbl_aporteTipoDUI').innerHTML = (resp.aporte.DUI);
@@ -136,6 +158,15 @@ function appAportesOperView(saldoID){
     appLlenarDataEnComboBox(resp.comboMonedas,"#cbo_aporteMonedas",0); //monedas
     document.querySelector('#txt_aporteFecha').value = (moment(resp.fecha).format("DD/MM/YYYY"));
     document.querySelector("#btn_EXEC").disabled = false;
-    document.querySelector("#btn_EXEC").innerHTML = (tipoOper==cIngreso) ? '<i class="fa fa-plus"></i> Aplicar Ingreso' : '<i class="fa fa-minus"></i> Aplicar Retiro';
+    document.querySelector("#btn_EXEC").innerHTML = (tipoOperAporte==cIngreso) ? '<i class="fa fa-plus"></i> Aplicar Ingreso' : '<i class="fa fa-minus"></i> Aplicar Retiro';
   });
+}
+
+function appPreparaModalPersonas(){
+  document.querySelector("#modalAporte_Titulo").innerHTML = ("Verificar Aportes por Doc. Identidad");
+  document.querySelector("#modalAporte_Grid").style.display = 'none';
+  document.querySelector("#modalAporte_Wait").innerHTML = ("");
+  document.querySelector("#modalAporte_TxtBuscar").value = ("");
+  $('#modalAporte').modal({keyboard:true});
+  $('#modalAporte').on('shown.bs.modal', ()=> { document.querySelector("#modalAporte_TxtBuscar").focus(); });
 }

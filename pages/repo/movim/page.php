@@ -59,7 +59,7 @@
             <table class="table table-hover" id="grd">
               <thead>
                 <tr>
-                  <th style="width:90px;">Hora</th>
+                  <th style="width:70px;">Hora</th>
                   <th style="width:120px;">Voucher</th>
                   <th style="">Socio</th>
                   <th style="">Producto</th>

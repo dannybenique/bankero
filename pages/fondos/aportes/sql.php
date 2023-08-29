@@ -60,17 +60,17 @@
           $id = reset($qry)["code"];
           $qry = $db->query_all("select id from bn_productos where id_coopac=".$web->coopacID." and id_tipo_oper=".$tipo_oper_ID);
           $productoID = reset($qry)["id"];
-          $qry = $db->query_all("select concat(to_char(now(),'YYYYMMDD'),'-',right('000000'||cast(coalesce(max(right(cod_prod,4)::integer)+1,1) as text),4)) as code from bn_saldos where left(cod_prod,8)=to_char(now(),'YYYYMMDD') and id_coopac=".$web->coopacID);
-          $cod_prod = reset($qry)["code"];
-          $sql = "insert into bn_saldos values(:id,:coopacID,:socioID,:operID,:productoID,:monedaID,:codprod,:saldo,:estado,:sysIP,:userID,now());";
+          $qry = $db->query_all("select concat(to_char(now(),'YYYYMMDD'),'-',right('000000'||cast(coalesce(max(right(codigo,4)::integer)+1,1) as text),4)) as code from bn_saldos where left(codigo,8)=to_char(now(),'YYYYMMDD') and id_coopac=".$web->coopacID);
+          $codigo = reset($qry)["code"];
+          $sql = "insert into bn_saldos values(:id,:coopacID,:socioID,:operID,:productoID,:monedaID,:codigo,:saldo,:estado,:sysIP,:userID,now());";
           $params = [
             ":id"=>$id,
             ":coopacID"=>$web->coopacID,
             ":socioID"=>$data->socioID,
             ":operID"=>$tipo_oper_ID,
             ":productoID"=>$productoID,
-            ":monedaID"=>111,
-            ":codprod"=>$cod_prod,
+            ":monedaID"=>111, //soles
+            ":codigo"=>$codigo,
             ":saldo"=>0,
             ":estado"=>1,
             ":sysIP"=>$fn->getClientIP(), 
@@ -109,7 +109,7 @@
           //movimientos
           $movim = array();
           $params =[":coopacID"=>$web->coopacID,":operID"=>121,":socioID"=>$socioID];
-          $qry = $db->query_all("select * from vw_movim where id_coopac=:coopacID and id_tipo_oper=:operID and id_socio=:socioID order by item;",$params);
+          $qry = $db->query_all("select * from vw_movim where id_coopac=:coopacID and id_tipo_oper=:operID and id_socio=:socioID order by fecha;",$params);
           if ($qry) {
             foreach($qry as $rs){
               $movim[] = array(
