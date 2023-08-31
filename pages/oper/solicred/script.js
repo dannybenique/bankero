@@ -67,7 +67,7 @@ function appSoliCredBotonInsert(){
     alert("¡¡¡Faltan datos!!!");
   } else {
     let datos = appSoliCredGetDatosToDatabase();
-    datos.TipoQuery = "insSoliCred";
+    datos.TipoExec = "INS";
     appFetch(datos,rutaSQL).then(resp => {
       appSoliCredBotonCancel();
     });
@@ -79,7 +79,7 @@ function appSoliCredBotonUpdate(){
     alert("¡¡¡Faltan datos!!!");
   } else {
     let datos = appSoliCredGetDatosToDatabase();
-    datos.TipoQuery = "updSoliCred";
+    datos.TipoExec = "UPD";
     appFetch(datos,rutaSQL).then(resp => {
       appSoliCredBotonCancel();
     });
@@ -349,6 +349,8 @@ function appSoliCredValidarCampos(){
 
 function appSoliCredGetDatosToDatabase(){
   let rpta = {
+    TipoQuery : "execSoliCred",
+    TipoExec : null,
     ID : document.querySelector('#hid_SoliCredID').value,
     socioID : document.querySelector("#hid_PersID").value,
     agenciaID : document.querySelector("#cbo_SoliCredAgencia").value,
@@ -424,8 +426,9 @@ function appPersonaSetData(data){
 function modAprueba_BotonAprobar(){
   if(confirm("¿Esta seguro de continuar?")) {
     let datos = {
-      TipoQuery : 'aprobarSoliCred',
-      SoliCredID : document.querySelector("#hid_modApruebaID").value
+      ID : document.querySelector("#hid_modApruebaID").value,
+      TipoQuery : "aprobarSoliCred",
+      TipoExec : "APRU" //aprueba solicitud de credito
     }
     appFetch(datos,rutaSQL).then(resp => {
       if (!resp.error) { 
@@ -433,5 +436,10 @@ function modAprueba_BotonAprobar(){
         $("#modalAprueba").modal("hide");
       }
     });
+
+    // let datos = {
+    //   TipoQuery : 'aprobarSoliCred',
+    //   SoliCredID : document.querySelector("#hid_modApruebaID").value
+    // }
   }
 }

@@ -4,13 +4,7 @@ const cRetiro = 0;
 var menu = "";
 var agenciaID = null;
 var tipoOperAporte = null;
-var aporte = {
-  id : null,
-  saldo : null,
-  esObligatorio : null,
-  productoID : null,
-  socioID : null
-}
+var aporte = null;
 
 //=========================funciones para Personas============================
 function appPagosReset(){
@@ -21,9 +15,9 @@ function appPagosReset(){
     aporte = {
       id : null,
       saldo : null,
-      esObligatorio : null,
+      socioID : null,
       productoID : null,
-      socioID : null
+      esObligatorio : null
     }
 
     document.querySelector("#btn_NEW").style.display = (menu.caja.submenu.aportes.cmdInsert==1)?('inline'):('none');
@@ -63,16 +57,16 @@ function appAportesBotonExec(){
       if(tipoOperAporte==cRetiro && importe>aporte.saldo){ //controlamos el saldo mayor a cero
         alert("!!!NO se puede retirar un monto mayor al SALDO!!!");
       } else {
-        if(tipoOperAporte==cRetiro && esObligatorio==1 && importe==aporte.saldo){ //controlamos si es obligatorio que tenga saldo
+        if(tipoOperAporte==cRetiro && aporte.esObligatorio==1 && importe==aporte.saldo){ //controlamos si es obligatorio que tenga saldo
           alert("!!!El saldo NO puede quedar en CERO 0.00!!!");
         } else {
           if(confirm("¿Esta seguro de continuar con la operacion?")){
             let datos = {
               TipoQuery : 'insOperacion',
               agenciaID : agenciaID,
-              productoID : aporte.productoID*1,
-              saldoID: aporte.id*1,
-              socioID : aporte.socioID*1,
+              saldoID : aporte.id,
+              socioID : aporte.socioID,
+              productoID : aporte.productoID,
               medioPagoID : document.querySelector("#cbo_aporteMedioPago").value*1,
               monedaID : document.querySelector("#cbo_aporteMonedas").value*1,
               tipoOperAporte : tipoOperAporte,

@@ -72,18 +72,12 @@
           $rpta = array("tabla"=>$tabla,"cuenta"=>$rsCount["cuenta"]);
           echo json_encode($rpta);
           break;
-        case "insSoliCred":
-          //inicialmente el estado debe ser 3 en bn_prestamos
-          $qry = $db->query_all("select coalesce(max(id)+1,1)as maxi from bn_prestamos;");
-          $id = reset($qry)["maxi"];
-          $params = [":coopacID"=>$web->coopacID,":fecha"=>$data->fecha_solicred];
-          $qry = $db->query_all("select right('0000'||cast(coalesce(max(right(codigo,4)::integer)+1,1) as text),4) as maxi from bn_prestamos where id_coopac=:coopacID and fecha_solicred=:fecha;",$params);
-          $codigo = $data->fecha_solicred."-".reset($qry)["maxi"];
-          
-          $sql = "insert into bn_prestamos values(:id,:codigo,:socioID,:coopacID,:agenciaID,:promotorID,:analistaID,:apruebaID,:productoID,:tiposbsID,:destsbsID,:clasificaID,:condicionID,:monedaID,:importe,:saldo,:tasa,:mora,:desgr,:nrocuotas,:fechaSoli,:fechaApru,:fechaOtor,:fechaPriC,:tipocredID,:frecuencia,:estado,:sysIP,:userID,now(),:observac);";
+        case "execSoliCred":
+          //inicialmente el estado debe ser 3 en bn_saldos
+          $sql = "select sp_prestamos (:TipoExec,:id,:socioID,:coopacID,:agenciaID,:promotorID,:analistaID,:apruebaID,:productoID,:tiposbsID,:destsbsID,:clasificaID,:condicionID,:monedaID,:importe,:saldo,:tasa,:mora,:desgr,:nrocuotas,:fechaSoli,:fechaApru,:fechaOtor,:fechaPriC,:tipocredID,:frecuencia,:estado,:sysIP,:userID,:observac) as nro;";
           $params = [
-            ":id"=>$id,
-            ":codigo"=>$codigo,
+            ":TipoExec"=>$data->TipoExec,
+            ":id"=>$data->ID,
             ":socioID"=>$data->socioID,
             ":coopacID"=>$web->coopacID,
             ":agenciaID"=>$data->agenciaID,
@@ -107,7 +101,7 @@
             ":fechaOtor"=>$data->fecha_otorga,
             ":fechaPriC"=>$data->fecha_pricuota,
             ":tipocredID"=>$data->tipocredID,
-            ":frecuencia"=>($data->tipocredID==2)?$data->frecuencia:null,
+            ":frecuencia"=>($data->tipocredID==2)?($data->frecuencia):(null),
             ":estado"=>3,
             ":sysIP"=>$fn->getClientIP(),
             ":userID"=>$_SESSION['usr_ID'],
@@ -117,7 +111,7 @@
           $qry = $db->query_all($sql,$params);
           if($qry){
             $rs = reset($qry);
-            $rpta = array("error"=>false, "insert"=>1);
+            $rpta = array("error"=>false, "insert"=>$rs["nro"]);
           } else {
             $rpta = array("error"=>true, "insert"=>0);
           }
@@ -125,46 +119,10 @@
           //respuesta
           echo json_encode($rpta);
           break;
-        case "updSoliCred":
-          $sql = "update bn_prestamos set id_socio=:socioID,id_agencia=:agenciaID,id_promotor=:promotorID,id_analista=:analistaID,id_producto=:productoID,id_tiposbs=:tiposbsID,id_destsbs=:destsbsID,id_clasifica=:clasificaID,id_condicion=:condicionID,id_moneda=:monedaID,importe=:importe,saldo=:saldo,tasa_cred=:tasa,tasa_mora=:mora,tasa_desgr=:desgr,nro_cuotas=:nrocuotas,fecha_solicred=:fechaSoli,fecha_otorga=:fechaOtor,fecha_pricuota=:fechaPriC,id_tipocred=:tipocredID,frecuencia=:frecuencia,sys_ip=:sysIP,sys_user=:userID,sys_fecha=now(),observac=:observac where id=:id;";
-          $params = [
-            ":id"=>$data->ID, 
-            ":socioID"=>$data->socioID,
-            ":agenciaID"=>$data->agenciaID,
-            ":promotorID"=>$data->promotorID,
-            ":analistaID"=>$data->analistaID,
-            ":productoID"=>$data->productoID,
-            ":tiposbsID"=>$data->tiposbsID,
-            ":destsbsID"=>$data->destsbsID,
-            ":clasificaID"=>$data->clasificaID, 
-            ":condicionID"=>$data->condicionID, 
-            ":monedaID"=>$data->monedaID, 
-            ":importe"=>$data->importe, 
-            ":saldo"=>$data->saldo, 
-            ":tasa"=>$data->tasa, 
-            ":mora"=>$data->mora, 
-            ":desgr"=>$data->desgr, 
-            ":nrocuotas"=>$data->nrocuotas, 
-            ":fechaSoli"=>$data->fecha_solicred,
-            ":fechaOtor"=>$data->fecha_otorga, 
-            ":fechaPriC"=>$data->fecha_pricuota,
-            ":tipocredID"=>$data->tipocredID, 
-            ":frecuencia"=>($data->tipocredID==2)?$data->frecuencia:null, 
-            ":sysIP"=>$fn->getClientIP(), 
-            ":userID"=>$_SESSION['usr_ID'], 
-            ":observac"=>$data->observac
-          ];
-          $qry = $db->query_all($sql,$params);
-          $rs = ($qry) ? (reset($qry)) : (null);
-
-          //respuesta
-          $rpta = array("error"=>false, "update"=>1);
-          echo json_encode($rpta);
-          break;
         case "delSoliCred":
           $params = array();
           for($i=0; $i<count($data->arr); $i++){
-            $sql = "update bn_prestamos set estado=0,sys_ip=:sysIP,sys_user=:userID,sys_fecha=now() where id=:id";
+            $sql = "update bn_saldos set estado=0,sys_ip=:sysIP,sys_user=:userID,sys_fecha=now() where id=:id";
             $params = [
               ":id"=>$data->arr[$i],
               ":sysIP"=>$fn->getClientIP(),
@@ -196,7 +154,7 @@
         case "viewSoliCred":
           $tabla = 0;
           $socioID = 0;
-          $qry = $db->query_all("select * from bn_prestamos where id=".$data->SoliCredID);
+          $qry = $db->query_all("select s.*,p.* from bn_saldos s inner join bn_prestamos p on p.id_saldo=s.id and s.id=".$data->SoliCredID);
           if ($qry) {
             $rs = reset($qry);
             $socioID = $rs["id_socio"];
@@ -233,7 +191,7 @@
               "observac" => $rs["observac"],
               "estado" => ($rs["estado"]*1),
               "comboAgencias" => $fn->getComboBox("select id,nombre from bn_bancos where estado=1 and id_padre=".$web->coopacID), //agencias
-              "comboEmpleados" => $fn->getComboBox("select id_empleado as id,empleado as nombre from vw_empleados where estado=1 and id_coopac=".$web->coopacID), //empleados
+              "comboEmpleados" => $fn->getComboBox("select id_empleado as id,upper(nombrecorto) as nombre from vw_empleados where estado=1 and id_coopac=".$web->coopacID), //empleados
               "comboProductos" => $fn->getComboBox("select id,nombre from bn_productos where estado=1 and id_padre=4 and id_coopac=".$web->coopacID), //productos
               "comboTipoSBS" => $fn->getComboBox("select s.id,s.nombre from sis_tipos s join bn_tipos b on(b.id_tipo=s.id) where s.id_padre=5 and b.id_coopac=".$web->coopacID), //tipos credito SBS
               "comboDestSBS" => $fn->getComboBox("select id,nombre from sis_tipos where id_padre=6 order by id;"), //destino credito
@@ -292,30 +250,6 @@
           $rpta = $tabla;
           echo json_encode($rpta);
           break;
-        case "VerifySoliCred":
-          $tablaPers = ""; //almacena los datos de la persona
-          $persona = false; //indica que existe en personas
-          $activo = false; //indica que encontro en tabla de prestamos
-          
-          //verificar en Personas
-          $sql = "select p.id from personas p, bn_socios s where p.id=s.id_socio and (p.nro_dui=:nrodni) and (s.id_coopac=:coopacID);";
-          $params = [":nrodni"=>$data->nroDNI,":coopacID"=>$web->coopacID];
-          $qry = $db->query_all($sql,$params);
-          if($qry){
-            $rs = reset($qry);
-            $tablaPers = $fn->getViewPersona($rs["id"]);
-            $persona = true;
-            $activo = true;
-          }
-
-          //respuesta
-          $rpta = array(
-            "tablaPers" => $tablaPers,
-            "persona"=>$persona,
-            "activo"=>$activo,
-            "mensajeNOadd" => "");
-          echo json_encode($rpta);
-          break;
         case "cambiarTipoSBS":
           //respuesta
           $rpta = $fn->getComboBox("select id,nombre from sis_tipos where id_padre=".$data->padreID." order by id;");
@@ -343,18 +277,74 @@
           echo json_encode($rpta);
           break;
         case "aprobarSoliCred":
-          $sql = "update bn_prestamos set estado=:estado,id_aprueba=:userID,fecha_aprueba=now(),sys_ip=:sysIP,sys_user=:userID,sys_fecha=now() where id=:id";
+          //inicialmente el estado debe ser 3 en bn_saldos
+          $sql = "select sp_prestamos (:TipoExec,:id,:socioID,:coopacID,:agenciaID,:promotorID,:analistaID,:apruebaID,:productoID,:tiposbsID,:destsbsID,:clasificaID,:condicionID,:monedaID,:importe,:saldo,:tasa,:mora,:desgr,:nrocuotas,:fechaSoli,:fechaApru,:fechaOtor,:fechaPriC,:tipocredID,:frecuencia,:estado,:sysIP,:userID,:observac) as nro;";
           $params = [
-            ":id"=>$data->SoliCredID,
+            ":TipoExec"=>$data->TipoExec,
+            ":id"=>$data->ID,
+            ":socioID"=>null,
+            ":coopacID"=>null,
+            ":agenciaID"=>null,
+            ":promotorID"=>null,
+            ":analistaID"=>null,
+            ":apruebaID"=>$_SESSION['usr_ID'],
+            ":productoID"=>null,
+            ":tiposbsID"=>null,
+            ":destsbsID"=>null,
+            ":clasificaID"=>null,
+            ":condicionID"=>null,
+            ":monedaID"=>null,
+            ":importe"=>null,
+            ":saldo"=>null,
+            ":tasa"=>null,
+            ":mora"=>null,
+            ":desgr"=>null,
+            ":nrocuotas"=>null,
+            ":fechaSoli"=>null,
+            ":fechaApru"=>null,
+            ":fechaOtor"=>null,
+            ":fechaPriC"=>null,
+            ":tipocredID"=>null,
+            ":frecuencia"=>null,
             ":estado"=>2,
             ":sysIP"=>$fn->getClientIP(),
-            ":userID"=>$_SESSION['usr_ID']
+            ":userID"=>$_SESSION['usr_ID'],
+            ":observac"=>null
           ];
+          
           $qry = $db->query_all($sql,$params);
-          $rs = ($qry) ? (reset($qry)) : (null);
+          if($qry){
+            $rs = reset($qry);
+            $rpta = array("error"=>false, "insert"=>$rs["nro"]);
+          } else {
+            $rpta = array("error"=>true, "insert"=>0);
+          }
+          
+          //respuesta
+          echo json_encode($rpta);
+          break;
+        case "VerifySoliCred":
+          $tablaPers = ""; //almacena los datos de la persona
+          $persona = false; //indica que existe en personas
+          $activo = false; //indica que encontro en tabla de prestamos
+          
+          //verificar en Personas
+          $sql = "select p.id from personas p, bn_socios s where p.id=s.id_socio and (p.nro_dui=:nrodni) and (s.id_coopac=:coopacID);";
+          $params = [":nrodni"=>$data->nroDNI,":coopacID"=>$web->coopacID];
+          $qry = $db->query_all($sql,$params);
+          if($qry){
+            $rs = reset($qry);
+            $tablaPers = $fn->getViewPersona($rs["id"]);
+            $persona = true;
+            $activo = true;
+          }
 
           //respuesta
-          $rpta = array("error"=>false, "update"=>1);
+          $rpta = array(
+            "tablaPers" => $tablaPers,
+            "persona"=>$persona,
+            "activo"=>$activo,
+            "mensajeNOadd" => "");
           echo json_encode($rpta);
           break;
       }
