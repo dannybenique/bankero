@@ -8,8 +8,8 @@
   $banco_nombre = strtoupper($rs["nombre"]);
   $banco_ruc = $rs["ruc"];
 
-  $params = [":movimID"=>$movimID];
   //movimientos
+  $params = [":movimID"=>$movimID];
   $sql = "select m.*,b.nombre as agencia,t.nombre as tipo_oper,o.nombre as moneda,pr.nombre as producto,to_char(fecha,'DD/MM/YYYY HH24:MI:SS') as fechamov,fn_get_persona(p.tipo_persona, p.ap_paterno, p.ap_materno, p.nombres) AS socio,p.nro_dui from bn_movim m join bn_bancos b on m.id_agencia=b.id join bn_productos pr on m.id_producto=pr.id join sis_tipos t on m.id_tipo_oper=t.id join personas p on m.id_socio=p.id join sis_tipos o on m.id_moneda=o.id where m.id=:movimID;";
   $qry = $db->query_all($sql,$params);
   if($qry) {

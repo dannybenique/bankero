@@ -11,7 +11,7 @@ function appMovimGrid(){
     monedaID: document.querySelector('#cboMonedas').value,
     fecha: appConvertToFecha(document.querySelector('#txtFecha').value,'')
   };
-  console.log(datos);
+  // console.log(datos);
 
   appFetch(datos,rutaSQL).then(resp => {
     if(resp.movim.length>0){

@@ -1,9 +1,11 @@
+<script src="libs/moment/min/moment.min.js"></script>
+
 <!-- Content Header (Page header) -->
 <section class="content-header">
-  <h1>Perfil de Usuario</h1>
+  <h1><i class="fa fa-user"></i> <b>Perfil de Usuario</b></h1>
   <ol class="breadcrumb">
     <li><a href="#"><i class="fa fa-dashboard"></i> Home</a></li>
-    <li class="active">Perfil de Usuario</li>
+    <li class="active">Perfil</li>
   </ol>
 </section>
 <section class="content">
@@ -11,31 +13,29 @@
     <div class="col-md-3">
       <div class="box box-primary">
         <div class="box-body box-profile">
-          <img class="profile-user-img img-responsive img-circle" src="<?php echo $_SESSION['usr_urlfoto'];?>" alt="Foto de Usuario">
-          <h3 class="profile-username text-center" style="font-family:flexobold"> <?php echo $_SESSION['usr_nombrecorto'];?> </h3>
-          <p class="text-muted text-center"> <?php echo $_SESSION['usr_cargo'];?> </p>
+          <img id="perfil_imagen" class="profile-user-img img-responsive img-circle" src="data/personas/fotouser.jpg" alt="Foto de Usuario">
+          <h3 id="perfil_nombrecorto" class="profile-username text-center" style="font-family:flexoregular;font-weight:bold;"></h3>
+          <p id="perfil_cargo" class="text-muted text-center"></p>
           <ul class="list-group list-group-unbordered">
             <li class="list-group-item">
-              <span>Documento</span> <a id="proDNI" class="pull-right"></a></li>
+              <span>DUI</span> <a id="perfil_DNI" class="pull-right"></a></li>
             <li class="list-group-item">
-              <span>Celular</span> <a id="proCelular" class="pull-right"></a></li>
+              <span>Celular</span> <a id="perfil_Celular" class="pull-right"></a></li>
             <li class="list-group-item">
-              <span>Agencia</span> <a id="proAgencia" class="pull-right"></a></li>
+              <span>Agencia</span> <a id="perfil_Agencia" class="pull-right"></a></li>
           </ul>
         </div>
       </div>
-
-      <!-- About Me Box -->
       <div class="box box-primary">
         <div class="box-header with-border">
-          <h3 class="box-title" style="font-family:flexobold">Acerca de mi</h3>
+          <h3 class="box-title" style="font-family:flexoregular;font-weight:bold;">Acerca de mi</h3>
         </div>
         <div class="box-body">
-          <span style="font-family:flexobold"><i class="fa fa-envelope margin-r-5"></i> Correo</span>
-          <p id="proCorreo" class="text-muted"> </p>
+          <span style="font-family:flexoregular;font-weight:bold;"><i class="fa fa-envelope margin-r-5"></i> Correo</span>
+          <p id="perfil_Correo" class="text-muted"></p>
           <hr>
-          <span style="font-family:flexobold"><i class="fa fa-map-marker margin-r-5"></i> Direccion</span>
-          <p id="proDireccion" class="text-muted">Malibu, California</p>
+          <span style="font-family:flexoregular;font-weight:bold;"><i class="fa fa-map-marker margin-r-5"></i> Direccion</span>
+          <p id="perfil_Direccion" class="text-muted"></p>
         </div>
       </div>
     </div>
@@ -49,14 +49,14 @@
         <div class="tab-content">
           <div class="tab-pane active" id="settings">
             <ul class="appDatosPers appDatosPers-inverse">
-              <li><div class="timeline-item"><h3 class="timeline-header no-border" style="font-family:flexoregular;"><span class="appSpanPerfil">Nombres</span><span id="proDatNombres"></span></h3></div></li>
-              <li><div class="timeline-item"><h3 class="timeline-header no-border" style="font-family:flexoregular;"><span class="appSpanPerfil">Apellidos</span><span id="proDatApellidos"></span></h3></div></li>
-              <li><div class="timeline-item"><h3 class="timeline-header no-border" style="font-family:flexoregular;"><span class="appSpanPerfil">Nacim.</span><span id="proDatFechaNac"></span></h3></div></li>
-              <li><div class="timeline-item"><h3 class="timeline-header no-border" style="font-family:flexoregular;"><span class="appSpanPerfil">Sexo</span><span id="proDatSexo"></span></h3></div></li>
-              <li><div class="timeline-item"><h3 class="timeline-header no-border" style="font-family:flexoregular;"><span class="appSpanPerfil">Estudios</span><span id="proDatGInstruccion"></span></h3></div></li>
-              <li><div class="timeline-item"><h3 class="timeline-header no-border" style="font-family:flexoregular;"><span class="appSpanPerfil">E. Civil</span><span id="proDatECivil"></span></h3></div></li>
-              <li><div class="timeline-item"><h3 class="timeline-header no-border" style="font-family:flexoregular;"><span class="appSpanPerfil">Ocupacion</span><span id="proDatOcupacion"></span></h3></div></li>
-              <li><div class="timeline-item"><h3 class="timeline-header no-border" style="font-family:flexoregular;"><span class="appSpanPerfil">Observac.</span><span id="proDatObservac"></span></h3></div></li>
+              <li><div class="timeline-item"><h3 class="timeline-header no-border" style="font-family:flexoregular;"><span class="appSpanPerfil">Nombres</span><span id="perfilDatos_Nombres"></span></h3></div></li>
+              <li><div class="timeline-item"><h3 class="timeline-header no-border" style="font-family:flexoregular;"><span class="appSpanPerfil">Apellidos</span><span id="perfilDatos_Apellidos"></span></h3></div></li>
+              <li><div class="timeline-item"><h3 class="timeline-header no-border" style="font-family:flexoregular;"><span class="appSpanPerfil">Nacim.</span><span id="perfilDatos_FechaNac"></span></h3></div></li>
+              <li><div class="timeline-item"><h3 class="timeline-header no-border" style="font-family:flexoregular;"><span class="appSpanPerfil">Sexo</span><span id="perfilDatos_Sexo"></span></h3></div></li>
+              <li><div class="timeline-item"><h3 class="timeline-header no-border" style="font-family:flexoregular;"><span class="appSpanPerfil">Estudios</span><span id="perfilDatos_GInstruccion"></span></h3></div></li>
+              <li><div class="timeline-item"><h3 class="timeline-header no-border" style="font-family:flexoregular;"><span class="appSpanPerfil">E. Civil</span><span id="perfilDatos_ECivil"></span></h3></div></li>
+              <li><div class="timeline-item"><h3 class="timeline-header no-border" style="font-family:flexoregular;"><span class="appSpanPerfil">Ocupacion</span><span id="perfilDatos_Ocupacion"></span></h3></div></li>
+              <li><div class="timeline-item"><h3 class="timeline-header no-border" style="font-family:flexoregular;"><span class="appSpanPerfil">Observac.</span><span id="perfilDatos_Observac"></span></h3></div></li>
             </ul>
           </div>
           <div class="tab-pane" id="password">
@@ -137,16 +137,13 @@
         </div>
       </div>
     </div>
-    <!-- /.col -->
   </div>
-  <!-- /.row -->
 </section>
 
-<!-- SHA1 -->
 <script type="text/javascript" src="libs/webtoolkit/webtoolkit.sha1.js"></script>
-<script src="pages/global/profile/profile.js"></script>
+<script src="pages/global/profile/script.js"></script>
 <script>
   $(document).ready(function(){
-    appProfileGetOne(<?php echo($_SESSION['usr_ID']); ?>);
+    appProfile(<?php echo($_SESSION['usr_ID']); ?>);
   });
 </script>

@@ -31,10 +31,6 @@
         </div>
         <div class="box-body">
           <div class="box-body">
-            <input type="hidden" id="hid_crediID" value="">
-            <input type="hidden" id="hid_crediProductoID" value="">
-            <input type="hidden" id="hid_crediTasaMora" value="">
-            <input type="hidden" id="hid_crediSocioID" value="">
             Socio: <a id="lbl_crediSocio"></a><br/>
             <span id="lbl_crediTipoDUI">DUI</span>: <a id="lbl_crediNroDUI"></a><br/><br/>
             Desembolso: <a id="lbl_crediFecha"></a><br/>
@@ -118,7 +114,7 @@
                     <select id="cbo_DeudaMedioPago" class="form-control selectpicker"></select>
                   </div>
                 </div>
-                <div class="form-group" style="margin-bottom:5px;">
+                <div id="div_DeudaImporte" class="form-group" style="margin-bottom:5px;">
                   <div class="input-group">
                     <span class="input-group-addon" style="background:#eeeeee;"><b>IMPORTE A PAGAR</b></span>
                     <input id="txt_DeudaImporte" type="text" class="form-control" autocomplete="off"/>

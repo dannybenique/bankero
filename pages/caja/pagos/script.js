@@ -1,21 +1,21 @@
 const rutaSQL = "pages/caja/pagos/sql.php";
 var menu = "";
-var agenciaID = 0;
+var pago = null;
+var agenciaID = null;
 
 //=========================funciones para Personas============================
 function appPagosReset(){
+  $(".form-group").removeClass("has-error");
   appFetch({ TipoQuery:'selDataUser' },"includes/sess_interfaz.php").then(resp => {
-    menu = JSON.parse(resp.menu);
+    pago = null;
     agenciaID = resp.agenciaID;
-    document.querySelector("#btn_NEW").style.display = (menu.caja.submenu.pagos.cmdInsert==1)?('inline'):('none');
+    menu = JSON.parse(resp.menu);
+    
     document.querySelector("#btn_PAGAR").disabled = true;
+    document.querySelector("#btn_NEW").style.display = (menu.caja.submenu.pagos.cmdInsert==1)?('inline'):('none');
     document.querySelector("#lbl_crediAtraso").style.color = "#777";
+    
     document.querySelector('#lbl_crediAtraso').innerHTML = ("");
-
-    document.querySelector('#hid_crediID').value = ("");
-    document.querySelector('#hid_crediProductoID').value = ("");
-    document.querySelector('#hid_crediTasaMora').value = ("");
-    document.querySelector('#hid_crediSocioID').value = ("");
     document.querySelector('#lbl_crediSocio').innerHTML = ("");
     document.querySelector('#lbl_crediTipoDUI').innerHTML = ("DUI");
     document.querySelector('#lbl_crediNroDUI').innerHTML = ("");
@@ -23,8 +23,8 @@ function appPagosReset(){
     document.querySelector('#lbl_crediMoneda').innerHTML = ("");
     document.querySelector('#lbl_crediProducto').innerHTML = ("");
     document.querySelector('#lbl_crediCodigo').innerHTML = ("");
-    document.querySelector('#lbl_crediTasaCred').innerHTML = ("%");
-    document.querySelector('#lbl_crediTasaMora').innerHTML = ("%");
+    document.querySelector('#lbl_crediTasaCred').innerHTML = ("");
+    document.querySelector('#lbl_crediTasaMora').innerHTML = ("");
     document.querySelector('#lbl_crediAgencia').innerHTML = ("");
     document.querySelector('#lbl_crediPromotor').innerHTML = ("");
     document.querySelector('#lbl_crediAnalista').innerHTML = ("");
@@ -54,22 +54,23 @@ function appPagosBotonNuevo(){
 
 function appPagosBotonPagar(){
   let importe = appConvertToNumero(document.querySelector("#txt_DeudaImporte").value);
+  $(".form-group").removeClass("has-error");
   if(!isNaN(importe)){
     if(importe>0){
       if(confirm("¿Esta seguro de continuar con el PAGO?")){
         let datos = {
           TipoQuery : 'insPago',
           agenciaID : agenciaID*1,
+          socioID : pago.socioID,
+          tasaMora : pago.tasaMora,
+          prestamoID : pago.prestamoID,
+          productoID : pago.productoID,
           codprod : document.querySelector("#lbl_crediCodigo").innerHTML,
-          prestamoID : document.querySelector("#hid_crediID").value*1,
           medioPagoID : document.querySelector("#cbo_DeudaMedioPago").value*1,
-          productoID : document.querySelector("#hid_crediProductoID").value*1,
-          tasaMora : document.querySelector('#hid_crediTasaMora').value*1,
-          socioID : document.querySelector("#hid_crediSocioID").value*1,
           monedaID : document.querySelector("#cbo_DeudaMonedas").value*1,
           importe : importe*1
         };
-        console.log(datos);
+        // console.log(datos);
         appFetch(datos,rutaSQL).then(resp => {
           if (!resp.error) { 
             if(confirm("¿Desea Imprimir el pago?")){
@@ -83,9 +84,12 @@ function appPagosBotonPagar(){
       }
     } else {
       alert("el IMPORTE debe ser mayor a cero 0.00");
+      document.querySelector("#div_DeudaImporte").className = "form-group has-error";
+
     }
   } else {
     alert("el IMPORTE debe ser una cantidad valida");
+    document.querySelector("#div_DeudaImporte").className = "form-group has-error";
   }
 }
 
@@ -137,7 +141,7 @@ function appCreditoPagoView(prestamoID){
   };
   
   appFetch(datos,rutaSQL).then(resp => {
-    console.log(resp);
+    // console.log(resp);
     appCredi_Cabecera_SetData(resp.cabecera);
     appCredi_Detalle_SetData(resp.detalle);
     appLlenarDataEnComboBox(resp.comboTipoPago,"#cbo_DeudaMedioPago",0); //medios de pago
@@ -151,10 +155,12 @@ function appCredi_Cabecera_SetData(data){
   document.querySelector("#lbl_crediAtraso").style.color = (data.atraso>0)?("#D00"):("#777");
   document.querySelector('#lbl_crediAtraso').innerHTML = (data.atraso);
 
-  document.querySelector('#hid_crediID').value = (data.ID);
-  document.querySelector('#hid_crediSocioID').value = (data.socioID);
-  document.querySelector('#hid_crediProductoID').value = (data.productoID);
-  document.querySelector('#hid_crediTasaMora').value = (data.mora),
+  pago = {
+    tasaMora : data.mora,
+    socioID : data.socioID,
+    prestamoID : data.prestamoID,
+    productoID : data.productoID
+  }
   document.querySelector('#lbl_crediSocio').innerHTML = (data.socio);
   document.querySelector('#lbl_crediTipoDUI').innerHTML = (data.dui);
   document.querySelector('#lbl_crediNroDUI').innerHTML = (data.nro_dui);

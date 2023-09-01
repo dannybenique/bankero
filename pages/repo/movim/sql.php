@@ -14,7 +14,7 @@
       switch ($data->TipoQuery) {
         case "selMovim":
           $tabla = array();
-          $sql = "select *,to_char(fecha,'HH24:MI:SS') as horamov from vw_movim where id_coopac=:coopacID and id_agencia=:agenciaID and id_moneda=:monedaID and id_cajera=:cajeraID and to_char(fecha,'YYYYMMDD')=:fecha;";
+          $sql = "select *,to_char(fecha,'HH24:MI:SS') as horamov from vw_movim where id_coopac=:coopacID and id_agencia=:agenciaID and id_moneda=:monedaID and id_cajera=:cajeraID and to_char(fecha,'YYYYMMDD')=:fecha order by fecha;";
           $params = [
             ":coopacID"=>$web->coopacID,
             ":agenciaID"=>$data->agenciaID,

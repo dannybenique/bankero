@@ -144,12 +144,10 @@
           echo json_encode($rpta);
           break;
         case "ejecutarDesembolso":
-          $tipo_operID = 124; //creditos
-          $tipo_pagoID = 164; //efectivo
           $userID = $_SESSION['usr_ID'];
           $clientIP = $fn->getClientIP();
 
-          $sql = "select sp_desembolsos (:TipoExec,:id,:socioID,:coopacID,:agenciaID,:productoID,:monedaID,:tipopagoID,:importe,:tasa,:desgr,:nrocuotas,:fechaOtor,:tipocredID,:pivot,:sysIP,:userID) as nro;";
+          $sql = "select sp_desembolsos (:TipoExec,:id,:socioID,:coopacID,:agenciaID,:productoID,:monedaID,:tipopagoID,:importe,:tasa,:desgr,:nrocuotas,:fechaOtor,:tipocredID,:pivot,:sysIP,:userID) as movimID;";
           $params = [
             ":TipoExec"=>"DESEM",
             ":id"=>$data->ID,
@@ -173,7 +171,7 @@
           $qry = $db->query_all($sql,$params);
           if($qry){
             $rs = reset($qry);
-            $rpta = array("error"=>false, "insert"=>$rs["nro"]);
+            $rpta = array("error"=>false, "insert"=>1,"movimID"=>$rs["movimID"]);
           } else {
             $rpta = array("error"=>true, "insert"=>0);
           }

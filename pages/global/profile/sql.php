@@ -10,43 +10,48 @@
 
       //****************personas****************
       switch ($data->TipoQuery) {
-        case "selProfile":
-          $qry = $db->select("select pr.ID, pr.nombres, pr.ap_paterno, pr.ap_materno, dc.nombre AS doc, pr.DNI,sx.nombre AS sexo, gi.nombre AS gInstruc, ec.nombre AS ecivil, pr.direccion, pr.referencia,REPLACE(CONVERT(NVARCHAR, pr.fecha_nac, 103), ' ', '/') AS fecha_nac, pr.telefijo, pr.celular, pr.email, pr.urlfoto, pr.ocupacion, cg.nombre AS cargo,wr.nombrecorto, wr.codigo, ag.nombre AS agencia, ub.region, ub.provincia, ub.distrito, wr.estado, pr.observac FROM dbo.tb_workers wr,dbo.tb_personas pr,dbo.vw_ubigeo ub,dbo.tb_agencias ag,dbo.tb_mastertipos cg,dbo.tb_mastertipos sx,dbo.tb_mastertipos dc,dbo.tb_mastertipos gi,dbo.tb_mastertipos ec where wr.id_persona=pr.ID and pr.id_ubigeo=ub.id_distrito and wr.id_agencia=ag.ID and wr.id_cargo=cg.ID and pr.id_sexo=sx.ID and pr.id_doc=dc.ID and pr.id_ginstruc=gi.ID and pr.id_ecivil=ec.ID and pr.ID=".$data->miID);
-          if ($db->has_rows($qry)) { $rs = $db->fetch_array($qry); }
-          $rpta = array(
-            "nacimiento" => $rs["fecha_nac"],
-            "documento" => $rs["doc"]." - ".$rs["DNI"],
+        case "selPerfil":
+          $sql = "select p.id,p.nombres,p.ap_paterno,p.ap_materno,dc.nombre AS doc,p.nro_dui,sx.nombre AS sexo,gi.nombre AS ginstruc,ec.nombre AS ecivil,p.direccion,p.referencia,p.fecha_nac,p.telefijo,p.celular,p.email,p.urlfoto,p.ocupacion, cg.nombre AS cargo,e.nombrecorto, e.codigo, ag.nombre AS agencia, ub.region, ub.provincia, ub.distrito,e.estado,e.observac ".
+                 "from bn_empleados e ".
+                 "join personas p on (e.id_empleado=p.id) ".
+                 "join vw_ubigeo ub on (p.id_ubigeo=ub.id_distrito) ".
+                 "join bn_bancos ag on (e.id_agencia=ag.id) ".
+                 "join sis_tipos cg on (e.id_cargo=cg.id) ".
+                 "join personas_tipos_aux sx on (p.id_sexo=sx.id) ".
+                 "join personas_tipos_aux dc on (p.id_dui=dc.id) ".
+                 "join personas_tipos_aux gi on (p.id_ginstruccion=gi.id) ".
+                 "join personas_tipos_aux ec on (p.id_ecivil=ec.id) ".
+                 "where e.id_empleado=".$data->userID;
+          $qry = $db->query_all($sql);
+          if ($qry) { $rs = reset($qry); }
+          $perfil = array(
+            "fecha_nac" => $rs["fecha_nac"],
+            "doc_dui" => $rs["doc"]." - ".$rs["nro_dui"],
             "celular" => $rs["celular"],
-            "agencia" => utf8_encode($rs["agencia"]),
-
+            "agencia" => ($rs["agencia"]),
             "correo" => $rs["email"],
-            "direccion" => utf8_encode($rs["direccion"])."<br/>".utf8_encode($rs["distrito"]).", ".utf8_encode($rs["provincia"]).", ".utf8_encode($rs["region"]),
-            "observa" => utf8_encode($rs["observac"]),
-
-            "nombres" => utf8_encode($rs["nombres"]),
-            "apellidos" => utf8_encode($rs["ap_paterno"])." ".utf8_encode($rs["ap_materno"]),
-            "instruccion" => $rs["gInstruc"],
+            "direccion" => ($rs["direccion"])."<br/>".($rs["distrito"]).", ".($rs["provincia"]).", ".($rs["region"]),
+            "observac" => ($rs["observac"]),
+            "nombres" => ($rs["nombres"]),
+            "apellidos" => ($rs["ap_paterno"])." ".($rs["ap_materno"]),
+            "instruccion" => $rs["ginstruc"],
             "ecivil" => $rs["ecivil"],
             "sexo" => $rs["sexo"],
             "ocupacion" => $rs["ocupacion"]);
+
+          //respuesta
+          $rpta = array("perfil"=>$perfil,"user"=>$_SESSION['usr_data']);
           echo json_encode($rpta);
           break;
         case "updPassword": //cambiar password de usuario
           //verificamos nivel de usuario
-          $params = array();
-          $sql = "update dbo.tb_usuarios set passw='".utf8_decode($data->pass)."',passtxt='".utf8_decode($data->passtxt)."' where id_persona=".$data->userID.";";
-          $qry = $db->update($sql, $params);
-          if($qry) {
-            $rpta = array(
-              "error" => false,
-              "resp" => "Se actualizo el passw"
-            );
-          } else{
-            $rpta = array(
-              "error" => true,
-              "resp" => "Fallo actualizacion"
-            );
-          }
+          $params = [":passw"=>$data->pass,":id"=>$data->userID];
+          $sql = "update bn_usuarios set passw=:passw where id=:id;";
+          $qry = $db->query_all($sql, $params);
+          $user = ($qry) ? (array("error" => false,"resp" => "Se actualizo el passw")) : (array("error" => true,"resp" => "Fallo actualizacion"));
+          
+          //respuesta
+          $rpta  = $user;
           echo json_encode($rpta);
           break;
       }

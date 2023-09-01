@@ -90,6 +90,7 @@ function appDesembBotonDesembolsar(){
     }
     // console.log(datos);
     appFetch(datos,rutaSQL).then(resp => {
+      console.log(resp);
       if (!resp.error) { 
         if(confirm("¿Desea Imprimir el desembolso?")){
           $("#modalPrint").modal("show");

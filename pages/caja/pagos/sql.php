@@ -39,7 +39,7 @@
         case "selCreditos":
           $tabla = array();
           $buscar = strtoupper($data->buscar);
-          $sql = "select * from vw_prestamos_min where estado=1 and saldo>0 and id_coopac=:coopacID and nro_dui LIKE :buscar";
+          $sql = "select * from vw_prestamos_min where estado=1 and saldo<0 and id_coopac=:coopacID and nro_dui LIKE :buscar";
           $params = [":coopacID"=>$web->coopacID,":buscar"=>'%'.$buscar.'%'];
           $qry = $db->query_all($sql,$params);
           if ($qry) {
@@ -65,12 +65,12 @@
         case "viewCredito":
           //cabecera
           $cabecera = 0;
-          $qry = $db->query_all("select p.*,extract(days from (now()-d.fecha)) as atraso from vw_prestamos_ext p join bn_prestamos_det d on (p.id=d.id_prestamo) where p.id=:id and d.numero=(select min(numero) from bn_prestamos_det where id_prestamo=:id and numero>0 and capital>pg_capital)",[":id"=>$data->prestamoID]);
+          $qry = $db->query_all("select p.*,extract(days from (now()-d.fecha)) as atraso from vw_prestamos_ext p join bn_prestamos_det d on (p.id=d.id_saldo) where p.id=:id and d.numero=(select min(numero) from bn_prestamos_det where id_saldo=:id and numero>0 and capital>pg_capital)",[":id"=>$data->prestamoID]);
           if($qry) {
             $rs = reset($qry);
             
             $cabecera = array(
-              "ID" => $rs["id"],
+              "prestamoID" => $rs["id"],
               "codigo" => $rs["codigo"],
               "socioID" => $rs["id_socio"],
               "socio" => $rs["socio"],
@@ -107,7 +107,7 @@
           //detalle
           $detalle = 0;
           $params = [":cabemora"=>$cabecera["mora"],":id"=>$data->prestamoID];
-          $qry = $db->query_all("select sum(capital-pg_capital) as capital,sum(interes-pg_interes) as interes,sum(round((extract(days from now()-fecha)::integer*(:cabemora*0.01/360)::float*(capital))::decimal,2)-pg_mora) as mora,sum(otros-pg_otros) as otros from bn_prestamos_det where extract(days from now()-fecha)>=0 and capital>pg_capital and numero>0 and id_prestamo=:id;",$params);
+          $qry = $db->query_all("select sum(capital-pg_capital) as capital,sum(interes-pg_interes) as interes,sum(round((extract(days from now()-fecha)::integer*(:cabemora*0.01/360)::float*(capital))::decimal,2)-pg_mora) as mora,sum(otros-pg_otros) as otros from bn_prestamos_det where extract(days from now()-fecha)>=0 and capital>pg_capital and numero>0 and id_saldo=:id;",$params);
           if ($qry) {
             foreach($qry as $rs){
               $detalle = array(
@@ -130,7 +130,7 @@
           break;
         case "insPago":
           $estado = 1;
-          $tipo_operID = 124;
+          $tipo_operID = 124; //credito
           $coopacID = $web->coopacID;
           $clientIP = $fn->getClientIP();
           $userID = $_SESSION['usr_ID'];
@@ -145,7 +145,7 @@
           $pg_tot_mora = 0;
           $pg_tot_interes = 0;
           $pg_tot_capital = 0;
-          $sql = "select id_prestamo,numero,capital-pg_capital as capital,interes-pg_interes as interes,(extract(days from now()-fecha)::float*(:tasamora*0.01/360)*(capital-pg_capital))-pg_mora as mora,otros-pg_otros as otros from bn_prestamos_det where extract(days from now()-fecha)>=0 and numero>0 and id_prestamo=:id order by numero;";
+          $sql = "select id_saldo,numero,capital-pg_capital as capital,interes-pg_interes as interes,(extract(days from now()-fecha)::float*(:tasamora*0.01/360)*(capital-pg_capital))-pg_mora as mora,otros-pg_otros as otros from bn_prestamos_det where extract(days from now()-fecha)>=0 and numero>0 and id_saldo=:id order by numero;";
           $params = [":tasamora"=>$data->tasaMora,":id"=>$data->prestamoID];
           $qry = $db->query_all($sql,$params);
           if ($qry) {
@@ -165,14 +165,20 @@
                 $whr_interes = ($pg_interes>0)?(",pg_interes=pg_interes+".$pg_interes):("");
                 $whr_capital = ($pg_capital>0)?(",pg_capital=pg_capital+".$pg_capital):("");
                 $whr_atraso = ($rs["capital"]-$pg_capital<=0)?(",atraso=extract(days from now()-fecha)"):("");
-                $qrx = $db->query_all("update bn_prestamos_det set numero=".$rs["numero"].$whr_otros.$whr_mora.$whr_interes.$whr_capital.$whr_atraso." where id_prestamo=".$data->prestamoID." and numero=".$rs["numero"].";");
+                $qrx = $db->query_all("update bn_prestamos_det set numero=".$rs["numero"].$whr_otros.$whr_mora.$whr_interes.$whr_capital.$whr_atraso." where id_saldo=".$data->prestamoID." and numero=".$rs["numero"].";");
                 $aa = reset($qrx);
               }
             }
           }
           //actualizamos saldo de bn_prestamos
-          if($pg_tot_capital>0) { 
-            $qry = $db->query_all("update bn_prestamos set saldo=saldo-:capital where id=:id;",[":id"=>$data->prestamoID,":capital"=>$pg_tot_capital]);
+          if($pg_tot_capital>0) {
+            $params = [
+              ":id"=>$data->prestamoID,
+              ":capital"=>$pg_tot_capital,
+              ":sysIP"=>$clientIP,
+              ":userID"=>$userID
+            ];
+            $qry = $db->query_all("update bn_saldos set saldo=saldo+:capital,sys_ip=:sysIP,sys_user=:userID,sys_fecha=now() where id=:id;",$params);
             $rs = reset($qry);
           }
 
@@ -183,7 +189,7 @@
           $movimID = reset($qry)["code"];
           $qry = $db->query_all("select right('0000000'||cast(coalesce(max(right(codigo,7)::integer)+1,1) as text),7) as code from bn_movim where id_cajera=".$userID);
           $codigo = $userID."-".reset($qry)["code"];
-          $sql = "insert into bn_movim values(:id,:coopacID,:agenciaID,:operID,:pagoID,:monedaID,:socioID,:tabla,:productoID,:cajeraID,now(),:codigo,:importe,:estado,:sysIP,:userID,now(),:observac)";
+          $sql = "insert into bn_movim values(:id,:coopacID,:agenciaID,:operID,:pagoID,:monedaID,:socioID,:saldoID,:productoID,:cajeraID,now(),:codigo,:importe,:estado,:sysIP,:userID,now(),:observac)";
           $params = [
             ":id"=>$movimID,
             ":coopacID"=>$coopacID,
@@ -192,11 +198,11 @@
             ":pagoID"=>$data->medioPagoID,
             ":monedaID"=>$data->monedaID,
             ":socioID"=>$data->socioID,
-            ":tabla"=>null,
-            ":productoID"=>null,
+            ":saldoID"=>$data->prestamoID,
+            ":productoID"=>$data->productoID,
             ":cajeraID"=>$userID,
             ":codigo"=>$codigo,
-            ":importe"=>$importe,
+            ":importe"=>$data->importe,
             ":estado"=>$estado,
             ":sysIP"=>$clientIP,
             ":userID"=>$userID,
@@ -210,24 +216,7 @@
           if($pg_tot_interes>0) {reg_movim_det(11,$data->prestamoID,$movimID,$data->productoID,$pg_tot_interes); }
           if($pg_tot_capital>0) {reg_movim_det(10,$data->prestamoID,$movimID,$data->productoID,$pg_tot_capital); }
 
-
-          /******agregamos bn_saldos*******/
-          /********************************/
-          if($pg_tot_capital>0) {
-            $sql = "update bn_saldos set saldo=(saldo + :capital),sys_ip=:sysIP,sys_user=:userID,sys_fecha=now() where id_coopac=:coopacID and id_socio=:socioID and id_tipo_oper=:operID and id_producto=:productoID;";
-            $params = [
-              ":coopacID"=>$coopacID,
-              ":socioID"=>$data->socioID,
-              ":operID"=>$tipo_operID,
-              ":productoID"=>$data->productoID,
-              ":capital"=>$pg_tot_capital,
-              ":sysIP"=>$clientIP,
-              ":userID"=>$userID
-            ];
-            $qry = $db->query_all($sql,$params);
-            $rs = reset($qry);
-          }
-
+          //respuesta
           $rpta = array("error" => false,"movimID"=>$movimID,"ingresados" => 1);
           echo json_encode($rpta);
           break;
