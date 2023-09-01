@@ -1,5 +1,6 @@
 const rutaSQL = "pages/caja/desembolsos/sql.php";
 var menu = "";
+var desemb = null;
 
 //=========================funciones para Personas============================
 function appDesembGrid(){
@@ -37,6 +38,7 @@ function appDesembGrid(){
 
 function appDesembReset(){
   appFetch({ TipoQuery:'selDataUser' },"includes/sess_interfaz.php").then(resp => {
+    desemb = null;
     menu = JSON.parse(resp.menu);
     document.querySelector("#btn_DEL").style.display = (menu.caja.submenu.desemb.cmdDelete==1)?('inline'):('none');
 
@@ -69,21 +71,21 @@ function appDesembBotonDesembolsar(){
   if(confirm("¿Esta seguro de continuar?")) {
     let datos = {
       TipoQuery : 'ejecutarDesembolso',
-      prestamoID : document.querySelector("#hid_DesembID").value,
-      tipopagoID : document.querySelector("#hid_tipocredID").value,
-      tipocredID : document.querySelector("#hid_tipocredID").value,
-      productoID : document.querySelector("#hid_productoID").value,
-      agenciaID : document.querySelector("#hid_agenciaID").value,
-      monedaID : document.querySelector("#hid_monedaID").value,
-      socioID : document.querySelector("#hid_socioID").value,
+      ID : desemb.id,
+      socioID : desemb.socioID,
+      monedaID : desemb.monedaID,
+      agenciaID : desemb.agenciaID,
+      tipopagoID : desemb.tipopagoID,
+      tipocredID : desemb.tipocredID,
+      productoID : desemb.productoID,
       cod_prod : document.querySelector("#lbl_DesembCodigo").innerHTML,
       fecha_desemb : appConvertToFecha(document.querySelector("#txt_DesembFecha").value,""),
+      fecha_otorga : appConvertToFecha(document.querySelector("#lbl_DesembFechaOtorga").innerHTML),
       importe : appConvertToNumero(document.querySelector("#lbl_DesembImporte").innerHTML),
       tasa_cred : appConvertToNumero(document.querySelector("#lbl_DesembTasaCred").innerHTML),
       tasa_desgr : appConvertToNumero(document.querySelector("#lbl_DesembTasaDesgr").innerHTML),
-      nro_cuotas : document.querySelector("#lbl_DesembNrocuotas").innerHTML,
-      fecha_otorga : appConvertToFecha(document.querySelector("#lbl_DesembFechaOtorga").innerHTML),
-      pivot : (document.querySelector("#hid_tipocredID").value==1)?(appConvertToFecha(document.querySelector("#lbl_DesembFechaPriCuota").innerHTML)):(document.querySelector("#lbl_DesembFrecuencia").innerHTML),
+      nrocuotas : document.querySelector("#lbl_DesembNrocuotas").innerHTML,
+      pivot : (desemb.tipocredID==1)?(appConvertToFecha(document.querySelector("#lbl_DesembFechaPriCuota").innerHTML)):(document.querySelector("#lbl_DesembFrecuencia").innerHTML),
       observac: document.querySelector("#lbl_DesembObservac").innerHTML
     }
     // console.log(datos);
@@ -139,14 +141,17 @@ function appDesembView(solicredID){
 
 function appDesembSetData(data){
   //pestaña de desembolso
+  desemb = {
+    id : data.ID,
+    tipopagoID : 164,
+    tipocredID : data.tipocredID,
+    productoID : data.productoID,
+    monedaID : data.monedaID,
+    socioID : data.socioID,
+    agenciaID : data.agenciaID
+  }
   document.querySelector("#lbl_FormAprueba").style.color = (data.aprueba=="")?("#D00"):("#777");
   
-  document.querySelector('#hid_DesembID').value = (data.ID);
-  document.querySelector('#hid_tipocredID').value = (data.tipocredID);
-  document.querySelector('#hid_productoID').value = (data.productoID);
-  document.querySelector('#hid_agenciaID').value = (data.agenciaID);
-  document.querySelector('#hid_monedaID').value = (data.monedaID);
-  document.querySelector('#hid_socioID').value = (data.socioID);
   document.querySelector('#txt_DesembFecha').value = (moment(data.fecha_desemb).format("DD/MM/YYYY"));
   document.querySelector('#lbl_DesembSocio').innerHTML = (data.socio);
   document.querySelector('#lbl_DesembFechaSoliCred').innerHTML = (moment(data.fecha_solicred).format("DD/MM/YYYY"));

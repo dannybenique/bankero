@@ -436,10 +436,5 @@ function modAprueba_BotonAprobar(){
         $("#modalAprueba").modal("hide");
       }
     });
-
-    // let datos = {
-    //   TipoQuery : 'aprobarSoliCred',
-    //   SoliCredID : document.querySelector("#hid_modApruebaID").value
-    // }
   }
 }

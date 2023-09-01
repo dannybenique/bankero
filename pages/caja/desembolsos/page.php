@@ -73,7 +73,6 @@
                   <div class="box-body">
                     <strong><i class="fa fa-pencil margin-r-5"></i> Basicos</strong>
                     <p class="text-muted">
-                      <input type="hidden" id="hid_DesembID" value=""/>
                       <input type="hidden" id="hid_tipocredID" value=""/>
                       <input type="hidden" id="hid_productoID" value=""/>
                       <input type="hidden" id="hid_agenciaID" value=""/>
