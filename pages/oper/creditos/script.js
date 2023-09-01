@@ -137,53 +137,52 @@ function appDetalleSetData(data){
         totBlackOtros += valor.otros;
       }
     }
-    fila += '<tr style="'+((valor.numero==0)?('color:#bbb;'):((valor.capital==valor.pg_capital)?('color:#bbb;'):((valor.atraso>=0)?("color:#f00;"):(""))))+'">';
-    fila += '<td>'+(valor.numero)+'</td>';
-    fila += '<td>'+((valor.numero>0)?(moment(valor.fecha).diff(fecha,"days")):(0))+'</td>';
-    fila += '<td>'+(moment(valor.fecha).format("DD/MM/YYYY"))+'</td>';
-    fila += '<td style="text-align:right;">'+appFormatMoney(valor.total+valor.pg_mora,2)+'</td>';
-    fila += '<td style="text-align:right;">'+appFormatMoney(((valor.capital==valor.pg_capital)?(valor.pg_capital):(valor.capital-valor.pg_capital)),2)+'</td>';
-    fila += '<td style="text-align:right;">'+appFormatMoney(((valor.capital==valor.pg_capital)?(valor.pg_interes):(valor.interes-valor.pg_interes)),2)+'</td>';
-    fila += '<td style="text-align:right;">'+appFormatMoney(((valor.capital==valor.pg_capital)?(valor.pg_mora):(valor.mora)),2)+'</td>';
-    fila += '<td style="text-align:right;">'+appFormatMoney(((valor.capital==valor.pg_capital)?(valor.pg_otros):(valor.otros)),2)+'</td>';
-    fila += '<td style="text-align:right;">'+appFormatMoney(valor.saldo,2)+'</td>';
-    fila += '<td style="text-align:center;">'+((valor.numero==0)?(0):((valor.atraso<0)?(0):(valor.atraso)))+'</td>';
-    fila += '<td></td>';
-    fila += '</tr>';
+    fila += '<tr style="'+((valor.numero==0)?('color:#bbb;'):((valor.capital==valor.pg_capital)?('color:#bbb;'):((valor.atraso>=0)?("color:#f00;"):(""))))+'">'+
+            '<td>'+(valor.numero)+'</td>'+
+            '<td>'+((valor.numero>0)?(moment(valor.fecha).diff(fecha,"days")):(0))+'</td>'+
+            '<td>'+(moment(valor.fecha).format("DD/MM/YYYY"))+'</td>'+
+            '<td style="text-align:right;">'+appFormatMoney(valor.total+valor.pg_mora,2)+'</td>'+
+            '<td style="text-align:right;">'+appFormatMoney(((valor.capital==valor.pg_capital)?(valor.pg_capital):(valor.capital-valor.pg_capital)),2)+'</td>'+
+            '<td style="text-align:right;">'+appFormatMoney(((valor.capital==valor.pg_capital)?(valor.pg_interes):(valor.interes-valor.pg_interes)),2)+'</td>'+
+            '<td style="text-align:right;">'+appFormatMoney(((valor.capital==valor.pg_capital)?(valor.pg_mora):(valor.mora)),2)+'</td>'+
+            '<td style="text-align:right;">'+appFormatMoney(((valor.capital==valor.pg_capital)?(valor.pg_otros):(valor.otros)),2)+'</td>'+
+            '<td style="text-align:right;">'+appFormatMoney(valor.saldo,2)+'</td>'+
+            '<td style="text-align:center;">'+((valor.numero==0)?(0):((valor.atraso<0)?(0):(valor.atraso)))+'</td>'+
+            '<td></td></tr>';
     fecha = valor.fecha;
   });
   
   if(viewTotalPagado){ //totales GRAY
-    fila += '<tr style="color:#bbb;">';
-    fila += '<td colspan="3" style="text-align:center;"><b>Total Pagado</b></td>';
-    fila += '<td style="text-align:right;"><b>'+appFormatMoney(totGrayTotal,2)+'</b></td>';
-    fila += '<td style="text-align:right;"><b>'+appFormatMoney(totGrayCapital,2)+'</b></td>';
-    fila += '<td style="text-align:right;"><b>'+appFormatMoney(totGrayInteres,2)+'</b></td>';
-    fila += '<td style="text-align:right;"><b>'+appFormatMoney(totGrayMora,2)+'</b></td>';
-    fila += '<td style="text-align:right;"><b>'+appFormatMoney(totGrayOtros,2)+'</b></td>';
-    fila += '<td colspan="3"></td>';
-    fila += '</tr>';
+    fila += '<tr style="color:#bbb;">'+
+            '<td colspan="3" style="text-align:center;"><b>Total Pagado</b></td>'+
+            '<td style="text-align:right;"><b>'+appFormatMoney(totGrayTotal,2)+'</b></td>'+
+            '<td style="text-align:right;"><b>'+appFormatMoney(totGrayCapital,2)+'</b></td>'+
+            '<td style="text-align:right;"><b>'+appFormatMoney(totGrayInteres,2)+'</b></td>'+
+            '<td style="text-align:right;"><b>'+appFormatMoney(totGrayMora,2)+'</b></td>'+
+            '<td style="text-align:right;"><b>'+appFormatMoney(totGrayOtros,2)+'</b></td>'+
+            '<td colspan="3"></td>'+
+            '</tr>';
   }
   //totales RED
-  fila += '<tr style="color:red;">';
-  fila += '<td colspan="3" style="text-align:center;"><b>Total Vencido</b></td>';
-  fila += '<td style="text-align:right;"><b>'+appFormatMoney(totRedTotal,2)+'</b></td>';
-  fila += '<td style="text-align:right;"><b>'+appFormatMoney(totRedCapital,2)+'</b></td>';
-  fila += '<td style="text-align:right;"><b>'+appFormatMoney(totRedInteres,2)+'</b></td>';
-  fila += '<td style="text-align:right;"><b>'+appFormatMoney(totRedMora,2)+'</b></td>';
-  fila += '<td style="text-align:right;"><b>'+appFormatMoney(totRedOtros,2)+'</b></td>';
-  fila += '<td colspan="3"></td>';
-  fila += '</tr>';
+  fila += '<tr style="color:red;">'+
+          '<td colspan="3" style="text-align:center;"><b>Total Vencido</b></td>'+
+          '<td style="text-align:right;"><b>'+appFormatMoney(totRedTotal,2)+'</b></td>'+
+          '<td style="text-align:right;"><b>'+appFormatMoney(totRedCapital,2)+'</b></td>'+
+          '<td style="text-align:right;"><b>'+appFormatMoney(totRedInteres,2)+'</b></td>'+
+          '<td style="text-align:right;"><b>'+appFormatMoney(totRedMora,2)+'</b></td>'+
+          '<td style="text-align:right;"><b>'+appFormatMoney(totRedOtros,2)+'</b></td>'+
+          '<td colspan="3"></td>'+
+          '</tr>';
   if(viewTotalPorVencer){ //totales BLACK
-    fila += '<tr id="trTotalPorVencer">';
-    fila += '<td colspan="3" style="text-align:center;"><b>Total por Vencer</b></td>';
-    fila += '<td style="text-align:right;"><b>'+appFormatMoney(totBlackTotal,2)+'</b></td>';
-    fila += '<td style="text-align:right;"><b>'+appFormatMoney(totBlackCapital,2)+'</b></td>';
-    fila += '<td style="text-align:right;"><b>'+appFormatMoney(totBlackInteres,2)+'</b></td>';
-    fila += '<td style="text-align:right;"><b>'+appFormatMoney(totBlackMora,2)+'</b></td>';
-    fila += '<td style="text-align:right;"><b>'+appFormatMoney(totBlackOtros,2)+'</b></td>';
-    fila += '<td colspan="3"></td>';
-    fila += '</tr>';
+    fila += '<tr id="trTotalPorVencer">'+
+            '<td colspan="3" style="text-align:center;"><b>Total por Vencer</b></td>'+
+            '<td style="text-align:right;"><b>'+appFormatMoney(totBlackTotal,2)+'</b></td>'+
+            '<td style="text-align:right;"><b>'+appFormatMoney(totBlackCapital,2)+'</b></td>'+
+            '<td style="text-align:right;"><b>'+appFormatMoney(totBlackInteres,2)+'</b></td>'+
+            '<td style="text-align:right;"><b>'+appFormatMoney(totBlackMora,2)+'</b></td>'+
+            '<td style="text-align:right;"><b>'+appFormatMoney(totBlackOtros,2)+'</b></td>'+
+            '<td colspan="3"></td>'+
+            '</tr>';
   }
   
   $('#grdDetalleDatos').html(fila);
