@@ -4,7 +4,7 @@
     private $conn;
 
     private function __construct(){ //constructor
-      $host   = "132.145.138.124";
+      $host   = "129.213.27.61";
       $port   = "5432";
       $dbname = "bankero";
       $user   = "postgres";
