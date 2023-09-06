@@ -116,7 +116,8 @@ function appBillView(billID){
   };
   
   appFetch(datos,rutaSQL).then(resp => {
-    document.querySelector("#btnUpdate").style.display = (menu.caja.submenu.billetaje.cmdUpdate==1)?('inline'):('none');
+    console.log(resp);
+    document.querySelector("#btnUpdate").style.display = (resp.rolUSR===resp.rolROOT)?('inline'):((resp.fecha==resp.tabla.fecha && menu.caja.submenu.billetaje.cmdUpdate==1)?('inline'):('none'));
     document.querySelector("#btnInsert").style.display = 'none';
     document.querySelector('#grid').style.display = 'none';
     document.querySelector('#edit').style.display = 'block';

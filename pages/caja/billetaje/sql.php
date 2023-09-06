@@ -71,6 +71,9 @@
           $rpta = array(
             "comboMonedas" => $fn->getComboBox("select id,nombre from sis_tipos where id_padre=1"),
             "comboAgencias" => $fn->getComboBox("select id,nombre from bn_bancos where estado=1 and id_padre=".$web->coopacID),
+            "fecha" => $fn->getFechaActualDB(),
+            "rolUSR" => $_SESSION['usr_data']['rolID'],
+            "rolROOT" => 101, //rol de ROOT
             "tabla" => $tabla
           );
           echo json_encode($rpta);
