@@ -76,7 +76,6 @@ function appBillBotonNuevo(){
     usuarioID : document.querySelector("#cboUsuarios").value 
   }
   appFetch(datos,rutaSQL).then(resp => {
-    console.log(resp);
     document.querySelector("#btnInsert").style.display = (menu.caja.submenu.billetaje.cmdInsert==1)?('inline'):('none');
     document.querySelector("#btnUpdate").style.display = 'none';
     try{
@@ -116,7 +115,6 @@ function appBillView(billID){
   };
   
   appFetch(datos,rutaSQL).then(resp => {
-    console.log(resp);
     document.querySelector("#btnUpdate").style.display = (resp.rolUSR===resp.rolROOT)?('inline'):((resp.fecha==resp.tabla.fecha && menu.caja.submenu.billetaje.cmdUpdate==1)?('inline'):('none'));
     document.querySelector("#btnInsert").style.display = 'none';
     document.querySelector('#grid').style.display = 'none';
@@ -165,8 +163,7 @@ function appBillCalcular(){
 
 function appBillInsert(){
   let datos = appGetDataToDataBase();
-  console.log(datos);
-  if(datos!=""){
+  if(datos!=null){
     datos.TipoQuery = 'insBilletaje';
     appFetch(datos,rutaSQL).then(resp => {
       appBillGrid();
@@ -179,7 +176,7 @@ function appBillInsert(){
 
 function appBillUpdate(){
   let datos = appGetDataToDataBase();
-  if(datos!=""){
+  if(datos!=null){
     datos.TipoQuery = 'updBilletaje';
     appFetch(datos,rutaSQL).then(resp => {
       appBillGrid();
@@ -191,7 +188,7 @@ function appBillUpdate(){
 }
 
 function appGetDataToDataBase(){
-  let rpta = "";
+  let rpta = null;
   let esError = false;
 
   $(".form-group").removeClass("has-error");
