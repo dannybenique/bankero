@@ -107,6 +107,7 @@
 
   include_once("../../../libs/pdf.php/vendor/autoload.php");
   $mpdf = new \Mpdf\Mpdf([
+    'tempDir' => sys_get_temp_dir(),
     'format' => [55,100],
     'margin_left' => 1,
     'margin_right' => 1,

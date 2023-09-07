@@ -147,10 +147,9 @@
           $userID = $_SESSION['usr_ID'];
           $clientIP = $fn->getClientIP();
 
-          $sql = "select sp_desembolsos (:TipoExec,:id,:socioID,:coopacID,:agenciaID,:productoID,:monedaID,:tipopagoID,:importe,:tasa,:desgr,:nrocuotas,:fechaOtor,:tipocredID,:pivot,:sysIP,:userID) as movimID;";
+          $sql = "select sp_desembolsos ('DESEM',:saldoID,:socioID,:coopacID,:agenciaID,:productoID,:monedaID,:tipopagoID,:importe,:tasa,:desgr,:nrocuotas,:fechaOtor,:tipocredID,:pivot,:sysIP,:userID) as movim_id;";
           $params = [
-            ":TipoExec"=>"DESEM",
-            ":id"=>$data->ID,
+            ":saldoID"=>$data->ID,
             ":socioID"=>$data->socioID,
             ":coopacID"=>$web->coopacID,
             ":agenciaID"=>$data->agenciaID,
@@ -171,7 +170,7 @@
           $qry = $db->query_all($sql,$params);
           if($qry){
             $rs = reset($qry);
-            $rpta = array("error"=>false, "insert"=>1,"movimID"=>$rs["movimID"]);
+            $rpta = array("error"=>false, "insert"=>1, "movimID"=>$rs["movim_id"]);
           } else {
             $rpta = array("error"=>true, "insert"=>0);
           }
