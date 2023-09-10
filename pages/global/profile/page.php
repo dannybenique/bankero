@@ -42,24 +42,78 @@
     <div class="col-md-9">
       <div class="nav-tabs-custom">
         <ul class="nav nav-tabs">
-          <li class="active"><a href="#settings" data-toggle="tab">Personal</a></li>
-          <li><a href="#password" data-toggle="tab">Password</a></li>
+          <li class="active"><a href="#datosPersonal" data-toggle="tab"><i class="fa fa-address-card"></i> Personal</a></li>
+          <li><a href="#password" data-toggle="tab"><i class="fa fa-key"></i> Password</a></li>
           <?php //<li><a href="#timeline" data-toggle="tab">Timeline</a></li> ?>
         </ul>
         <div class="tab-content">
-          <div class="tab-pane active" id="settings">
-            <ul class="appDatosPers appDatosPers-inverse">
-              <li><div class="timeline-item"><h3 class="timeline-header no-border" style="font-family:flexoregular;"><span class="appSpanPerfil">Nombres</span><span id="perfilDatos_Nombres"></span></h3></div></li>
-              <li><div class="timeline-item"><h3 class="timeline-header no-border" style="font-family:flexoregular;"><span class="appSpanPerfil">Apellidos</span><span id="perfilDatos_Apellidos"></span></h3></div></li>
-              <li><div class="timeline-item"><h3 class="timeline-header no-border" style="font-family:flexoregular;"><span class="appSpanPerfil">Nacim.</span><span id="perfilDatos_FechaNac"></span></h3></div></li>
-              <li><div class="timeline-item"><h3 class="timeline-header no-border" style="font-family:flexoregular;"><span class="appSpanPerfil">Sexo</span><span id="perfilDatos_Sexo"></span></h3></div></li>
-              <li><div class="timeline-item"><h3 class="timeline-header no-border" style="font-family:flexoregular;"><span class="appSpanPerfil">Estudios</span><span id="perfilDatos_GInstruccion"></span></h3></div></li>
-              <li><div class="timeline-item"><h3 class="timeline-header no-border" style="font-family:flexoregular;"><span class="appSpanPerfil">E. Civil</span><span id="perfilDatos_ECivil"></span></h3></div></li>
-              <li><div class="timeline-item"><h3 class="timeline-header no-border" style="font-family:flexoregular;"><span class="appSpanPerfil">Ocupacion</span><span id="perfilDatos_Ocupacion"></span></h3></div></li>
-              <li><div class="timeline-item"><h3 class="timeline-header no-border" style="font-family:flexoregular;"><span class="appSpanPerfil">Observac.</span><span id="perfilDatos_Observac"></span></h3></div></li>
-            </ul>
+          <div id="datosPersonal" class="tab-pane active">
+            <div class="box-body row">
+              <div class="col-md-5">
+                <div class="box-body">
+                  <strong><i class="fa fa-address-card margin-r-5"></i> Basicos</strong>
+                  <p class="text-muted">
+                    <input type="hidden" id="hid_PersID" value=""/>
+                    <span id="lbl_PersTipoNombres">Nombres</span>: <a id="lbl_PersNombres"></a><br>
+                    <span id="lbl_PersTipoApellidos">Apellidos: <a id="lbl_PersApellidos"></a><br></span><br>
+                    <span id="lbl_PersTipoDNI"></span>: <a id="lbl_PersNroDNI"></a><br>
+                    Pais Nac: <a id="lbl_PersPaisNac"></a><br>
+                    Lugar Nac: <a id="lbl_PersLugarNac"></a><br>
+                    Fecha Nac: <a id="lbl_PersFechaNac"></a><br>
+                    Edad: <a id="lbl_PersEdad"></a><br>
+                    <span id="lbl_PersTipoSexo">Sexo: <a id="lbl_PersSexo"></a><br></span>
+                    <span id="lbl_PersTipoECivil">Estado Civil: <a id="lbl_PersEcivil"></a></span>
+                  </p>
+                  <hr/>
+
+                  <strong><i class="fa fa-phone margin-r-5"></i> Contacto</strong>
+                  <p class="text-muted">
+                    Celular: <a id="lbl_PersCelular"></a><br>
+                    Telefono Fijo: <a id="lbl_PersTelefijo"></a><br>
+                    Correo: <a id="lbl_PersEmail"></a><br>
+                  </p>
+                  <hr/>
+
+                  <strong><i class="fa fa-graduation-cap margin-r-5"></i> Profesionales</strong>
+                  <p class="text-muted">
+                    <span id="lbl_PersTipoGIntruc">Grado Instruccion: <a id="lbl_PersGInstruccion"></a><br></span>
+                    <span id="lbl_PersTipoProfesion">Profesion</span>: <a id="lbl_PersProfesion"></a><br>
+                    Ocupacion: <a id="lbl_PersOcupacion"></a>
+                  </p>
+                </div>
+              </div>
+              <div class="col-md-7">
+                <div class="box-body">
+                  <b><i class="fa fa-map-marker margin-r-5"></i> Ubicacion</b>
+                  <table class="table-responsive no-padding">
+                    <tr>
+                      <td style="width:65px;vertical-align:bottom;">Direccion:</td>
+                      <td><a id="lbl_PersUbicacion" style="font:12px configcondensed_light;"></a><br>
+                          <a id="lbl_PersDireccion"></a></td>
+                    </tr>
+                  </table>
+                  Referencia: <a id="lbl_PersReferencia"></a><br>
+                  Medidor de Luz: <a id="lbl_PersMedidorluz"></a><br>
+                  Medidor de Agua: <a id="lbl_PersMedidorAgua"></a><br>
+                  Tipo de Vivienda: <a id="lbl_PersTipovivienda"></a>
+                  <hr/>
+
+                  <strong><i class="fa fa-book margin-r-5"></i> Observaciones</strong>
+                  <p class="text-muted">
+                    <span id="lbl_PersObservac"></span>
+                  </p><br><br>
+                  <div id="div_PersAuditoria">
+                    <strong><i class="fa fa-eye margin-r-5"></i> Auditoria</strong>
+                    <div style="font:10px flexolight;color:gray;">
+                      Fecha: <span id="lbl_PersSysFecha"></span><br>
+                      Modif. por: <span id="lbl_PersSysUser"></span>
+                    </div>
+                  </div><br>
+                </div>
+              </div>
+            </div>
           </div>
-          <div class="tab-pane" id="password">
+          <div id="password" class="tab-pane">
             <form class="form-horizontal" autocomplete="off">
               <div class="box-body">
                 <div class="col-md-12">
@@ -84,7 +138,7 @@
               </div>
             </form>
           </div>
-          <div class="tab-pane" id="timeline">
+          <div id="timeline" class="tab-pane">
             <!-- The timeline -->
             <ul class="timeline timeline-inverse">
               <!-- timeline time label -->

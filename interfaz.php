@@ -143,7 +143,7 @@
   $appPage = "pages/global/dashboard/page.php";
   if(isset($_GET["page"])){
     switch ($_GET["page"]) {
-      case "profile": $appPage = "pages/global/profile/profile.php"; break;
+      case "profile": $appPage = "pages/global/profile/page.php"; break;
       case "cajaDesembolsos" : $menuCaja = 'active menu-open'; $appPage = "pages/caja/desembolsos/page.php"; break;
       case "cajaPagos"       : $menuCaja = 'active menu-open'; $appPage = "pages/caja/pagos/page.php"; break;
       case "cajaAportes"     : $menuCaja = 'active menu-open'; $appPage = "pages/caja/aportes/page.php"; break;

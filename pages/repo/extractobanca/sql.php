@@ -12,91 +12,62 @@
 
       //****************personas****************
       switch ($data->TipoQuery) {
-        case "selMovim":
-          $tabla = array();
-          $sql = "select *,to_char(fecha,'HH24:MI:SS') as horamov from vw_movim where id_coopac=:coopacID and id_agencia=:agenciaID and id_moneda=:monedaID and id_cajera=:cajeraID and to_char(fecha,'YYYYMMDD')=:fecha;";
-          $params = [
-            ":coopacID"=>$web->coopacID,
-            ":agenciaID"=>$data->agenciaID,
-            ":monedaID"=>$data->monedaID,
-            ":cajeraID"=>$data->usuarioID,
-            ":fecha"=>$data->fecha
-          ];
+        case "selSocios":
+          $socios = array();
+          $buscar = strtoupper($data->buscar);
+          $params = [ ":coopacID" => $web->coopacID, ":buscar"=>'%'.$buscar.'%' ];
+          $sql = "select s.id_socio,s.persona,s.dui,s.nro_dui,count(x.*) as productos from vw_socios s left join bn_saldos x on (s.id_socio=x.id_socio and x.estado=1) where s.estado=1 and s.id_coopac=:coopacID and (nro_dui LIKE :buscar) group by s.id_socio,s.persona,s.dui,s.nro_dui";
           $qry = $db->query_all($sql,$params);
           if ($qry) {
             foreach($qry as $rs){
-              $tabla[] = array(
-                "ID" => $rs["id"],
-                "voucher" => $rs["codigo"],
-                "codsocio" => $rs["codsocio"],
-                "socio" => $rs["socio"],
-                "codprod" => $rs["codprod"],
-                "producto" => $rs["producto"],
-                "codmov" => $rs["codmov"],
-                "movim" => $rs["movim"],
-                "ingreso" => ($rs["in_out"]==1)?($rs["importe_det"]*1):(0),
-                "salida" => ($rs["in_out"]==0)?($rs["importe_det"]*1):(0),
-                "hora" => $rs["horamov"]
+              $socios[] = array(
+                "ID" => $rs["id_socio"],
+                "socio" => $rs["persona"],
+                "DUI" => $rs["dui"],
+                "nro_DUI" => str_ireplace($buscar, '<span style="background:yellow;">'.$buscar.'</span>', $rs["nro_dui"]),
+                "prods" => $rs["productos"]*1
               );
             }
           }
-          $rpta = array("movim"=>$tabla);
+          $rpta = array("socios"=>$socios);
           echo json_encode($rpta);
           break;
-        case "viewMovim":
-          //cabecera
-          $cabecera = 0;
-          $tipo_oper = 0;
-          $sql = "select m.*,b.nombre as agencia,t.nombre as tipo_oper,o.nombre as moneda,o.abrevia as mon_abrevia,to_char(fecha,'DD/MM/YYYY') as fechamov,to_char(fecha,'HH24:MI:SS') as horamov,em.nombrecorto,fn_get_persona(p.tipo_persona,p.ap_paterno,p.ap_materno,p.nombres) AS socio,ax.nombre as tipo_dui,p.nro_dui from bn_movim m join bn_bancos b on m.id_agencia=b.id join sis_tipos t on m.id_tipo_oper=t.id join personas p on m.id_socio=p.id join sis_tipos o on m.id_moneda=o.id join personas_tipos_aux ax on p.id_dui=ax.id join bn_empleados em on m.id_cajera=em.id_empleado where m.id=:voucherID;";
-          $params = [":voucherID"=>$data->voucherID];
-          $qry = $db->query_params($sql,$params);
+        case "viewSocio":
+          //socio
+          $params = ["coopacID"=>$web->coopacID,":socioID"=>$data->socioID];
+          $sql = "select * from vw_socios where id_coopac=:coopacID and id_socio=:socioID";
+          $qry = $db->query_all($sql,$params);
           if ($qry) {
             $rs = reset($qry);
-            $tipo_oper = $rs["id_tipo_oper"]; 
-            $cabecera = array(
-              "ID" => $rs["id"],
+            $socio = array(
+              "tipoPersona" => $rs["tipo_persona"],
+              "socioID" => $rs["id_socio"],
               "codigo" => $rs["codigo"],
-              "fecha" => $rs["fechamov"],
-              "hora" => $rs["horamov"],
-              "socio" => $rs["socio"],
-              "tipodui" => $rs["tipo_dui"],
-              "nrodui" => $rs["nro_dui"],
-              "cajera" => $rs["nombrecorto"],
-              "agencia" => $rs["agencia"],
-              "moneda" => $rs["moneda"],
-              "mon_abrevia" => $rs["mon_abrevia"],
-              "importe" => $rs["importe"],
-              "tipo_oper" => $rs["tipo_oper"]
+              "persona" => $rs["persona"],
+              "tipoDUI" => $rs["dui"],
+              "nroDUI" => $rs["nro_dui"],
+              "direccion" => $rs["direccion"]
             );
           }
           
-          //detalle
-          $detalle = array();
-          $sql = "select d.*,x.nombre as tipo_mov,concat(pr.nombre,' :: ',pt.codigo) as producto,pt.tasa_cred from bn_movim_det d join sis_mov x on d.id_tipo_mov=x.id join bn_productos pr on d.id_producto=pr.id left join bn_prestamos pt on d.id_tabla=pt.id where d.id_movim=:voucherID order by item;";
-          $params = [":voucherID"=>$data->voucherID];
+          //productos
+          $prods = array();
+          $sql = "select * from vw_saldos where id_coopac=:coopacID and id_socio=:socioID order by id_tipo_oper;";
           $qry = $db->query_all($sql,$params);
           if ($qry) {
             foreach($qry as $rs){
               $detalle[] = array(
-                "ID" => $rs["id"],
-                "item" => $rs["item"],
-                "tipo_mov" => $rs["tipo_mov"],
+                "saldoID" => $rs["id"],
+                "operID" => $rs["id_tipo_oper"],
+                "productoID" => $rs["id_producto"],
                 "producto" => $rs["producto"],
-                "importe" => $rs["importe"]
+                "saldo" => $rs["saldo"]
               );
             }
           }
 
           //respuesta
-          $rpta = array('cab'=> $cabecera, 'deta'=> $detalle);
-          echo json_encode($rpta);
-          break;
-        case "StartMovim":
-          //respuesta
-          $rpta = array(
-            "comboTipoProd" => $fn->getComboBox("select id,nombre from bn_productos where id_padre is null;"),
-            "fecha" => $db->fetch_array($db->query("select now() as fecha;"))["fecha"],
-            "coopac" => $web->coopacID);
+          $rpta = array('socio'=> $socio, 'prods'=> $detalle);
           echo json_encode($rpta);
           break;
       }
