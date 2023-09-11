@@ -27,25 +27,12 @@
     </div>
     <div class="col-md-8">
       <div class="box box-primary">
+        <div class="box-header with-border">
+          <h3 id="title_prod_movim" class="box-title" style="font-family:flexoregular;font-weight:bold;"></h3>
+        </div>
         <div class="box-body box-profile">
-          <div class="box-body table-responsive no-padding">
-              <table class="table table-hover" id="grdDetalle" style="font-family:helveticaneue_light;">
-                <thead>
-                  <tr>
-                    <th style="width:25px;" title="Agencia">AG</th>
-                    <th style="width:25px;" title="Usuario">US</th>
-                    <th style="width:80px;text-align:center;">Fecha</th>
-                    <th style="width:120px;text-align:center;">num_trans</th>
-                    <th style="">Detalle</th>
-                    <th style="width:95px;text-align:right;">Depositos</th>
-                    <th style="width:80px;text-align:right;">Retiros</th>
-                    <th style="width:80px;text-align:right;">Otros</th>
-                  </tr>
-                </thead>
-                <tbody id="grdDetalleDatos">
-                </tbody>
-              </table>
-            </div>
+          <div id="div_TablaMovim" class="box-body table-responsive no-padding">
+          </div>
         </div>
       </div>
     </div>

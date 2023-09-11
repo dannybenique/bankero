@@ -91,7 +91,6 @@ function appAportesBotonBorrar(){
   }
 }
 
-
 function appAportesView(aporteID){
   let datos = {
     TipoQuery : 'viewAporte',
@@ -116,7 +115,7 @@ function appAportesSetData(data){
 }
 
 function appMovimSetData(data){
-  console.log(data);
+  // console.log(data);
   let totIngresos = 0;
   let totSalidas = 0;
   let totOtros = 0;
