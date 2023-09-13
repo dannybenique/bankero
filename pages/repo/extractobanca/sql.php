@@ -70,7 +70,11 @@
           $rpta = array('socio'=> $socio, 'prods'=> $prods);
           echo json_encode($rpta);
           break;
-        case "viewProdMovim":
+        case "viewMovimAportes":
+          //producto
+          $qry = $db->query_all("select p.nombre as producto,s.* from bn_saldos s join bn_productos p on (p.id=s.id_producto) where s.id=".$data->saldoID);
+          $producto = reset($qry)["producto"];
+
           //movimientos
           $movim = array();
           $params =[":coopacID"=>$web->coopacID,":saldoID"=>$data->saldoID];
@@ -92,7 +96,36 @@
           }
 
           //respuesta
-          $rpta = array('movim'=> $movim);
+          $rpta = array('producto'=>$producto,'movim'=> $movim);
+          echo json_encode($rpta);
+          break;
+        case "viewMovimCreditos":
+          //producto
+          $qry = $db->query_all("select p.nombre as producto,s.* from bn_saldos s join bn_productos p on (p.id=s.id_producto) where s.id=".$data->saldoID);
+          $producto = reset($qry)["producto"];
+
+          //movimientos
+          $movim = array();
+          $params =[":coopacID"=>$web->coopacID,":saldoID"=>$data->saldoID];
+          $qry = $db->query_all("select * from vw_movim where id_coopac=:coopacID and id_saldo=:saldoID order by fecha;",$params);
+          if ($qry) {
+            foreach($qry as $rs){
+              $movim[] = array(
+                "ag" => $rs["codagenc"],
+                "us" => $rs["coduser"],
+                "fecha" => $rs["fecha"],
+                "codigo" => $rs["codigo"],
+                "codmov" => $rs["codmov"],
+                "movim" => $rs["movim"],
+                "ingresos" => ($rs["in_out"]==1 && $rs["afec_prod"]==1)?($rs["importe_det"]*1):(0),
+                "salidas" => ($rs["in_out"]==0 && $rs["afec_prod"]==1)?($rs["importe_det"]*1):(0),
+                "otros" => ($rs["afec_prod"]==0)?($rs["importe_det"]*1):(0)
+              );
+            }
+          }
+
+          //respuesta
+          $rpta = array('producto'=>$producto,'movim'=> $movim);
           echo json_encode($rpta);
           break;
       }

@@ -28,7 +28,9 @@
     <div class="col-md-8">
       <div class="box box-primary">
         <div class="box-header with-border">
-          <h3 id="title_prod_movim" class="box-title" style="font-family:flexoregular;font-weight:bold;"></h3>
+          <table style="width:100%;">
+            <tr><td id="div_title_movim"></td></tr>
+          </table>
         </div>
         <div class="box-body box-profile">
           <div id="div_TablaMovim" class="box-body table-responsive no-padding">

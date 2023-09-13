@@ -76,14 +76,16 @@ function appSociosOperView(socioID){
 }
 
 function appSociosViewMovimProd(saldoID,tipoOperID){
-  let result = "";
+  let result = document.querySelector("#div_TablaMovim").innerHTML = '';
+  console.log();
+  document.querySelector("#div_title_movim").innerHTML = '<div class="progress progress-xs active"><div class="progress-bar progress-bar-success progress-bar-striped" style="width:100%"></div></div>';
   switch(tipoOperID){
     case 121: //aportes
-      let datos = {
-        TipoQuery : 'viewProdMovim',
+      let datAportes = {
+        TipoQuery : 'viewMovimAportes',
         saldoID : saldoID
       }
-      appFetch(datos,rutaSQL).then(resp => {
+      appFetch(datAportes,rutaSQL).then(resp => {
         let totIngresos = 0;
         let totSalidas = 0;
         let totOtros = 0;
@@ -124,11 +126,60 @@ function appSociosViewMovimProd(saldoID,tipoOperID){
               '</tr></thead>'+
             '<tbody>'+fila+'</tbody>'+
           '</table>';
-        document.querySelector("#title_prod_movim").innerHTML = 'APORTES';
+        document.querySelector("#div_title_movim").innerHTML = '<h3 class="box-title" style="font-family:flexoregular;font-weight:bold;">'+resp.producto+'</h3>';
         document.querySelector("#div_TablaMovim").innerHTML = result;
       });
       break;
     case 124: //creditos
+      let datCred = {
+        TipoQuery : 'viewMovimCreditos',
+        saldoID : saldoID
+      }
+      appFetch(datAportes,rutaSQL).then(resp => {
+        let totIngresos = 0;
+        let totSalidas = 0;
+        let totOtros = 0;
+        let fila = "";
+        resp.movim.forEach((valor,key)=>{
+          totIngresos += valor.ingresos;
+          totSalidas += valor.salidas;
+          totOtros += valor.otros;
+          fila += '<tr>';
+          fila += '<td>'+(valor.ag)+'</td>';
+          fila += '<td>'+(valor.us)+'</td>';
+          fila += '<td style="text-align:center;">'+(moment(valor.fecha).format("DD/MM/YYYY"))+'</td>';
+          fila += '<td style="text-align:center;">'+(valor.codigo)+'</td>';
+          fila += '<td>'+(valor.codmov+' '+valor.movim)+'</td>';
+          fila += '<td style="text-align:right;">'+((valor.ingresos>0)?(appFormatMoney(valor.ingresos,2)):(''))+'</td>';
+          fila += '<td style="text-align:right;">'+((valor.salidas>0)?(appFormatMoney(valor.salidas,2)):(''))+'</td>';
+          fila += '<td style="text-align:right;">'+((valor.otros>0)?appFormatMoney(valor.otros,2):(''))+'</td>';
+          fila += '</tr>';
+        });
+        fila += '<tr>';
+        fila += '<td colspan="5" style="text-align:center;"><b>Total</b></td>';
+        fila += '<td style="text-align:right;"><b>'+appFormatMoney(totIngresos,2)+'</b></td>';
+        fila += '<td style="text-align:right;"><b>'+appFormatMoney(totSalidas,2)+'</b></td>';
+        fila += '<td style="text-align:right;"><b>'+appFormatMoney(totOtros,2)+'</b></td>';
+        fila += '</tr>';
+        
+        //resultado
+        result = '<table class="table table-hover" style="font-family:helveticaneue_light;">'+
+            '<thead><tr>'+
+                '<th style="width:25px;" title="Agencia">AG</th>'+
+                '<th style="width:25px;" title="Usuario">US</th>'+
+                '<th style="width:80px;text-align:center;">Fecha</th>'+
+                '<th style="width:120px;text-align:center;">num_trans</th>'+
+                '<th style="">Detalle</th>'+
+                '<th style="width:80px;text-align:right;">Capital</th>'+
+                '<th style="width:80px;text-align:right;">Interes</th>'+
+                '<th style="width:80px;text-align:right;">Mora</th>'+
+                '<th style="width:80px;text-align:right;">Otros</th>'+
+              '</tr></thead>'+
+            '<tbody>'+fila+'</tbody>'+
+          '</table>';
+        document.querySelector("#div_title_movim").innerHTML = '<h3 class="box-title" style="font-family:flexoregular;font-weight:bold;">'+resp.producto+'</h3>';
+        document.querySelector("#div_TablaMovim").innerHTML = result;
+      });
       break;
   }
 }
