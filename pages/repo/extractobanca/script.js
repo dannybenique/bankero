@@ -94,23 +94,23 @@ function appSociosViewMovimProd(saldoID,tipoOperID){
           totIngresos += valor.ingresos;
           totSalidas += valor.salidas;
           totOtros += valor.otros;
-          fila += '<tr>';
-          fila += '<td>'+(valor.ag)+'</td>';
-          fila += '<td>'+(valor.us)+'</td>';
-          fila += '<td style="text-align:center;">'+(moment(valor.fecha).format("DD/MM/YYYY"))+'</td>';
-          fila += '<td style="text-align:center;">'+(valor.codigo)+'</td>';
-          fila += '<td>'+(valor.codmov+' '+valor.movim)+'</td>';
-          fila += '<td style="text-align:right;">'+((valor.ingresos>0)?(appFormatMoney(valor.ingresos,2)):(''))+'</td>';
-          fila += '<td style="text-align:right;">'+((valor.salidas>0)?(appFormatMoney(valor.salidas,2)):(''))+'</td>';
-          fila += '<td style="text-align:right;">'+((valor.otros>0)?appFormatMoney(valor.otros,2):(''))+'</td>';
-          fila += '</tr>';
+          fila += '<tr>'+
+                  '<td>'+(valor.ag)+'</td>'+
+                  '<td>'+(valor.us)+'</td>'+
+                  '<td style="text-align:center;">'+(moment(valor.fecha).format("DD/MM/YYYY"))+'</td>'+
+                  '<td style="text-align:center;">'+(valor.codigo)+'</td>'+
+                  '<td>'+(valor.codmov+' '+valor.movim)+'</td>'+
+                  '<td style="text-align:right;">'+((valor.ingresos>0)?(appFormatMoney(valor.ingresos,2)):(''))+'</td>'+
+                  '<td style="text-align:right;">'+((valor.salidas>0)?(appFormatMoney(valor.salidas,2)):(''))+'</td>'+
+                  '<td style="text-align:right;">'+((valor.otros>0)?appFormatMoney(valor.otros,2):(''))+'</td>'+
+                  '</tr>';
         });
-        fila += '<tr>';
-        fila += '<td colspan="5" style="text-align:center;"><b>Total</b></td>';
-        fila += '<td style="text-align:right;"><b>'+appFormatMoney(totIngresos,2)+'</b></td>';
-        fila += '<td style="text-align:right;"><b>'+appFormatMoney(totSalidas,2)+'</b></td>';
-        fila += '<td style="text-align:right;"><b>'+appFormatMoney(totOtros,2)+'</b></td>';
-        fila += '</tr>';
+        fila += '<tr>'+
+                '<td colspan="5" style="text-align:center;"><b>Total</b></td>'+
+                '<td style="text-align:right;"><b>'+appFormatMoney(totIngresos,2)+'</b></td>'+
+                '<td style="text-align:right;"><b>'+appFormatMoney(totSalidas,2)+'</b></td>'+
+                '<td style="text-align:right;"><b>'+appFormatMoney(totOtros,2)+'</b></td>'+
+                '</tr>';
         
         //resultado
         result = '<table class="table table-hover" style="font-family:helveticaneue_light;">'+
@@ -135,32 +135,35 @@ function appSociosViewMovimProd(saldoID,tipoOperID){
         TipoQuery : 'viewMovimCreditos',
         saldoID : saldoID
       }
-      appFetch(datAportes,rutaSQL).then(resp => {
-        let totIngresos = 0;
-        let totSalidas = 0;
+      appFetch(datCred,rutaSQL).then(resp => {
+        let totCapital = 0;
+        let totInteres = 0;
+        let totMora = 0;
         let totOtros = 0;
         let fila = "";
         resp.movim.forEach((valor,key)=>{
-          totIngresos += valor.ingresos;
-          totSalidas += valor.salidas;
+          totCapital += valor.ingresos;
+          totInteres += valor.salidas;
+          totMora += 0;
           totOtros += valor.otros;
-          fila += '<tr>';
-          fila += '<td>'+(valor.ag)+'</td>';
-          fila += '<td>'+(valor.us)+'</td>';
-          fila += '<td style="text-align:center;">'+(moment(valor.fecha).format("DD/MM/YYYY"))+'</td>';
-          fila += '<td style="text-align:center;">'+(valor.codigo)+'</td>';
-          fila += '<td>'+(valor.codmov+' '+valor.movim)+'</td>';
-          fila += '<td style="text-align:right;">'+((valor.ingresos>0)?(appFormatMoney(valor.ingresos,2)):(''))+'</td>';
-          fila += '<td style="text-align:right;">'+((valor.salidas>0)?(appFormatMoney(valor.salidas,2)):(''))+'</td>';
-          fila += '<td style="text-align:right;">'+((valor.otros>0)?appFormatMoney(valor.otros,2):(''))+'</td>';
-          fila += '</tr>';
+          fila += '<tr>'+
+                  '<td>'+(valor.ag)+'</td>'+
+                  '<td>'+(valor.us)+'</td>'+
+                  '<td style="text-align:center;">'+(moment(valor.fecha).format("DD/MM/YYYY"))+'</td>'+
+                  '<td style="text-align:center;">'+(valor.codigo)+'</td>'+
+                  '<td>'+(valor.codmov+' '+valor.movim)+'</td>'+
+                  '<td style="text-align:right;">'+((valor.ingresos>0)?(appFormatMoney(valor.ingresos,2)):(''))+'</td>'+
+                  '<td style="text-align:right;">'+((valor.salidas>0)?(appFormatMoney(valor.salidas,2)):(''))+'</td>'+
+                  '<td style="text-align:right;">'+((valor.salidas>0)?(appFormatMoney(valor.salidas,2)):(''))+'</td>'+
+                  '<td style="text-align:right;">'+((valor.otros>0)?appFormatMoney(valor.otros,2):(''))+'</td>'+
+                  '</tr>';
         });
-        fila += '<tr>';
-        fila += '<td colspan="5" style="text-align:center;"><b>Total</b></td>';
-        fila += '<td style="text-align:right;"><b>'+appFormatMoney(totIngresos,2)+'</b></td>';
-        fila += '<td style="text-align:right;"><b>'+appFormatMoney(totSalidas,2)+'</b></td>';
-        fila += '<td style="text-align:right;"><b>'+appFormatMoney(totOtros,2)+'</b></td>';
-        fila += '</tr>';
+        fila += '<tr>'+
+                '<td colspan="5" style="text-align:center;"><b>Total</b></td>'+
+                '<td style="text-align:right;"><b>'+appFormatMoney(totIngresos,2)+'</b></td>'+
+                '<td style="text-align:right;"><b>'+appFormatMoney(totSalidas,2)+'</b></td>'+
+                '<td style="text-align:right;"><b>'+appFormatMoney(totOtros,2)+'</b></td>'+
+                '</tr>';
         
         //resultado
         result = '<table class="table table-hover" style="font-family:helveticaneue_light;">'+
