@@ -21,7 +21,7 @@
           $qry = $db->query_all("select count(*) as cuenta from vw_prestamos_min where estado=1 and saldo>0 ".$whr.";",$params);
           $rsCount = reset($qry);
 
-          $qry = $db->query_all("select * from vw_prestamos_min where estado=1 and saldo<0 ".$whr." order by socio limit 25 offset 0;",$params);
+          $qry = $db->query_all("select * from vw_prestamos_min where estado=1 and saldo>0 ".$whr." order by socio limit 25 offset 0;",$params);
           if($qry) {
             foreach($qry as $rs){
               $tabla[] = array(

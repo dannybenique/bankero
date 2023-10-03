@@ -77,7 +77,6 @@ function appSociosOperView(socioID){
 
 function appSociosViewMovimProd(saldoID,tipoOperID){
   let result = document.querySelector("#div_TablaMovim").innerHTML = '';
-  console.log();
   document.querySelector("#div_title_movim").innerHTML = '<div class="progress progress-xs active"><div class="progress-bar progress-bar-success progress-bar-striped" style="width:100%"></div></div>';
   switch(tipoOperID){
     case 121: //aportes
@@ -95,8 +94,8 @@ function appSociosViewMovimProd(saldoID,tipoOperID){
           totSalidas += valor.salidas;
           totOtros += valor.otros;
           fila += '<tr>'+
-                  '<td>'+(valor.ag)+'</td>'+
-                  '<td>'+(valor.us)+'</td>'+
+                  '<td>'+(valor.codagenc)+'</td>'+
+                  '<td>'+(valor.coduser)+'</td>'+
                   '<td style="text-align:center;">'+(moment(valor.fecha).format("DD/MM/YYYY"))+'</td>'+
                   '<td style="text-align:center;">'+(valor.codigo)+'</td>'+
                   '<td>'+(valor.codmov+' '+valor.movim)+'</td>'+
@@ -136,32 +135,33 @@ function appSociosViewMovimProd(saldoID,tipoOperID){
         saldoID : saldoID
       }
       appFetch(datCred,rutaSQL).then(resp => {
+        console.log(resp);
         let totCapital = 0;
         let totInteres = 0;
         let totMora = 0;
         let totOtros = 0;
         let fila = "";
         resp.movim.forEach((valor,key)=>{
-          totCapital += valor.ingresos;
-          totInteres += valor.salidas;
-          totMora += 0;
+          totCapital += valor.capital;
+          totInteres += valor.interes;
+          totMora += valor.mora;
           totOtros += valor.otros;
           fila += '<tr>'+
-                  '<td>'+(valor.ag)+'</td>'+
-                  '<td>'+(valor.us)+'</td>'+
+                  '<td>'+(valor.codagenc)+'</td>'+
+                  '<td>'+(valor.coduser)+'</td>'+
                   '<td style="text-align:center;">'+(moment(valor.fecha).format("DD/MM/YYYY"))+'</td>'+
                   '<td style="text-align:center;">'+(valor.codigo)+'</td>'+
-                  '<td>'+(valor.codmov+' '+valor.movim)+'</td>'+
-                  '<td style="text-align:right;">'+((valor.ingresos>0)?(appFormatMoney(valor.ingresos,2)):(''))+'</td>'+
-                  '<td style="text-align:right;">'+((valor.salidas>0)?(appFormatMoney(valor.salidas,2)):(''))+'</td>'+
-                  '<td style="text-align:right;">'+((valor.salidas>0)?(appFormatMoney(valor.salidas,2)):(''))+'</td>'+
-                  '<td style="text-align:right;">'+((valor.otros>0)?appFormatMoney(valor.otros,2):(''))+'</td>'+
+                  '<td style="text-align:right;">'+((valor.capital!=0)?appFormatMoney(valor.capital,2):'-')+'</td>'+
+                  '<td style="text-align:right;">'+((valor.interes>0)?appFormatMoney(valor.interes,2):'-')+'</td>'+
+                  '<td style="text-align:right;">'+((valor.mora>0)?appFormatMoney(valor.mora,2):'-')+'</td>'+
+                  '<td style="text-align:right;">'+((valor.otros>0)?appFormatMoney(valor.otros,2):'-')+'</td>'+
                   '</tr>';
         });
         fila += '<tr>'+
-                '<td colspan="5" style="text-align:center;"><b>Total</b></td>'+
-                '<td style="text-align:right;"><b>'+appFormatMoney(totIngresos,2)+'</b></td>'+
-                '<td style="text-align:right;"><b>'+appFormatMoney(totSalidas,2)+'</b></td>'+
+                '<td colspan="4" style="text-align:center;"><b>Total</b></td>'+
+                '<td style="text-align:right;"><b>'+appFormatMoney(totCapital,2)+'</b></td>'+
+                '<td style="text-align:right;"><b>'+appFormatMoney(totInteres,2)+'</b></td>'+
+                '<td style="text-align:right;"><b>'+appFormatMoney(totMora,2)+'</b></td>'+
                 '<td style="text-align:right;"><b>'+appFormatMoney(totOtros,2)+'</b></td>'+
                 '</tr>';
         
@@ -172,7 +172,6 @@ function appSociosViewMovimProd(saldoID,tipoOperID){
                 '<th style="width:25px;" title="Usuario">US</th>'+
                 '<th style="width:80px;text-align:center;">Fecha</th>'+
                 '<th style="width:120px;text-align:center;">num_trans</th>'+
-                '<th style="">Detalle</th>'+
                 '<th style="width:80px;text-align:right;">Capital</th>'+
                 '<th style="width:80px;text-align:right;">Interes</th>'+
                 '<th style="width:80px;text-align:right;">Mora</th>'+
@@ -180,7 +179,7 @@ function appSociosViewMovimProd(saldoID,tipoOperID){
               '</tr></thead>'+
             '<tbody>'+fila+'</tbody>'+
           '</table>';
-        document.querySelector("#div_title_movim").innerHTML = '<h3 class="box-title" style="font-family:flexoregular;font-weight:bold;">'+resp.producto+'</h3>';
+        document.querySelector("#div_title_movim").innerHTML = '<h3 class="box-title" style="font-family:flexoregular;font-weight:bold;">'+resp.producto.producto+'</h3>';
         document.querySelector("#div_TablaMovim").innerHTML = result;
       });
       break;

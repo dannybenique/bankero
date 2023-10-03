@@ -39,7 +39,7 @@
         case "selCreditos":
           $tabla = array();
           $buscar = strtoupper($data->buscar);
-          $sql = "select * from vw_prestamos_min where estado=1 and saldo<0 and id_coopac=:coopacID and nro_dui LIKE :buscar";
+          $sql = "select * from vw_prestamos_min where estado=1 and saldo>0 and id_coopac=:coopacID and nro_dui LIKE :buscar";
           $params = [":coopacID"=>$web->coopacID,":buscar"=>'%'.$buscar.'%'];
           $qry = $db->query_all($sql,$params);
           if ($qry) {
@@ -145,7 +145,10 @@
           $pg_tot_mora = 0;
           $pg_tot_interes = 0;
           $pg_tot_capital = 0;
-          $sql = "select id_saldo,numero,capital-pg_capital as capital,interes-pg_interes as interes,(extract(days from now()-fecha)::float*(:tasamora*0.01/360)*(capital-pg_capital))-pg_mora as mora,otros-pg_otros as otros from bn_prestamos_det where extract(days from now()-fecha)>=0 and numero>0 and id_saldo=:id order by numero;";
+          $sql = "select id_saldo,numero,fecha,capital-pg_capital as capital,interes-pg_interes as interes,(extract(days from now()-fecha)::float*(:tasamora*0.01/360)*(capital-pg_capital))-pg_mora as mora,otros-pg_otros as otros ".
+                 "from bn_prestamos_det ".
+                 "where id_saldo=:id and numero>0 and (capital>pg_capital or interes>pg_interes or otros>pg_otros) ".
+                 "order by numero;";
           $params = [":tasamora"=>$data->tasaMora,":id"=>$data->prestamoID];
           $qry = $db->query_all($sql,$params);
           if ($qry) {
@@ -178,7 +181,7 @@
               ":sysIP"=>$clientIP,
               ":userID"=>$userID
             ];
-            $qry = $db->query_all("update bn_saldos set saldo=saldo+:capital,sys_ip=:sysIP,sys_user=:userID,sys_fecha=now() where id=:id;",$params);
+            $qry = $db->query_all("update bn_saldos set saldo=saldo-:capital,sys_ip=:sysIP,sys_user=:userID,sys_fecha=now() where id=:id;",$params);
             $rs = reset($qry);
           }
 

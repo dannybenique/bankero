@@ -82,8 +82,8 @@
           if ($qry) {
             foreach($qry as $rs){
               $movim[] = array(
-                "ag" => $rs["codagenc"],
-                "us" => $rs["coduser"],
+                "codagenc" => $rs["codagenc"],
+                "coduser" => $rs["coduser"],
                 "fecha" => $rs["fecha"],
                 "codigo" => $rs["codigo"],
                 "codmov" => $rs["codmov"],
@@ -102,24 +102,37 @@
         case "viewMovimCreditos":
           //producto
           $qry = $db->query_all("select p.nombre as producto,s.* from bn_saldos s join bn_productos p on (p.id=s.id_producto) where s.id=".$data->saldoID);
-          $producto = reset($qry)["producto"];
+          $rs = reset($qry);
+          $producto = array(
+            "producto" => $rs["producto"],
+            "codigo" => $rs["codigo"],
+            "saldo" => $rs["saldo"]
+          );
 
           //movimientos
           $movim = array();
           $params =[":coopacID"=>$web->coopacID,":saldoID"=>$data->saldoID];
-          $qry = $db->query_all("select * from vw_movim where id_coopac=:coopacID and id_saldo=:saldoID order by fecha;",$params);
+          $sql = "select codagenc,coduser,fecha,codigo,".
+                 "sum(CASE WHEN codmov='09' THEN importe_det*(-1) ELSE 0 END) as desembolso,".
+                 "sum(CASE WHEN codmov='10' THEN importe_det ELSE 0 END) as capital,".
+                 "sum(CASE WHEN codmov='11' THEN importe_det ELSE 0 END) as interes,".
+                 "sum(CASE WHEN codmov='12' THEN importe_det ELSE 0 END) as mora,".
+                 "sum(CASE WHEN codmov='13' THEN importe_det ELSE 0 END) as otros ".
+                 "from vw_movim where id_coopac=:coopacID and id_saldo=:saldoID ".
+                 "group by codagenc,coduser,fecha,codigo ".
+                 "order by fecha,codigo";
+          $qry = $db->query_all($sql,$params);
           if ($qry) {
             foreach($qry as $rs){
               $movim[] = array(
-                "ag" => $rs["codagenc"],
-                "us" => $rs["coduser"],
+                "codagenc" => $rs["codagenc"],
+                "coduser" => $rs["coduser"],
                 "fecha" => $rs["fecha"],
                 "codigo" => $rs["codigo"],
-                "codmov" => $rs["codmov"],
-                "movim" => $rs["movim"],
-                "ingresos" => ($rs["in_out"]==1 && $rs["afec_prod"]==1)?($rs["importe_det"]*1):(0),
-                "salidas" => ($rs["in_out"]==0 && $rs["afec_prod"]==1)?($rs["importe_det"]*1):(0),
-                "otros" => ($rs["afec_prod"]==0)?($rs["importe_det"]*1):(0)
+                "capital" => $rs["capital"]+$rs["desembolso"],
+                "interes" => $rs["interes"]*1,
+                "mora" => $rs["mora"]*1,
+                "otros" => $rs["otros"]*1
               );
             }
           }
