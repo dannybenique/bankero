@@ -9,13 +9,18 @@
       $data = json_decode($_REQUEST['appSQL']);
       switch ($data->TipoQuery) {
         case "dashboard":
-          foreach($db->query_all("select count(*) as cuenta from bn_bancos where id_padre=:coopac", [':coopac'=>$web->coopacID]) as $rs){ $agencias = $rs['cuenta']; }
-          foreach($db->query_all("select count(*) as cuenta from bn_socios where id_coopac=:coopac", [':coopac'=>$web->coopacID]) as $rs){ $socios = $rs['cuenta']; }
+          $qry = $db->query_all("select count(*) as cuenta from bn_bancos where id_padre=:coopac", [':coopac'=>$web->coopacID]);
+          $agencias = reset($qry)['cuenta'];
+          $qry = $db->query_all("select count(*) as cuenta from bn_socios where id_coopac=:coopac", [':coopac'=>$web->coopacID]);
+          $socios = reset($qry)['cuenta'];
+          $qry = $db->query_all("select count(*) as cuenta from bn_saldos where id_tipo_oper=124 and saldo>0 and id_coopac=:coopac", [':coopac'=>$web->coopacID]);
+          $creditos = reset($qry)['cuenta'];
 
           //respuesta
           $rpta = array(
             "agencias" => $agencias,
-            "socios" => $socios
+            "socios" => $socios,
+            "creditos" => $creditos
           );
           echo json_encode($rpta);
           break;

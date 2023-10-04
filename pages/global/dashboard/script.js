@@ -3,8 +3,10 @@ const rutaSQL = "pages/global/dashboard/sql.php";
 //=========================funciones para Dashboard============================
 function appDashBoard(){
   appFetch({ TipoQuery : 'dashboard' },rutaSQL).then(resp => {
+    // console.log(resp);
     $("#appTotalAgencias").html(resp.agencias);
     $("#appTotalSocios").html(resp.socios);
+    $("#appTotalCreditos").html(resp.creditos);
   });
 }
 
