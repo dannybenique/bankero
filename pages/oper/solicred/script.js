@@ -179,7 +179,6 @@ function appSoliCredView(solicredID){
 }
 
 function appSoliCredSetData(data,txtSocio){
-  console.log(data);
   //pestaña de solicred
   appLlenarDataEnComboBox(data.comboAgencias,"#cbo_SoliCredAgencia",data.agenciaID);
   appLlenarDataEnComboBox(data.comboEmpleados,"#cbo_SoliCredPromotor",data.promotorID);
@@ -191,7 +190,7 @@ function appSoliCredSetData(data,txtSocio){
   appLlenarDataEnComboBox(data.comboCondicion,"#cbo_SoliCredCondicion",data.condicionID);
   appLlenarDataEnComboBox(data.comboMoneda,"#cbo_SoliCredMoneda",data.monedaID);
   $("#cbo_SoliCredTipo").val(data.tipocredID);
-  $("#txt_SoliCredFecha").datepicker("setDate",moment(data.fecha_solicred).format("DD/MM/YYYY"));
+  $("#txt_SoliCredFechaSolici").datepicker("setDate",moment(data.fecha_solicred).format("DD/MM/YYYY"));
   $("#txt_SoliCredFechaOtorga").datepicker("setDate",moment(data.fecha_otorga).format("DD/MM/YYYY"));
   $("#txt_SoliCredFechaPriCuota").datepicker("setDate",moment(data.fecha_pricuota).format("DD/MM/YYYY"));
   $("#txt_SoliCredFrecuencia").val(data.frecuencia);
@@ -238,10 +237,10 @@ function appSoliCredClear(txtSocio){
     appLlenarDataEnComboBox(resp.comboClasifica,"#cbo_SoliCredClasifica",131);
     appLlenarDataEnComboBox(resp.comboCondicion,"#cbo_SoliCredCondicion",141);
     appLlenarDataEnComboBox(resp.comboMoneda,"#cbo_SoliCredMoneda",0);
-    document.querySelector('#hid_SoliCredID').value = (0);
-    document.querySelector("#txt_SoliCredCodigo").placeholder = (moment(resp.fecha).format("YYYYMMDD")+".0000");
-    document.querySelector('#txt_SoliCredSocio').value = (txtSocio);
-    document.querySelector('#txt_SoliCredFecha').value = (moment(resp.fecha).format("DD/MM/YYYY"));
+    document.querySelector("#hid_SoliCredID").value = (0);
+    document.querySelector("#txt_SoliCredSocio").value = (txtSocio);
+    document.querySelector("#txt_SoliCredFechaSolici").value = (moment(resp.fecha).format("DD/MM/YYYY"));
+    document.querySelector("#txt_SoliCredCodigo").placeholder = (appConvertToFecha(document.querySelector("#txt_SoliCredFechaSolici").value)+".0000");
     document.querySelector("#txt_SoliCredCodigo").value = ("");
     document.querySelector("#txt_SoliCredImporte").value = ("100.00");
     document.querySelector("#txt_SoliCredTasa").value = ("100.00");
@@ -368,7 +367,7 @@ function appSoliCredGetDatosToDatabase(){
     mora : appConvertToNumero(document.querySelector("#txt_SoliCredMora").value),
     desgr : appConvertToNumero(document.querySelector("#txt_SoliCredSegDesgr").value),
     nrocuotas : appConvertToNumero(document.querySelector("#txt_SoliCredNroCuotas").value),
-    fecha_solicred : appConvertToFecha(document.querySelector("#txt_SoliCredFecha").value,""),
+    fecha_solicred : appConvertToFecha(document.querySelector("#txt_SoliCredFechaSolici").value,""),
     fecha_otorga : appConvertToFecha(document.querySelector("#txt_SoliCredFechaOtorga").value,""),
     fecha_pricuota : appConvertToFecha(document.querySelector("#txt_SoliCredFechaPriCuota").value,""),
     frecuencia : appConvertToNumero(document.querySelector("#txt_SoliCredFrecuencia").value),

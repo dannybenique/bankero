@@ -78,7 +78,7 @@
                     <div class="form-group" style="margin-bottom:3px;">
                       <div class="input-group">
                         <span class="input-group-addon" style="width:100px;background:#eeeeee;"><b>Ingreso</b></span>
-                        <input id="txt_SoliCredFecha" type="text" class="form-control" style="width:105px;" disabled="disabled" />
+                        <input id="txt_SoliCredFechaSolici" type="text" class="form-control" style="width:105px;" disabled="disabled" />
                       </div>
                     </div>
                     <div class="form-group" style="margin-bottom:3px;">

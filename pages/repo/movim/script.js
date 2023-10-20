@@ -11,33 +11,34 @@ function appMovimGrid(){
     monedaID: document.querySelector('#cboMonedas').value,
     fecha: appConvertToFecha(document.querySelector('#txtFecha').value,'')
   };
-  // console.log(datos);
 
   appFetch(datos,rutaSQL).then(resp => {
     if(resp.movim.length>0){
       let totIngresos = 0;
       let totSalidas = 0;
       let fila = "";
+      let foot = "";
       resp.movim.forEach((valor,key)=>{
         totIngresos += valor.ingreso;
         totSalidas += valor.salida;
-        fila += '<tr>';
-        fila += '<td>'+(valor.hora)+'</td>';
-        fila += '<td>'+(valor.voucher)+'</td>';
-        fila += '<td>'+(valor.codsocio+' '+valor.socio)+'</td>';
-        fila += '<td>'+(valor.codprod+' '+valor.producto)+'</td>';
-        fila += '<td>'+(valor.codmov+' '+valor.movim)+'</td>';
-        fila += '<td style="text-align:right;">'+((valor.ingreso>0)?(appFormatMoney(valor.ingreso,2)):('-'))+'</td>';
-        fila += '<td style="text-align:right;">'+((valor.salida>0)?(appFormatMoney(valor.salida,2)):('-'))+'</td>';
-        fila += '</tr>';
+        fila += '<tr>'+
+                '<td>'+(valor.hora)+'</td>'+
+                '<td>'+(valor.voucher)+'</td>'+
+                '<td>'+(valor.codsocio+' '+valor.socio)+'</td>'+
+                '<td>'+(valor.codprod+' '+valor.producto)+'</td>'+
+                '<td>'+(valor.codmov+' '+valor.movim)+'</td>'+
+                '<td style="text-align:right;">'+((valor.ingreso>0)?(appFormatMoney(valor.ingreso,2)):('-'))+'</td>'+
+                '<td style="text-align:right;">'+((valor.salida>0)?(appFormatMoney(valor.salida,2)):('-'))+'</td>'+
+                '</tr>';
       });
-      fila += '<tr>';
-      fila += '<td colspan="5" style="text-align:right;"><b>TOTAL GENERAL</b></td>';
-      fila += '<td style="text-align:right;border-bottom-style:double;"><b>'+(appFormatMoney(totIngresos,2))+'</b></td>';
-      fila += '<td style="text-align:right;border-bottom-style:double;"><b>'+(appFormatMoney(totSalidas,2))+'</b></td>';
-      fila += '</tr>';
-      fila += '<tr><td colspan="7"></td></tr>';
+      foot = '<tr>'+
+              '<td colspan="5" style="text-align:right;"><b>TOTAL GENERAL</b></td>'+
+              '<td style="text-align:right;border-bottom-style:double;"><b>'+(appFormatMoney(totIngresos,2))+'</b></td>'+
+              '<td style="text-align:right;border-bottom-style:double;"><b>'+(appFormatMoney(totSalidas,2))+'</b></td>'+
+              '</tr>'+
+              '<tr><td colspan="7"></td></tr>';
       document.querySelector('#grdDatos').innerHTML = (fila);
+      
     }else{
       document.querySelector('#grdDatos').innerHTML = ('<tr><td colspan="7" style="text-align:center;color:red;">Sin Resultados</td></tr>');
     }

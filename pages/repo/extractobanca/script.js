@@ -67,11 +67,13 @@ function appSociosOperView(socioID){
     resp.prods.forEach((valor,key)=>{
       fila += '<li class="list-group-item"><a href="javascript:appSociosViewMovimProd('+(valor.saldoID)+','+(valor.operID)+');"><span>'+(valor.producto)+'</span></a> <a class="pull-right">'+appFormatMoney(valor.saldo,2)+'</a></li>';
     });
-    let prods = '<ul class="list-group list-group-unbordered">'+(fila)+'</ul>';
     document.querySelector("#div_InfoCorta").innerHTML = '<div class="box-body">'+
       'Socio: <a>'+(resp.socio.persona)+'</a><br/>'+
       (resp.socio.tipoDUI)+': <a>'+(resp.socio.nroDUI)+'</a><br/>'+
-      'Codigo: <a>'+(resp.socio.codigo)+'</a><br/><br/>'+ prods + '</div>';
+      'Codigo: <a>'+(resp.socio.codigo)+'</a>'+
+      '<br/><br/>'+
+      '<ul class="list-group list-group-unbordered">'+(fila)+'</ul></div>';
+    document.querySelector("#div_TablaMovim").innerHTML = '';
   });
 }
 
@@ -147,37 +149,46 @@ function appSociosViewMovimProd(saldoID,tipoOperID){
           totMora += valor.mora;
           totOtros += valor.otros;
           fila += '<tr>'+
+                  '<td style="text-align:center;">'+(valor.codigo)+'</td>'+
                   '<td>'+(valor.codagenc)+'</td>'+
                   '<td>'+(valor.coduser)+'</td>'+
                   '<td style="text-align:center;">'+(moment(valor.fecha).format("DD/MM/YYYY"))+'</td>'+
-                  '<td style="text-align:center;">'+(valor.codigo)+'</td>'+
-                  '<td style="text-align:right;">'+((valor.capital!=0)?appFormatMoney(valor.capital,2):'-')+'</td>'+
-                  '<td style="text-align:right;">'+((valor.interes>0)?appFormatMoney(valor.interes,2):'-')+'</td>'+
-                  '<td style="text-align:right;">'+((valor.mora>0)?appFormatMoney(valor.mora,2):'-')+'</td>'+
-                  '<td style="text-align:right;">'+((valor.otros>0)?appFormatMoney(valor.otros,2):'-')+'</td>'+
+                  '<td style="text-align:right;">'+((valor.capital!=0)?appFormatMoney(valor.capital,2):'')+'</td>'+
+                  '<td style="text-align:right;">'+((valor.interes>0)?appFormatMoney(valor.interes,2):'')+'</td>'+
+                  '<td style="text-align:right;">'+((valor.mora>0)?appFormatMoney(valor.mora,2):'')+'</td>'+
+                  '<td style="text-align:right;">'+((valor.otros>0)?appFormatMoney(valor.otros,2):'')+'</td>'+
+                  '<td style="text-align:right;">'+(appFormatMoney((valor.capital+valor.interes+valor.mora+valor.otros),2))+'</td>'+
                   '</tr>';
         });
         fila += '<tr>'+
-                '<td colspan="4" style="text-align:center;"><b>Total</b></td>'+
+                '<td colspan="4" style="text-align:center;"><b>TOTAL GENERAL</b></td>'+
                 '<td style="text-align:right;"><b>'+appFormatMoney(totCapital,2)+'</b></td>'+
                 '<td style="text-align:right;"><b>'+appFormatMoney(totInteres,2)+'</b></td>'+
                 '<td style="text-align:right;"><b>'+appFormatMoney(totMora,2)+'</b></td>'+
                 '<td style="text-align:right;"><b>'+appFormatMoney(totOtros,2)+'</b></td>'+
-                '</tr>';
+                '<td></td></tr>';
         
         //resultado
         result = '<table class="table table-hover" style="font-family:helveticaneue_light;">'+
             '<thead><tr>'+
+                '<th style="width:120px;text-align:center;">num_trans</th>'+
                 '<th style="width:25px;" title="Agencia">AG</th>'+
                 '<th style="width:25px;" title="Usuario">US</th>'+
                 '<th style="width:80px;text-align:center;">Fecha</th>'+
-                '<th style="width:120px;text-align:center;">num_trans</th>'+
                 '<th style="width:80px;text-align:right;">Capital</th>'+
                 '<th style="width:80px;text-align:right;">Interes</th>'+
                 '<th style="width:80px;text-align:right;">Mora</th>'+
                 '<th style="width:80px;text-align:right;">Otros</th>'+
+                '<th style="width:80px;text-align:right;">Total</th>'+
               '</tr></thead>'+
             '<tbody>'+fila+'</tbody>'+
+            '<tfoot>'+
+              '<tr style="height:60px;">'+
+                '<td colspan="3"></td>'+
+                '<td style="text-align:center;vertical-align:bottom;border-bottom-style:double;"><b>Saldo Final</b></td>'+
+                '<td style="text-align:right;vertical-align:bottom;border-bottom-style:double;"><b>'+appFormatMoney(totCapital,2)+'</b></td>'+
+                '<td colspan="4"></td></tr>'+
+            '</tfoot>'+
           '</table>';
         document.querySelector("#div_title_movim").innerHTML = '<h3 class="box-title" style="font-family:flexoregular;font-weight:bold;">'+resp.producto.producto+'</h3>';
         document.querySelector("#div_TablaMovim").innerHTML = result;

@@ -70,6 +70,8 @@
               </thead>
               <tbody id="grdDatos">
               </tbody>
+              <tfoot id="grdFoot">
+              </tfoot>
             </table>
           </div>
         </div>
