@@ -312,6 +312,13 @@
             <div class="box-body row">
               <div class="col-md-6">
                 <div class="box-body">
+                  <strong><i class="fa fa-thumbs-up margin-r-5"></i> Aprobacion</strong>
+                  <div class="form-group" style="margin-bottom:15px;">
+                    <div class="input-group">
+                      <span class="input-group-addon" style="background:#eeeeee;"><b>Fecha</b></span>
+                      <input id="txt_modApruebaFechaAprueba" type="text" class="form-control" style="width:105px;" disabled="disabled" />
+                    </div>
+                  </div>
                   <strong><i class="fa fa-pencil margin-r-5"></i> Basicos</strong>
                   <p class="text-muted">
                     <input type="hidden" id="hid_modApruebaID" value=""/>

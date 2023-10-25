@@ -242,10 +242,13 @@
               "tipocred" => $rs["tipocred"],
               "tipocredID" => $rs["id_tipocred"],
               "fecha_solicred" => $rs["fecha_solicred"],
+              "fecha_aprueba" => $fn->getFechaActualDB(),
               "frecuencia" => $rs["frecuencia"],
               "cuota" => $cuota[1]["cuota"],
               "observac" => $rs["observac"],
-              "estado" => ($rs["estado"]*1)
+              "estado" => ($rs["estado"]*1),
+              "rolUser" => $_SESSION['usr_data']['rolID'],
+              "rolROOT" => 101
             );
           }
 
@@ -304,7 +307,7 @@
             ":desgr"=>null,
             ":nrocuotas"=>null,
             ":fechaSoli"=>null,
-            ":fechaApru"=>null,
+            ":fechaApru"=>$data->FechaAprueba,
             ":fechaOtor"=>null,
             ":fechaPriC"=>null,
             ":tipocredID"=>null,

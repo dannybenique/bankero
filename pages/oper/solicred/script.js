@@ -127,6 +127,9 @@ function appSoliCredAprueba(solicredID){
     SoliCredID: solicredID
   }
   appFetch(datos,rutaSQL).then(resp => {
+    document.querySelector("#txt_modApruebaFechaAprueba").disabled = (resp.rolUser==resp.rolROOT) ? (false):(true);
+    $("#txt_modApruebaFechaAprueba").datepicker("setDate",moment(resp.fecha_aprueba).format("DD/MM/YYYY"));
+
     document.querySelector("#hid_modApruebaID").value = (resp.ID);
     document.querySelector("#lbl_modApruebaSocio").innerHTML = (resp.socio);
     document.querySelector("#lbl_modApruebaFechaSoliCred").innerHTML = (moment(resp.fecha_solicred).format("DD/MM/YYYY"));
@@ -228,7 +231,6 @@ function appSoliCredClear(txtSocio){
   document.querySelector("#btnInsert").style.display = 'inline';
   
   appFetch(datos,rutaSQL).then(resp => {
-    // console.log(resp);
     appLlenarDataEnComboBox(resp.comboAgencias,"#cbo_SoliCredAgencia",0);
     appLlenarDataEnComboBox(resp.comboEmpleados,"#cbo_SoliCredPromotor",0);
     appLlenarDataEnComboBox(resp.comboEmpleados,"#cbo_SoliCredAnalista",0);
@@ -370,9 +372,9 @@ function appSoliCredGetDatosToDatabase(){
     mora : appConvertToNumero(document.querySelector("#txt_SoliCredMora").value),
     desgr : appConvertToNumero(document.querySelector("#txt_SoliCredSegDesgr").value),
     nrocuotas : appConvertToNumero(document.querySelector("#txt_SoliCredNroCuotas").value),
-    fecha_solicred : appConvertToFecha(document.querySelector("#txt_SoliCredFechaSolici").value,""),
-    fecha_otorga : appConvertToFecha(document.querySelector("#txt_SoliCredFechaOtorga").value,""),
-    fecha_pricuota : appConvertToFecha(document.querySelector("#txt_SoliCredFechaPriCuota").value,""),
+    fecha_solicred : appConvertToFecha(document.querySelector("#txt_SoliCredFechaSolici").value),
+    fecha_otorga : appConvertToFecha(document.querySelector("#txt_SoliCredFechaOtorga").value),
+    fecha_pricuota : appConvertToFecha(document.querySelector("#txt_SoliCredFechaPriCuota").value),
     frecuencia : appConvertToNumero(document.querySelector("#txt_SoliCredFrecuencia").value),
     tipocredID : document.querySelector("#cbo_SoliCredTipo").value,
     observac : document.querySelector("#txt_SoliCredObserv").value
@@ -429,6 +431,7 @@ function modAprueba_BotonAprobar(){
   if(confirm("¿Esta seguro de continuar?")) {
     let datos = {
       ID : document.querySelector("#hid_modApruebaID").value,
+      FechaAprueba : appConvertToFecha(document.querySelector("#txt_modApruebaFechaAprueba").value),
       TipoQuery : "aprobarSoliCred",
       TipoExec : "APRU" //aprueba solicitud de credito
     }
