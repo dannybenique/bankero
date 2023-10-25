@@ -21,6 +21,7 @@
             "login" => $rs['login'],
             "cargo" => $rs['cargo'],
             "rolID" => $rs['id_rol'],
+            "rolROOT" => 101,
             "coopacID" => $rs['id_coopac'],
             "agenciaID" => $rs['id_agencia'],
             "nombrecorto" => $rs['nombrecorto'],

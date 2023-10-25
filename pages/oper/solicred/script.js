@@ -46,7 +46,7 @@ function appSoliCredReset(){
 
     document.querySelector("#txtBuscar").value = ("");
     document.querySelector("#grdDatos").innerHTML = ("");
-    document.querySelector("#div_PersAuditoria").style.display = ((resp.rolID==101)?('block'):('none'));
+    document.querySelector("#div_PersAuditoria").style.display = ((resp.rolID==resp.rolROOT)?('block'):('none'));
     appSoliCredGrid();
   });
 }
@@ -228,6 +228,7 @@ function appSoliCredClear(txtSocio){
   document.querySelector("#btnInsert").style.display = 'inline';
   
   appFetch(datos,rutaSQL).then(resp => {
+    // console.log(resp);
     appLlenarDataEnComboBox(resp.comboAgencias,"#cbo_SoliCredAgencia",0);
     appLlenarDataEnComboBox(resp.comboEmpleados,"#cbo_SoliCredPromotor",0);
     appLlenarDataEnComboBox(resp.comboEmpleados,"#cbo_SoliCredAnalista",0);
@@ -237,10 +238,10 @@ function appSoliCredClear(txtSocio){
     appLlenarDataEnComboBox(resp.comboClasifica,"#cbo_SoliCredClasifica",131);
     appLlenarDataEnComboBox(resp.comboCondicion,"#cbo_SoliCredCondicion",141);
     appLlenarDataEnComboBox(resp.comboMoneda,"#cbo_SoliCredMoneda",0);
+    
     document.querySelector("#hid_SoliCredID").value = (0);
     document.querySelector("#txt_SoliCredSocio").value = (txtSocio);
-    document.querySelector("#txt_SoliCredFechaSolici").value = (moment(resp.fecha).format("DD/MM/YYYY"));
-    document.querySelector("#txt_SoliCredCodigo").placeholder = (appConvertToFecha(document.querySelector("#txt_SoliCredFechaSolici").value)+".0000");
+    document.querySelector("#txt_SoliCredFechaSolici").disabled = (resp.rolUser==resp.rolROOT) ? (false):(true);
     document.querySelector("#txt_SoliCredCodigo").value = ("");
     document.querySelector("#txt_SoliCredImporte").value = ("100.00");
     document.querySelector("#txt_SoliCredTasa").value = ("100.00");
@@ -249,9 +250,11 @@ function appSoliCredClear(txtSocio){
     document.querySelector("#txt_SoliCredNroCuotas").value = ("12");
     document.querySelector("#txt_SoliCredFrecuencia").value = ("");
     document.querySelector("#txt_SoliCredObserv").value = ("");
+
+    $("#txt_SoliCredFechaSolici").datepicker("setDate",moment(resp.fecha).format("DD/MM/YYYY"));
     $('#txt_SoliCredFechaOtorga').datepicker("setDate",moment(resp.fecha).format("DD/MM/YYYY"));
-    $('#txt_SoliCredFechaPriCuota').datepicker("setDate",moment(resp.fecha).add(1,'M').format("DD/MM/YYYY"));
     $('#txt_SoliCredFechaOtorga').datepicker().on('changeDate', function(e) { appSoliCredUpdatePriCuotaByFechaOtorga(); });
+    $('#txt_SoliCredFechaPriCuota').datepicker("setDate",moment(resp.fecha).add(1,'M').format("DD/MM/YYYY"));
     $('#txt_SoliCredFrecuencia').on('input', function(e) { appSoliCredUpdatePriCuotaByFrecuencia(); });
   });
 }

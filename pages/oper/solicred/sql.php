@@ -148,7 +148,10 @@
             "comboCondicion" => $fn->getComboBox("select id,nombre from sis_tipos where id_padre=4 order by id;"), //condicion credito
             "comboMoneda" => $fn->getComboBox("select id,nombre from sis_tipos where id_padre=1 order by id;"), //tipos moneda
             "fecha" => $fn->getFechaActualDB(),
-            "coopac" => $web->coopacID);
+            "coopac" => $web->coopacID,
+            "rolUser" => $_SESSION['usr_data']['rolID'],
+            "rolROOT" => 101
+          );
           echo json_encode($rpta);
           break;
         case "viewSoliCred":
