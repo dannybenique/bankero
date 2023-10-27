@@ -70,7 +70,6 @@ function appPagosBotonPagar(){
           monedaID : document.querySelector("#cbo_DeudaMonedas").value*1,
           importe : importe*1
         };
-        // console.log(datos);
         appFetch(datos,rutaSQL).then(resp => {
           if (!resp.error) { 
             if(confirm("¿Desea Imprimir el pago?")){
@@ -146,12 +145,14 @@ function appCreditoPagoView(prestamoID){
     appCredi_Detalle_SetData(resp.detalle);
     appLlenarDataEnComboBox(resp.comboTipoPago,"#cbo_DeudaMedioPago",0); //medios de pago
     appLlenarDataEnComboBox(resp.comboMonedas,"#cbo_DeudaMonedas",0); //monedas
-    document.querySelector('#txt_DeudaFecha').value = (moment(resp.fecha).format("DD/MM/YYYY"));
+    $('#txt_DeudaFecha').datepicker("setDate",moment(resp.fecha).format("DD/MM/YYYY"));
     document.querySelector("#btn_PAGAR").disabled = false;
   });
 }
 
 function appCredi_Cabecera_SetData(data){
+  document.querySelector("#txt_DeudaFecha").disabled = (data.rolUser==data.rolROOT) ? (false):(true);
+  document.querySelector("#txt_DeudaMora").disabled = (data.rolUser==data.rolROOT) ? (false):(true);
   document.querySelector("#lbl_crediAtraso").style.color = (data.atraso>0)?("#D00"):("#777");
   document.querySelector('#lbl_crediAtraso').innerHTML = (data.atraso);
 

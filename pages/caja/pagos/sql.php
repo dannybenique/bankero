@@ -100,7 +100,9 @@
               "frecuencia" => $rs["frecuencia"],
               "observac" => ($rs["observac"]),
               "estado" => ($rs["estado"]*1),
-              "atraso" => (($rs["atraso"]<0)?(0):($rs["atraso"] ))
+              "atraso" => (($rs["atraso"]<0)?(0):($rs["atraso"] )),
+              "rolUser" => $_SESSION['usr_data']['rolID'],
+              "rolROOT" => 101
             );
           }
           

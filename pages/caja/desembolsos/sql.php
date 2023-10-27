@@ -120,7 +120,9 @@
               "frecuencia" => $rs["frecuencia"],
               "cuota" => $cuota[1]["cuota"],
               "observac" => $rs["observac"],
-              "estado" => ($rs["estado"]*1)
+              "estado" => ($rs["estado"]*1),
+              "rolUser" => $_SESSION['usr_data']['rolID'],
+              "rolROOT" => 101
             );
           }
           

@@ -152,8 +152,9 @@ function appDesembSetData(data){
     agenciaID : data.agenciaID
   }
   document.querySelector("#lbl_FormAprueba").style.color = (data.aprueba=="")?("#D00"):("#777");
-  
-  document.querySelector('#txt_DesembFecha').value = (moment(data.fecha_desemb).format("DD/MM/YYYY"));
+  document.querySelector("#txt_DesembFecha").disabled = (data.rolUser==data.rolROOT) ? (false):(true);
+  $('#txt_DesembFecha').datepicker("setDate",moment(data.fecha_desemb).format("DD/MM/YYYY"));
+
   document.querySelector('#lbl_DesembSocio').innerHTML = (data.socio);
   document.querySelector('#lbl_DesembFechaSoliCred').innerHTML = (moment(data.fecha_solicred).format("DD/MM/YYYY"));
   document.querySelector("#lbl_DesembCodigo").innerHTML = (data.codigo);
