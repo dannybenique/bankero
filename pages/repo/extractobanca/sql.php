@@ -61,6 +61,7 @@
                 "operID" => $rs["id_tipo_oper"],
                 "productoID" => $rs["id_producto"],
                 "producto" => $rs["producto"],
+                "cod_prod" => $rs["cod_prod"],
                 "saldo" => $rs["saldo"]
               );
             }

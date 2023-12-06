@@ -65,7 +65,7 @@ function appSociosOperView(socioID){
   appFetch(datos,rutaSQL).then(resp => {
     let fila = '';
     resp.prods.forEach((valor,key)=>{
-      fila += '<li class="list-group-item"><a href="javascript:appSociosViewMovimProd('+(valor.saldoID)+','+(valor.operID)+');"><span>'+(valor.producto)+'</span></a> <a class="pull-right">'+appFormatMoney(valor.saldo,2)+'</a></li>';
+      fila += '<li class="list-group-item"><a href="javascript:appSociosViewMovimProd('+(valor.saldoID)+','+(valor.operID)+');"><span>'+(valor.producto)+'&raquo; '+(valor.cod_prod)+'</span></a> <a class="pull-right">'+appFormatMoney(valor.saldo,2)+'</a></li>';
     });
     document.querySelector("#div_InfoCorta").innerHTML = '<div class="box-body">'+
       'Socio: <a>'+(resp.socio.persona)+'</a><br/>'+
