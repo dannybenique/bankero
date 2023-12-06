@@ -102,7 +102,7 @@
                   <thead>
                     <tr>
                       <th style="width:30px;">Nro</th>
-                      <th style="width:30px;">DS</th>
+                      <th style="width:30px;" title="dias entre cuotas">DS</th>
                       <th style="width:80px;text-align:center;">Fecha</th>
                       <th style="width:95px;text-align:right;">Total</th>
                       <th style="width:95px;text-align:right;">Capital</th>

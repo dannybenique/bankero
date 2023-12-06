@@ -97,6 +97,11 @@ function appCabeceraSetData(data){
 
 function appDetalleSetData(data){
   // console.log(data);
+  let cuoTotal = 0;
+  let cuoCapital = 0;
+  let cuoInteres = 0;
+  let cuoMora = 0;
+  let cuoOtros = 0;
   let totGrayTotal = 0;
   let totGrayCapital = 0;
   let totGrayInteres = 0;
@@ -137,15 +142,20 @@ function appDetalleSetData(data){
         totBlackOtros += valor.otros;
       }
     }
+    cuoOtros = (valor.capital==valor.pg_capital)?(valor.pg_otros):(valor.otros);
+    cuoMora = (valor.capital==valor.pg_capital)?(valor.pg_mora):(valor.mora);
+    cuoInteres = (valor.capital==valor.pg_capital)?(valor.pg_interes):(valor.interes-valor.pg_interes);
+    cuoCapital = (valor.capital==valor.pg_capital)?(valor.pg_capital):(valor.capital-valor.pg_capital);
+    cuoTotal = cuoCapital + cuoInteres + cuoMora + cuoOtros;
     fila += '<tr style="'+((valor.numero==0)?('color:#bbb;'):((valor.capital==valor.pg_capital)?('color:#bbb;'):((valor.atraso>=0)?("color:#f00;"):(""))))+'">'+
             '<td>'+(valor.numero)+'</td>'+
             '<td>'+((valor.numero>0)?(moment(valor.fecha).diff(fecha,"days")):(0))+'</td>'+
             '<td>'+(moment(valor.fecha).format("DD/MM/YYYY"))+'</td>'+
-            '<td style="text-align:right;">'+appFormatMoney(valor.total+valor.pg_mora,2)+'</td>'+
-            '<td style="text-align:right;">'+appFormatMoney(((valor.capital==valor.pg_capital)?(valor.pg_capital):(valor.capital-valor.pg_capital)),2)+'</td>'+
-            '<td style="text-align:right;">'+appFormatMoney(((valor.capital==valor.pg_capital)?(valor.pg_interes):(valor.interes-valor.pg_interes)),2)+'</td>'+
-            '<td style="text-align:right;">'+appFormatMoney(((valor.capital==valor.pg_capital)?(valor.pg_mora):(valor.mora)),2)+'</td>'+
-            '<td style="text-align:right;">'+appFormatMoney(((valor.capital==valor.pg_capital)?(valor.pg_otros):(valor.otros)),2)+'</td>'+
+            '<td style="text-align:right;">'+appFormatMoney(cuoTotal,2)+'</td>'+
+            '<td style="text-align:right;" title="Inicial:&nbsp;'+appFormatMoney(valor.capital,2)+'\nA Cta:&nbsp;'+appFormatMoney(valor.pg_capital,2)+'\nActual:&nbsp;'+appFormatMoney(valor.capital-valor.pg_capital,2)+'">'+appFormatMoney((cuoCapital),2)+'</td>'+
+            '<td style="text-align:right;" title="Inicial:&nbsp;'+appFormatMoney(valor.interes,2)+'\nA Cta:&nbsp;'+appFormatMoney(valor.pg_interes,2)+'\nActual:&nbsp;'+appFormatMoney(valor.interes-valor.pg_interes,2)+'">'+appFormatMoney((cuoInteres),2)+'</td>'+
+            '<td style="text-align:right;">'+appFormatMoney((cuoMora),2)+'</td>'+
+            '<td style="text-align:right;">'+appFormatMoney((cuoOtros),2)+'</td>'+
             '<td style="text-align:right;">'+appFormatMoney(valor.saldo,2)+'</td>'+
             '<td style="text-align:center;">'+((valor.numero==0)?(0):((valor.atraso<0)?(0):(valor.atraso)))+'</td>'+
             '<td></td></tr>';

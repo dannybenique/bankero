@@ -52,7 +52,7 @@
           
           //productos
           $prods = array();
-          $sql = "select * from vw_saldos where id_coopac=:coopacID and id_socio=:socioID order by id_tipo_oper;";
+          $sql = "select * from vw_saldos where estado=1 and id_coopac=:coopacID and id_socio=:socioID order by id_tipo_oper;";
           $qry = $db->query_all($sql,$params);
           if ($qry) {
             foreach($qry as $rs){
