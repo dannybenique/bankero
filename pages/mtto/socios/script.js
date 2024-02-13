@@ -13,14 +13,14 @@ function appSociosGrid(){
     if(resp.tabla.length>0){
       let fila = "";
       resp.tabla.forEach((valor,key)=>{
-        fila += '<tr>';
-        fila += '<td><input type="checkbox" name="chk_Borrar" value="'+(valor.ID)+'" '+disabledDelete+'/></td>';
-        fila += '<td>'+(valor.codigo)+'</td>';
-        fila += '<td>'+(moment(valor.fecha).format("DD/MM/YYYY"))+'</td>';
-        fila += '<td>'+(valor.nro_dui)+'</td>';
-        fila += '<td><a href="javascript:appSocioView('+(valor.ID)+');" title="'+(valor.ID)+'">'+(valor.socio)+'</a></td>';
-        fila += '<td>'+(valor.direccion)+'</td>';
-        fila += '</tr>';
+        fila += '<tr>'+
+                '<td><input type="checkbox" name="chk_Borrar" value="'+(valor.ID)+'" '+disabledDelete+'/></td>'+
+                '<td>'+(valor.codigo)+'</td>'+
+                '<td>'+(moment(valor.fecha).format("DD/MM/YYYY"))+'</td>'+
+                '<td>'+(valor.nro_dui)+'</td>'+
+                '<td><a href="javascript:appSocioView('+(valor.ID)+');" title="'+(valor.ID)+'">'+(valor.socio)+'</a></td>'+
+                '<td>'+(valor.direccion)+'</td>'+
+                '</tr>';
       });
       document.querySelector('#grdDatos').innerHTML = (fila);
     } else {
@@ -293,14 +293,14 @@ function appLaboralSetData(data){
   if(data.length>0){
     let fila = "";
     data.forEach((valor,key)=>{
-      fila += '<tr>';
-      fila += '<td><a href="javascript:appLaboralDelete('+(valor.ID)+');"><i class="fa fa-trash" style="color:#D73925;"></i></a></td>';
-      fila += '<td>'+((valor.condicion==1)?("Dependiente"):("Independiente"))+'</td>';
-      fila += '<td>'+(valor.ruc)+'</td>';
-      fila += '<td><a href="javascript:appLaboralEditar('+(valor.ID)+');" title="'+(valor.ID)+'">'+(valor.empresa)+'</a></td>';
-      fila += '<td>'+(valor.cargo)+'</td>';
-      fila += '<td style="text-align:right;">'+(appFormatMoney(valor.ingreso,2))+'</td>';
-      fila += '</tr>';
+      fila += '<tr>'+
+              '<td><a href="javascript:appLaboralDelete('+(valor.ID)+');"><i class="fa fa-trash" style="color:#D73925;"></i></a></td>'+
+              '<td>'+((valor.condicion==1)?("Dependiente"):("Independiente"))+'</td>'+
+              '<td>'+(valor.ruc)+'</td>'+
+              '<td><a href="javascript:appLaboralEditar('+(valor.ID)+');" title="'+(valor.ID)+'">'+(valor.empresa)+'</a></td>'+
+              '<td>'+(valor.cargo)+'</td>'+
+              '<td style="text-align:right;">'+(appFormatMoney(valor.ingreso,2))+'</td>'+
+              '</tr>';
     });
     $('#grdLaboDatosBody').html(fila);
   } else {

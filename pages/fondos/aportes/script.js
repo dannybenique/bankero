@@ -14,13 +14,13 @@ function appAportesGrid(){
     if(resp.tabla.length>0){
       let fila = "";
       resp.tabla.forEach((valor,key)=>{
-        fila += '<tr style="color:'+((resp.obliga)?((valor.saldo>0)?("black"):("red")):("black"))+'">';
-        fila += '<td>'+((valor.num_movim==0)?('<input type="checkbox" name="chk_Borrar" value="'+(valor.ID)+'" '+disabledDelete+'/>'):(''))+'</td>';
-        fila += '<td>'+(valor.nro_dui)+'</td>';
-        fila += '<td>'+(valor.socio)+'</td>';
-        fila += '<td><a href="javascript:appAportesView('+(valor.ID)+');" title="'+(valor.ID)+'">'+(valor.codigo+' &raquo; '+valor.producto+'; '+valor.m_abrevia+';')+'</a></td>';
-        fila += '<td style="text-align:right;">'+appFormatMoney(valor.saldo,2)+'</td>';
-        fila += '</tr>';
+        fila += '<tr style="color:'+((resp.obliga)?((valor.saldo>0)?("black"):("red")):("black"))+'">'+
+                '<td>'+((valor.num_movim==0)?('<input type="checkbox" name="chk_Borrar" value="'+(valor.ID)+'" '+disabledDelete+'/>'):(''))+'</td>'+
+                '<td>'+(valor.nro_dui)+'</td>'+
+                '<td>'+(valor.socio)+'</td>'+
+                '<td><a href="javascript:appAportesView('+(valor.ID)+');" title="'+(valor.ID)+'">'+(valor.codigo+' &raquo; '+valor.producto+'; '+valor.m_abrevia+';')+'</a></td>'+
+                '<td style="text-align:right;">'+appFormatMoney(valor.saldo,2)+'</td>'+
+                '</tr>';
       });
       $('#grdDatos').html(fila);
     }else{
@@ -124,23 +124,23 @@ function appMovimSetData(data){
     totIngresos += valor.ingresos;
     totSalidas += valor.salidas;
     totOtros += valor.otros;
-    fila += '<tr>';
-    fila += '<td>'+(valor.ag)+'</td>';
-    fila += '<td>'+(valor.us)+'</td>';
-    fila += '<td style="text-align:center;">'+(moment(valor.fecha).format("DD/MM/YYYY"))+'</td>';
-    fila += '<td style="text-align:center;">'+(valor.codigo)+'</td>';
-    fila += '<td>'+(valor.codmov+' '+valor.movim)+'</td>';
-    fila += '<td style="text-align:right;">'+((valor.ingresos>0)?(appFormatMoney(valor.ingresos,2)):(''))+'</td>';
-    fila += '<td style="text-align:right;">'+((valor.salidas>0)?(appFormatMoney(valor.salidas,2)):(''))+'</td>';
-    fila += '<td style="text-align:right;">'+((valor.otros>0)?appFormatMoney(valor.otros,2):(''))+'</td>';
-    fila += '</tr>';
+    fila += '<tr>'+
+            '<td>'+(valor.ag)+'</td>'+
+            '<td>'+(valor.us)+'</td>'+
+            '<td style="text-align:center;">'+(moment(valor.fecha).format("DD/MM/YYYY"))+'</td>'+
+            '<td style="text-align:center;">'+(valor.codigo)+'</td>'+
+            '<td>'+(valor.codmov+' '+valor.movim)+'</td>'+
+            '<td style="text-align:right;">'+((valor.ingresos>0)?(appFormatMoney(valor.ingresos,2)):(''))+'</td>'+
+            '<td style="text-align:right;">'+((valor.salidas>0)?(appFormatMoney(valor.salidas,2)):(''))+'</td>'+
+            '<td style="text-align:right;">'+((valor.otros>0)?appFormatMoney(valor.otros,2):(''))+'</td>'+
+            '</tr>';
   });
-  fila += '<tr>';
-  fila += '<td colspan="5" style="text-align:center;"><b>Total</b></td>';
-  fila += '<td style="text-align:right;"><b>'+appFormatMoney(totIngresos,2)+'</b></td>';
-  fila += '<td style="text-align:right;"><b>'+appFormatMoney(totSalidas,2)+'</b></td>';
-  fila += '<td style="text-align:right;"><b>'+appFormatMoney(totOtros,2)+'</b></td>';
-  fila += '</tr>';
+  fila += '<tr>'+
+          '<td colspan="5" style="text-align:center;"><b>Total</b></td>'+
+          '<td style="text-align:right;"><b>'+appFormatMoney(totIngresos,2)+'</b></td>'+
+          '<td style="text-align:right;"><b>'+appFormatMoney(totSalidas,2)+'</b></td>'+
+          '<td style="text-align:right;"><b>'+appFormatMoney(totOtros,2)+'</b></td>'+
+          '</tr>';
   document.querySelector('#grdDetalleDatos').innerHTML = fila;
   document.querySelector('#lbl_movimSaldo').innerHTML = appFormatMoney(totIngresos-totSalidas,2);
 }

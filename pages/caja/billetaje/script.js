@@ -16,14 +16,14 @@ function appBillGrid(){
     if(resp.tabla.length>0){
       let fila = "";
       resp.tabla.forEach((valor,key)=>{
-        fila += '<tr>';
-        fila += '<td><input type="checkbox" name="chk_Borrar" value="'+(valor.ID)+'" '+disabledDelete+'/></td>';
-        fila += '<td><a href="javascript:appBillView('+(valor.ID)+');" title="'+(valor.ID)+'">'+(moment(valor.fecha).format("DD/MM/YYYY"))+'</a></td>';
-        fila += '<td>'+(valor.agencia)+'</td>';
-        fila += '<td>'+(valor.empleado)+'</td>';
-        fila += '<td>'+(valor.moneda)+'</td>';
-        fila += '<td style="text-align:right;">'+appFormatMoney(valor.total,2)+'</td>';
-        fila += '</tr>';
+        fila += '<tr>'+
+                '<td><input type="checkbox" name="chk_Borrar" value="'+(valor.ID)+'" '+disabledDelete+'/></td>'+
+                '<td><a href="javascript:appBillView('+(valor.ID)+');" title="'+(valor.ID)+'">'+(moment(valor.fecha).format("DD/MM/YYYY"))+'</a></td>'+
+                '<td>'+(valor.agencia)+'</td>'+
+                '<td>'+(valor.empleado)+'</td>'+
+                '<td>'+(valor.moneda)+'</td>'+
+                '<td style="text-align:right;">'+appFormatMoney(valor.total,2)+'</td>'+
+                '</tr>';
       });
       $('#grdDatos').html(fila);
     }else{

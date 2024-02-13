@@ -13,12 +13,12 @@ function appAgenciasGrid(){
     if(resp.agencias.length>0){
       let fila = "";
       resp.agencias.forEach((valor,key)=>{
-        fila += '<tr>';
-        fila += '<td><input type="checkbox" name="chk_Borrar" value="'+(valor.ID)+'" '+(disabledDelete)+'/></td>';
-        fila += '<td style="font-size:18px;font-weight:bold;text-align:center;">'+(valor.codigo)+'</td>';
-        fila += '<td><a href="javascript:appAgenciaView('+(valor.ID)+');" title="'+(valor.ID)+'"><span style="font-size:12px;">'+(valor.telefonos)+'</span><br>'+(valor.nombre)+'</a></td>';
-        fila += '<td><span style="font-size:12px;color:#999;">'+(valor.region+' - '+valor.provincia+' - '+valor.distrito)+'</span><br>'+(valor.direccion)+'</td>';
-        fila += '</tr>';
+        fila += '<tr>'+
+                '<td><input type="checkbox" name="chk_Borrar" value="'+(valor.ID)+'" '+(disabledDelete)+'/></td>'+
+                '<td style="font-size:18px;font-weight:bold;text-align:center;">'+(valor.codigo)+'</td>'+
+                '<td><a href="javascript:appAgenciaView('+(valor.ID)+');" title="'+(valor.ID)+'"><span style="font-size:12px;">'+(valor.telefonos)+'</span><br>'+(valor.nombre)+'</a></td>'+
+                '<td><span style="font-size:12px;color:#999;">'+(valor.region+' - '+valor.provincia+' - '+valor.distrito)+'</span><br>'+(valor.direccion)+'</td>'+
+                '</tr>';
       });
       document.querySelector('#grdDatos').innerHTML = (fila);
     }else{

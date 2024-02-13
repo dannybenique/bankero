@@ -16,18 +16,18 @@ function appSoliCredGrid(){
     if(resp.tabla.length>0){
       let fila = "";
       resp.tabla.forEach((valor,key)=>{
-        fila += '<tr>';
-        fila += '<td><input type="checkbox" name="chk_Borrar" value="'+(valor.ID)+'" '+disabledDelete+'/></td>';
-        fila += '<td>'+((menu.oper.submenu.solicred.aprueba===1)?('<a href="javascript:appSoliCredAprueba('+(valor.ID)+');"><i class="fa fa-thumbs-up" style="color:#FF0084;"></i></a>'):(''))+'</td>';
-        fila += '<td>'+(moment(valor.fecha).format("DD/MM/YYYY"))+'</td>';
-        fila += '<td>'+(valor.nro_dui)+'</td>';
-        fila += '<td>'+(valor.socio)+'</td>';
-        fila += '<td><a href="javascript:appSoliCredView('+(valor.ID)+');" title="'+(valor.ID)+'">'+(valor.codigo)+(' &raquo; ')+(valor.producto)+'; '+(valor.mon_abrevia)+'; '+appFormatMoney(valor.tasa,2)+'%</a></td>';
-        fila += '<td>'+(valor.tiposbs)+'</td>';
-        fila += '<td>'+(moment(valor.otorga).format("DD/MM/YYYY"))+'</td>';
-        fila += '<td style="text-align:right;">'+appFormatMoney(valor.importe,2)+'</td>';
-        fila += '<td style="text-align:center;">'+(valor.nro_cuotas)+'</td>';
-        fila += '</tr>';
+        fila += '<tr>'+
+                '<td><input type="checkbox" name="chk_Borrar" value="'+(valor.ID)+'" '+disabledDelete+'/></td>'+
+                '<td>'+((menu.oper.submenu.solicred.aprueba===1)?('<a href="javascript:appSoliCredAprueba('+(valor.ID)+');"><i class="fa fa-thumbs-up" style="color:#FF0084;"></i></a>'):(''))+'</td>'+
+                '<td>'+(moment(valor.fecha).format("DD/MM/YYYY"))+'</td>'+
+                '<td>'+(valor.nro_dui)+'</td>'+
+                '<td>'+(valor.socio)+'</td>'+
+                '<td><a href="javascript:appSoliCredView('+(valor.ID)+');" title="'+(valor.ID)+'">'+(valor.codigo)+(' &raquo; ')+(valor.producto)+'; '+(valor.mon_abrevia)+'; '+appFormatMoney(valor.tasa,2)+'%</a></td>'+
+                '<td>'+(valor.tiposbs)+'</td>'+
+                '<td>'+(moment(valor.otorga).format("DD/MM/YYYY"))+'</td>'+
+                '<td style="text-align:right;">'+appFormatMoney(valor.importe,2)+'</td>'+
+                '<td style="text-align:center;">'+(valor.nro_cuotas)+'</td>'+
+                '</tr>';
       });
       $('#grdDatos').html(fila);
     }else{

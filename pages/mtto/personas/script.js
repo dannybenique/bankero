@@ -13,13 +13,13 @@ function appPersonasGrid(){
     if(resp.tabla.length>0){
       let fila = "";
       resp.tabla.forEach((valor,key)=>{
-        fila += '<tr>';
-        fila += '<td><input type="checkbox" name="chk_Borrar" value="'+(valor.ID)+'" '+(disabledDelete)+'/></td>';
-        fila += '<td><a href="javascript:appPersonasBotonAuditoria('+(valor.ID)+');"><i class="fa fa-paperclip" title="Auditoria"></i></a></td>';
-        fila += '<td>'+(valor.DNI)+'</td>';
-        fila += '<td><a href="javascript:appPersonaView('+(valor.ID)+');" title="'+(valor.ID)+'">'+(valor.persona)+'</a></td>';
-        fila += '<td>'+(valor.direccion)+'</td>';
-        fila += '</tr>';
+        fila += '<tr>'+
+                '<td><input type="checkbox" name="chk_Borrar" value="'+(valor.ID)+'" '+(disabledDelete)+'/></td>'+
+                '<td><a href="javascript:appPersonasBotonAuditoria('+(valor.ID)+');"><i class="fa fa-paperclip" title="Auditoria"></i></a></td>'+
+                '<td>'+(valor.DNI)+'</td>'+
+                '<td><a href="javascript:appPersonaView('+(valor.ID)+');" title="'+(valor.ID)+'">'+(valor.persona)+'</a></td>'+
+                '<td>'+(valor.direccion)+'</td>'+
+                '</tr>';
       });
       document.querySelector('#grdDatos').innerHTML = fila;
     }else{
@@ -175,18 +175,18 @@ function appPersonasBotonAuditoria(personaID){
     if(resp.tablaLog.length>0){
       let fila = "";
       resp.tablaLog.forEach((valor,key)=>{
-        fila += '<tr>';
-        fila += '<td>'+(valor.codigo)+'</td>';
-        fila += '<td>'+(valor.tabla)+'</td>';
-        fila += '<td>'+(valor.accion)+'</td>';
-        fila += '<td>'+(valor.campo)+'</td>';
-        fila += '<td>'+(valor.observac)+'</td>';
-        fila += '<td>'+(valor.usuario)+'</td>';
-        fila += '<td>'+(valor.sysIP)+'</td>';
-        fila += '<td style="text-align:center;">'+(valor.sysagencia)+'</td>';
-        fila += '<td style="text-align:right;">'+(valor.sysfecha)+'</td>';
-        fila += '<td style="text-align:right;">'+(valor.syshora)+'</td>';
-        fila += '</tr>';
+        fila += '<tr>'+
+                '<td>'+(valor.codigo)+'</td>'+
+                '<td>'+(valor.tabla)+'</td>'+
+                '<td>'+(valor.accion)+'</td>'+
+                '<td>'+(valor.campo)+'</td>'+
+                '<td>'+(valor.observac)+'</td>'+
+                '<td>'+(valor.usuario)+'</td>'+
+                '<td>'+(valor.sysIP)+'</td>'+
+                '<td style="text-align:center;">'+(valor.sysagencia)+'</td>'+
+                '<td style="text-align:right;">'+(valor.sysfecha)+'</td>'+
+                '<td style="text-align:right;">'+(valor.syshora)+'</td>'+
+                '</tr>';
       });
       document.querySelector('#grdAuditoriaBody').innerHTML = (fila);
     }else{
@@ -200,14 +200,14 @@ function appLaboralSetData(data){
   if(data.length>0){
     let fila = "";
     data.forEach((valor,key)=>{
-      fila += '<tr>';
-      fila += '<td><a href="javascript:appLaboralDelete('+(valor.ID)+');"><i class="fa fa-trash" style="color:#D73925;"></i></a></td>';
-      fila += '<td>'+((valor.condicion==1)?("Dependiente"):("Independiente"))+'</td>';
-      fila += '<td>'+(valor.ruc)+'</td>';
-      fila += '<td><a href="javascript:appLaboralEditar('+(valor.ID)+');" title="'+(valor.ID)+'">'+(valor.empresa)+'</a></td>';
-      fila += '<td>'+(valor.cargo)+'</td>';
-      fila += '<td style="text-align:right;">'+(appFormatMoney(valor.ingreso,2))+'</td>';
-      fila += '</tr>';
+      fila += '<tr>'+
+              '<td><a href="javascript:appLaboralDelete('+(valor.ID)+');"><i class="fa fa-trash" style="color:#D73925;"></i></a></td>'+
+              '<td>'+((valor.condicion==1)?("Dependiente"):("Independiente"))+'</td>'+
+              '<td>'+(valor.ruc)+'</td>'+
+              '<td><a href="javascript:appLaboralEditar('+(valor.ID)+');" title="'+(valor.ID)+'">'+(valor.empresa)+'</a></td>'+
+              '<td>'+(valor.cargo)+'</td>'+
+              '<td style="text-align:right;">'+(appFormatMoney(valor.ingreso,2))+'</td>'+
+              '</tr>';
     });
     document.querySelector('#grdLaboDatosBody').innerHTML = (fila);
   } else {

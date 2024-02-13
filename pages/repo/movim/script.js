@@ -88,21 +88,20 @@ function appMovimView(voucherID){
     
     //detalle
     if(resp.deta.length>0){
-      console.log(resp.deta);
+      // console.log(resp.deta);
       let fila = "";
       resp.deta.forEach((valor,key)=>{
-        fila += '<tr>';
-        fila += '<td style="text-align:center;">'+(valor.item)+'</td>';
-        fila += '<td>'+(valor.tipo_mov)+'</td>';
-        fila += '<td>'+(valor.producto)+'</td>';
-        fila += '<td style="text-align:right;">'+(appFormatMoney(valor.importe,2))+'</td>';
-        fila += '</tr>';
+        fila += '<tr>'+
+                '<td style="text-align:center;">'+(valor.item)+'</td>'+
+                '<td>'+(valor.tipo_mov)+'</td>'+
+                '<td>'+(valor.producto)+'</td>'+
+                '<td style="text-align:right;">'+(appFormatMoney(valor.importe,2))+'</td>'+
+                '</tr>';
       });
       document.querySelector('#grdDetalleDatos').innerHTML = (fila);
     }else{
       document.querySelector('#grdDetalleDatos').innerHTML = ('<tr><td colspan="4" style="text-align:center;color:red;">Sin DETALLE</td></tr>');
     }
-
     document.querySelector('#grid').style.display = 'none';
     document.querySelector('#edit').style.display = 'block';
   });

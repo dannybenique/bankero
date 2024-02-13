@@ -14,16 +14,16 @@ function appCreditosGrid(){
     if(resp.tabla.length>0){
       let fila = "";
       resp.tabla.forEach((valor,key)=>{
-        fila += '<tr>';
-        fila += '<td>'+(moment(valor.fecha).format("DD/MM/YYYY"))+'</td>';
-        fila += '<td>'+(valor.nro_dui)+'</td>';
-        fila += '<td>'+(valor.socio)+'</td>';
-        fila += '<td><a href="javascript:appCreditosView('+(valor.ID)+');" title="'+(valor.ID)+'">'+(valor.producto+' :: '+valor.codigo+'; '+valor.mon_abrevia+'; '+appFormatMoney(valor.tasa,2))+'%</a></td>';
-        fila += '<td>'+(valor.tiposbs)+'</td>';
-        fila += '<td style="text-align:right;">'+appFormatMoney(valor.importe,2)+'</td>';
-        fila += '<td style="text-align:right;">'+appFormatMoney(valor.saldo,2)+'</td>';
-        fila += '<td style="text-align:center;">'+(valor.nro_cuotas)+'</td>';
-        fila += '</tr>';
+        fila += '<tr>'+
+                '<td>'+(moment(valor.fecha).format("DD/MM/YYYY"))+'</td>'+
+                '<td>'+(valor.nro_dui)+'</td>'+
+                '<td>'+(valor.socio)+'</td>'+
+                '<td><a href="javascript:appCreditosView('+(valor.ID)+');" title="'+(valor.ID)+'">'+(valor.producto+' :: '+valor.codigo+'; '+valor.mon_abrevia+'; '+appFormatMoney(valor.tasa,2))+'%</a></td>'+
+                '<td>'+(valor.tiposbs)+'</td>'+
+                '<td style="text-align:right;">'+appFormatMoney(valor.importe,2)+'</td>'+
+                '<td style="text-align:right;">'+appFormatMoney(valor.saldo,2)+'</td>'+
+                '<td style="text-align:center;">'+(valor.nro_cuotas)+'</td>'+
+                '</tr>';
       });
       $('#grdDatos').html(fila);
     }else{
@@ -101,27 +101,27 @@ function appDetalleSetData(data){
     totCapital += valor.capital;
     totInteres += valor.interes;
     totSeguro += valor.seguro;
-    fila += '<tr>';
-    fila += '<td>'+(valor.numero)+'</td>';
-    fila += '<td>'+(moment(valor.fecha).format("DD/MM/YYYY"))+'</td>';
-    fila += '<td style="text-align:right;">'+appFormatMoney(valor.total,2)+'</td>';
-    fila += '<td style="text-align:right;">'+appFormatMoney(valor.capital,2)+'</td>';
-    fila += '<td style="text-align:right;">'+appFormatMoney(valor.interes,2)+'</td>';
-    fila += '<td style="text-align:right;">'+appFormatMoney(valor.seguro,2)+'</td>';
-    fila += '<td style="text-align:right;">'+appFormatMoney(valor.gastos,2)+'</td>';
-    fila += '<td style="text-align:right;">'+appFormatMoney(valor.saldo,2)+'</td>';
-    fila += '<td style="text-align:center;">0</td>';
-    fila += '<td></td>';
-    fila += '</tr>';
+    fila += '<tr>'+
+            '<td>'+(valor.numero)+'</td>'+
+            '<td>'+(moment(valor.fecha).format("DD/MM/YYYY"))+'</td>'+
+            '<td style="text-align:right;">'+appFormatMoney(valor.total,2)+'</td>'+
+            '<td style="text-align:right;">'+appFormatMoney(valor.capital,2)+'</td>'+
+            '<td style="text-align:right;">'+appFormatMoney(valor.interes,2)+'</td>'+
+            '<td style="text-align:right;">'+appFormatMoney(valor.seguro,2)+'</td>'+
+            '<td style="text-align:right;">'+appFormatMoney(valor.gastos,2)+'</td>'+
+            '<td style="text-align:right;">'+appFormatMoney(valor.saldo,2)+'</td>'+
+            '<td style="text-align:center;">0</td>'+
+            '<td></td>'+
+            '</tr>';
   });
-  fila += '<tr>';
-  fila += '<td colspan="2" style="text-align:center;"><b>Total</b></td>';
-  fila += '<td style="text-align:right;"><b>'+appFormatMoney(totTotal,2)+'</b></td>';
-  fila += '<td style="text-align:right;"><b>'+appFormatMoney(totCapital,2)+'</b></td>';
-  fila += '<td style="text-align:right;"><b>'+appFormatMoney(totInteres,2)+'</b></td>';
-  fila += '<td style="text-align:right;"><b>'+appFormatMoney(totSeguro,2)+'</b></td>';
-  fila += '<td style="text-align:right;"><b>'+appFormatMoney(totGastos,2)+'</b></td>';
-  fila += '<td colspan="3"></td>';
-  fila += '</tr>';
+  fila += '<tr>'+
+          '<td colspan="2" style="text-align:center;"><b>Total</b></td>'+
+          '<td style="text-align:right;"><b>'+appFormatMoney(totTotal,2)+'</b></td>'+
+          '<td style="text-align:right;"><b>'+appFormatMoney(totCapital,2)+'</b></td>'+
+          '<td style="text-align:right;"><b>'+appFormatMoney(totInteres,2)+'</b></td>'+
+          '<td style="text-align:right;"><b>'+appFormatMoney(totSeguro,2)+'</b></td>'+
+          '<td style="text-align:right;"><b>'+appFormatMoney(totGastos,2)+'</b></td>'+
+          '<td colspan="3"></td>'+
+          '</tr>';
   $('#grdDetalleDatos').html(fila);
 }

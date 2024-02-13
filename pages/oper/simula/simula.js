@@ -42,32 +42,32 @@ function appAhorrosGenerarIntereses(){
         interes = interes/tiempo;
         total = capital+interes;
         for(x=1; x<=tiempo; x++){
-          fila += '<tr>';
-          fila += '<td>'+(x)+'</td>';
-          fila += '<td>'+(moment(fecha).add(x,'months').format("DD/MM/YYYY"))+'</td>';
-          fila += '<td style="text-align:right;">'+appFormatMoney((x==tiempo)?capital:0,2)+'</td>';
-          fila += '<td style="text-align:right;">'+appFormatMoney(interes,2)+'</td>';
-          fila += '<td style="text-align:right;">'+appFormatMoney((x==tiempo)?total:interes,2)+'</td>';
-          fila += '<td></td>';
-          fila += '</tr>';
+          fila += '<tr>'+
+                   '<td>'+(x)+'</td>'+
+                   '<td>'+(moment(fecha).add(x,'months').format("DD/MM/YYYY"))+'</td>'+
+                   '<td style="text-align:right;">'+appFormatMoney((x==tiempo)?capital:0,2)+'</td>'+
+                   '<td style="text-align:right;">'+appFormatMoney(interes,2)+'</td>'+
+                   '<td style="text-align:right;">'+appFormatMoney((x==tiempo)?total:interes,2)+'</td>'+
+                   '<td></td>'+
+                   '</tr>';
         }
-        fila += '<tr style="color:blue;">';
-        fila += '<td colspan="2" style="text-align:center;">TOTAL</td>';
-        fila += '<td style="text-align:right;">'+appFormatMoney(capital,2)+'</td>';
-        fila += '<td style="text-align:right;">'+appFormatMoney(appConvertToNumero(resp.interes),2)+'</td>';
-        fila += '<td style="text-align:right;">'+appFormatMoney(capital+appConvertToNumero(resp.interes),2)+'</td>';
-        fila += '<td></td>';
-        fila += '</tr>';
+        fila += '<tr style="color:blue;">'+
+                '<td colspan="2" style="text-align:center;">TOTAL</td>'+
+                '<td style="text-align:right;">'+appFormatMoney(capital,2)+'</td>'+
+                '<td style="text-align:right;">'+appFormatMoney(appConvertToNumero(resp.interes),2)+'</td>'+
+                '<td style="text-align:right;">'+appFormatMoney(capital+appConvertToNumero(resp.interes),2)+'</td>'+
+                '<td></td>'+
+                '</tr>';
         break;
       default:
-        fila += '<tr>';
-        fila += '<td>'+(1)+'</td>';
-        fila += '<td>'+(moment(fecha).add(tiempo,'months').format("DD/MM/YYYY"))+'</td>';
-        fila += '<td style="text-align:right;">'+appFormatMoney(capital,2)+'</td>';
-        fila += '<td style="text-align:right;">'+appFormatMoney(interes,2)+'</td>';
-        fila += '<td style="text-align:right;">'+appFormatMoney(capital+interes,2)+'</td>';
-        fila += '<td></td>';
-        fila += '</tr>';
+        fila += '<tr>'+
+                '<td>'+(1)+'</td>'+
+                '<td>'+(moment(fecha).add(tiempo,'months').format("DD/MM/YYYY"))+'</td>'+
+                '<td style="text-align:right;">'+appFormatMoney(capital,2)+'</td>'+
+                '<td style="text-align:right;">'+appFormatMoney(interes,2)+'</td>'+
+                '<td style="text-align:right;">'+appFormatMoney(capital+interes,2)+'</td>'+
+                '<td></td>'+
+                '</tr>';
         break;
     }
 
@@ -132,27 +132,27 @@ function appCreditosGenerarPlanPagos(){
         tot_Interes += Number(valor.interes);
         tot_Desgrav += Number(valor.desgr);
 
-        fila += '<tr>';
-        fila += '<td>'+(valor.nro)+'</td>';
-        fila += '<td style="color:#aaa;">'+(valor.dias)+'</td>';
-        fila += '<td>'+(moment(valor.fecha).format("DD/MM/YYYY"))+'</td>';
-        fila += '<td style="text-align:right;">'+appFormatMoney(valor.cuota,2)+'</td>';
-        fila += '<td style="text-align:right;">'+appFormatMoney(valor.capital,2)+'</td>';
-        fila += '<td style="text-align:right;">'+appFormatMoney(valor.interes,2)+'</td>';
-        fila += '<td style="text-align:right;">'+appFormatMoney(valor.desgr,2)+'</td>';
-        fila += '<td style="text-align:right;">'+appFormatMoney(valor.saldo,2)+'</td>';
-        fila += '<td></td>';
-        fila += '</tr>';
+        fila += '<tr>'+
+                '<td>'+(valor.nro)+'</td>'+
+                '<td style="color:#aaa;">'+(valor.dias)+'</td>'+
+                '<td>'+(moment(valor.fecha).format("DD/MM/YYYY"))+'</td>'+
+                '<td style="text-align:right;">'+appFormatMoney(valor.cuota,2)+'</td>'+
+                '<td style="text-align:right;">'+appFormatMoney(valor.capital,2)+'</td>'+
+                '<td style="text-align:right;">'+appFormatMoney(valor.interes,2)+'</td>'+
+                '<td style="text-align:right;">'+appFormatMoney(valor.desgr,2)+'</td>'+
+                '<td style="text-align:right;">'+appFormatMoney(valor.saldo,2)+'</td>'+
+                '<td></td>'+
+                '</tr>';
       });
       //totales
-      fila += '<tr>';
-      fila += '<td style="text-align:center;" colspan="3"><b>Totales</b></td>';
-      fila += '<td style="text-align:right;"><b>'+appFormatMoney(tot_Cuota,2)+'</b></td>';
-      fila += '<td style="text-align:right;"><b>'+appFormatMoney(tot_Capital,2)+'</b></td>';
-      fila += '<td style="text-align:right;"><b>'+appFormatMoney(tot_Interes,2)+'</b></td>';
-      fila += '<td style="text-align:right;"><b>'+appFormatMoney(tot_Desgrav,2)+'</b></td>';
-      fila += '<td style="" colspan="2"></td>';
-      fila += '</tr>';
+      fila += '<tr>'+
+              '<td style="text-align:center;" colspan="3"><b>Totales</b></td>'+
+              '<td style="text-align:right;"><b>'+appFormatMoney(tot_Cuota,2)+'</b></td>'+
+              '<td style="text-align:right;"><b>'+appFormatMoney(tot_Capital,2)+'</b></td>'+
+              '<td style="text-align:right;"><b>'+appFormatMoney(tot_Interes,2)+'</b></td>'+
+              '<td style="text-align:right;"><b>'+appFormatMoney(tot_Desgrav,2)+'</b></td>'+
+              '<td style="" colspan="2"></td>'+
+              '</tr>';
 
       document.querySelector('#grdDatos').innerHTML = (fila);
       document.querySelector('#lbl_TEA').innerHTML = (appFormatMoney(resp.tea,2)+" %");

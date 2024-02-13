@@ -16,16 +16,16 @@ function appCreditosGrid(){
     if(resp.tabla.length>0){
       let fila = "";
       resp.tabla.forEach((valor,key)=>{
-        fila += '<tr>';
-        fila += '<td>'+(moment(valor.fecha).format("DD/MM/YYYY"))+'</td>';
-        fila += '<td>'+(valor.nro_dui)+'</td>';
-        fila += '<td>'+(valor.socio)+'</td>';
-        fila += '<td><a href="javascript:appCreditosView('+(valor.ID)+');" title="'+(valor.ID)+'">'+(valor.codigo+' &raquo; '+valor.producto+'; '+valor.mon_abrevia+'; '+appFormatMoney(valor.tasa,2))+'%</a></td>';
-        fila += '<td>'+(valor.tiposbs)+'</td>';
-        fila += '<td style="text-align:right;">'+appFormatMoney(valor.importe,2)+'</td>';
-        fila += '<td style="text-align:right;">'+appFormatMoney(valor.saldo,2)+'</td>';
-        fila += '<td style="text-align:center;">'+(valor.nro_cuotas)+'</td>';
-        fila += '</tr>';
+        fila += '<tr>'+
+                '<td>'+(moment(valor.fecha).format("DD/MM/YYYY"))+'</td>'+
+                '<td>'+(valor.nro_dui)+'</td>'+
+                '<td>'+(valor.socio)+'</td>'+
+                '<td><a href="javascript:appCreditosView('+(valor.ID)+');" title="'+(valor.ID)+'">'+(valor.codigo+' &raquo; '+valor.producto+'; '+valor.mon_abrevia+'; '+appFormatMoney(valor.tasa,2))+'%</a></td>'+
+                '<td>'+(valor.tiposbs)+'</td>'+
+                '<td style="text-align:right;">'+appFormatMoney(valor.importe,2)+'</td>'+
+                '<td style="text-align:right;">'+appFormatMoney(valor.saldo,2)+'</td>'+
+                '<td style="text-align:center;">'+(valor.nro_cuotas)+'</td>'+
+                '</tr>';
       });
       $('#grdDatos').html(fila);
     }else{
@@ -67,7 +67,7 @@ function appCreditosView(prestamoID){
   };
   
   appFetch(datos,rutaSQL).then(resp => {
-    console.log(resp);
+    // console.log(resp);
     appCabeceraSetData(resp.prestamo);
     appDetalleSetData(resp.detalle);
     document.querySelector('#grid').style.display = 'none';

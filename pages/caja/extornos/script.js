@@ -69,7 +69,7 @@ function appPagosBotonPagar(){
           monedaID : document.querySelector("#cbo_DeudaMonedas").value*1,
           importe : importe*1
         };
-        console.log(datos);
+        // console.log(datos);
         appFetch(datos,rutaSQL).then(resp => {
           if (!resp.error) { 
             if(confirm("¿Desea Imprimir el desembolso?")){
@@ -112,13 +112,13 @@ function modalCrediGrid(){
     if(resp.prestamos.length>0){
       let fila = "";
       resp.prestamos.forEach((valor,key)=>{
-        fila += '<tr>';
-        fila += '<td>'+(valor.nro_DUI)+'</td>';
-        fila += '<td>'+(valor.socio)+'</td>';
-        fila += '<td><a href="javascript:appCreditoPagoView('+(valor.ID)+');">'+(valor.codigo+' &raquo; '+valor.producto+'; '+valor.mon_abrevia+'; '+appFormatMoney(valor.tasa,2)+'%')+'</a></td>';
-        fila += '<td style="text-align:right;">'+(appFormatMoney(valor.importe,2))+'</td>';
-        fila += '<td style="text-align:right;">'+(appFormatMoney(valor.saldo,2))+'</td>';
-        fila += '</tr>';
+        fila += '<tr>'+
+                '<td>'+(valor.nro_DUI)+'</td>'+
+                '<td>'+(valor.socio)+'</td>'+
+                '<td><a href="javascript:appCreditoPagoView('+(valor.ID)+');">'+(valor.codigo+' &raquo; '+valor.producto+'; '+valor.mon_abrevia+'; '+appFormatMoney(valor.tasa,2)+'%')+'</a></td>'+
+                '<td style="text-align:right;">'+(appFormatMoney(valor.importe,2))+'</td>'+
+                '<td style="text-align:right;">'+(appFormatMoney(valor.saldo,2))+'</td>'+
+                '</tr>';
       });
       document.querySelector('#modalCredi_GridBody').innerHTML = (fila);
     }else{

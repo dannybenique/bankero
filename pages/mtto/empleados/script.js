@@ -32,17 +32,17 @@ function appWorkersGrid(){
     if(resp.tabla.length>0){
       let fila = "";
       resp.tabla.forEach((valor,key)=>{
-        fila += '<tr>';
-        fila += '<td><input type="checkbox" name="chk_Borrar" value="'+(valor.ID)+'" '+disabledDelete+'/></td>';
-        fila += '<td><i class="fa fa-paperclip"></i></td>';
-        fila += '<td>'+((valor.login!=null)?('<a href="javascript:appUserCambioPassw('+(valor.ID)+')"><i class="fa fa-lock"></i></a>'):(''))+'</td>';
-        fila += '<td>'+(valor.codigo)+'</td>';
-        fila += '<td>'+(valor.nro_dui)+'</td>';
-        fila += '<td><a href="javascript:appWorkerView('+(valor.ID)+');" title="'+(valor.ID)+'">'+(valor.empleado)+'</a></td>';
-        fila += '<td>'+(valor.nombrecorto)+'</td>';
-        fila += '<td>'+(valor.cargo)+'</td>';
-        fila += '<td>'+(valor.agencia)+'</td>';
-        fila += '</tr>';
+        fila += '<tr>'+
+                '<td><input type="checkbox" name="chk_Borrar" value="'+(valor.ID)+'" '+disabledDelete+'/></td>'+
+                '<td><i class="fa fa-paperclip"></i></td>'+
+                '<td>'+((valor.login!=null)?('<a href="javascript:appUserCambioPassw('+(valor.ID)+')"><i class="fa fa-lock"></i></a>'):(''))+'</td>'+
+                '<td>'+(valor.codigo)+'</td>'+
+                '<td>'+(valor.nro_dui)+'</td>'+
+                '<td><a href="javascript:appWorkerView('+(valor.ID)+');" title="'+(valor.ID)+'">'+(valor.empleado)+'</a></td>'+
+                '<td>'+(valor.nombrecorto)+'</td>'+
+                '<td>'+(valor.cargo)+'</td>'+
+                '<td>'+(valor.agencia)+'</td>'+
+                '</tr>';
       });
       document.querySelector('#grdDatos').innerHTML = (fila);
     } else {

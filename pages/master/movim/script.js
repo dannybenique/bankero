@@ -11,15 +11,15 @@ function appMovimGrid(){
     if(resp.movs.length>0){
       let fila = "";
       resp.movs.forEach((valor,key)=>{
-        fila += '<tr>';
-        fila += '<td>'+(valor.ID)+'</td>';
-        fila += '<td>'+(valor.nombre)+'</td>';
-        fila += '<td>'+(valor.codigo)+'</td>';
-        fila += '<td>'+(valor.abrevia)+'</td>';
-        fila += '<td>'+(valor.tipo_operID)+'</td>';
-        fila += '<td>'+(valor.in_out)+'</td>';
-        fila += '<td>'+(valor.afec_prod)+'</td>';
-        fila += '</tr>';
+        fila += '<tr>'+
+                '<td>'+(valor.ID)+'</td>'+
+                '<td>'+(valor.nombre)+'</td>'+
+                '<td>'+(valor.codigo)+'</td>'+
+                '<td>'+(valor.abrevia)+'</td>'+
+                '<td>'+(valor.tipo_operID)+'</td>'+
+                '<td>'+(valor.in_out)+'</td>'+
+                '<td>'+(valor.afec_prod)+'</td>'+
+                '</tr>';
       });
       document.querySelector('#grdDatos').innerHTML = (fila);
     }else{
