@@ -56,7 +56,7 @@
                 "codigo" => $rs["codigo"],
                 "fecha" => $rs["fecha_solicred"],
                 "otorga" => $rs["fecha_otorga"],
-                "nro_dui"=> str_replace($buscar, '<span style="background:yellow;">'.$buscar.'</span>', $rs["nro_dui"]),
+                "nro_dui" => str_replace($buscar, '<span style="background:yellow;">'.$buscar.'</span>', $rs["nro_dui"]),
                 "socio" => str_ireplace($buscar, '<span style="background:yellow;">'.$buscar.'</span>', $rs["socio"]),
                 "tipo_oper" => $rs["tipo_oper"],
                 "producto" => $rs["producto"],
