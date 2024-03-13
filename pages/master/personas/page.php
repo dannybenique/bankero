@@ -1,4 +1,4 @@
-<?php if(isset($menu->mtto->submenu->personas)){ ?>
+<?php if(isset($menu->master->submenu->personas)){ ?>
 <!-- bootstrap datepicker -->
 <link rel="stylesheet" href="libs/bootstrap-datepicker/dist/css/bootstrap-datepicker.min.css">
 <script src="libs/bootstrap-datepicker/dist/js/bootstrap-datepicker.min.js"></script>
@@ -329,7 +329,7 @@
   <div class="modal fade" id="modalPers" role="dialog"></div>
 </section>
 
-<script src="pages/mtto/personas/script.js"></script>
+<script src="pages/master/personas/script.js"></script>
 <script>
   $(document).ready(function(){
     Persona.addModalToParentForm('modalPers');

@@ -2,13 +2,12 @@ const rutaSQL = "pages/mtto/agencias/sql.php";
 var menu = "";
 
 //=========================funciones para Personas============================
-function appAgenciasGrid(){
+async function appAgenciasGrid(){
   document.querySelector('#grdDatos').innerHTML = ('<tr><td colspan="4"><div class="progress progress-xs active"><div class="progress-bar progress-bar-success progress-bar-striped" style="width:100%"></div></td></tr>');
-  let txtBuscar = document.querySelector("#txtBuscar").value;
-  let datos = { TipoQuery: 'selAgencias', buscar:txtBuscar };
-
-  appFetch(datos,rutaSQL).then(resp => {
-    let disabledDelete = (menu.mtto.submenu.agencias.cmdDelete===1) ? "" : "disabled";
+  const disabledDelete = (menu.mtto.submenu.agencias.cmdDelete===1) ? "" : "disabled";
+  const txtBuscar = document.querySelector("#txtBuscar").value;
+  try{
+    const resp = await appAsynFetch({ TipoQuery:'selAgencias', buscar:txtBuscar },rutaSQL);
     document.querySelector("#chk_All").disabled = (menu.mtto.submenu.agencias.cmdDelete===1) ? false : true;
     if(resp.agencias.length>0){
       let fila = "";
@@ -25,18 +24,22 @@ function appAgenciasGrid(){
       document.querySelector('#grdDatos').innerHTML = ('<tr><td colspan="4" style="text-align:center;color:red;">Sin Resultados para '+txtBuscar+'</td></tr>');
     }
     document.querySelector('#grdCount').innerHTML = (resp.agencias.length);
-  });
+  } catch(err){
+    console.error('Error al cargar datos:', err);
+  }
 }
 
-function appAgenciasReset(){
-  appFetch({ TipoQuery:'selDataUser' },"includes/sess_interfaz.php").then(resp => {
+async function appAgenciasReset(){
+  document.querySelector("#txtBuscar").value = ("");
+  try{
+    const resp = await appAsynFetch({ TipoQuery:'selDataUser' },"includes/sess_interfaz.php");
     menu = JSON.parse(resp.menu);
     document.querySelector("#btn_DEL").style.display = (menu.mtto.submenu.agencias.cmdDelete==1)?('inline'):('none');
     document.querySelector("#btn_NEW").style.display = (menu.mtto.submenu.agencias.cmdInsert==1)?('inline'):('none');
-    
-    document.querySelector("#txtBuscar").value = ("");
     appAgenciasGrid();
-  });
+  } catch(err){
+    console.error('Error al cargar datos:', err);
+  }
 }
 
 function appAgenciasBuscar(e){
@@ -44,102 +47,108 @@ function appAgenciasBuscar(e){
   if(code == 13) { appAgenciasGrid(); }
 }
 
-function appAgenciaNuevo(){
-  appFetch({ TipoQuery:'newAgencia' },rutaSQL).then(resp => {
-    try{
-      $(".form-group").removeClass("has-error");
-      document.querySelector("#hid_agenciaID").value = ("0");
-      document.querySelector("#txt_Codigo").value = ("");
-      document.querySelector("#txt_Abrev").value = ("");
-      document.querySelector("#txt_Nombre").value = ("");
-      document.querySelector("#txt_Ciudad").value = ("");
-      document.querySelector("#txt_Direccion").value = ("");
-      document.querySelector("#txt_Telefonos").value = ("");
-      document.querySelector("#txt_Observac").value = ("");
-      appLlenarDataEnComboBox(resp.comboRegiones,"#cbo_Region",1014); //region arequipa
-      appLlenarDataEnComboBox(resp.comboProvincias,"#cbo_Provincia",1401); //provincia arequipa
-      appLlenarDataEnComboBox(resp.comboDistritos,"#cbo_Distrito",140101); //distrito arequipa
-      document.querySelector("#grid").style.display = 'none';
-      document.querySelector("#edit").style.display = 'block';
-    } catch (err){
-      console.log(err);
-    } finally {
-      document.querySelector("#btnInsert").style.display = (menu.mtto.submenu.agencias.cmdInsert==1)?('inline'):('none');
-      document.querySelector("#btnUpdate").style.display = 'none';
-    }
-  });
-}
-
-function appAgenciaView(agenciaID){
-  let datos = {
-    TipoQuery : 'editAgencia',
-    agenciaID : agenciaID
+async function appAgenciaNuevo(){
+  document.querySelector("#btnInsert").style.display = (menu.mtto.submenu.agencias.cmdInsert==1)?('inline'):('none');
+  document.querySelector("#btnUpdate").style.display = 'none';
+  try{
+    const resp = await appAsynFetch({ TipoQuery:'newAgencia' },rutaSQL);
+    $(".form-group").removeClass("has-error");
+    document.querySelector("#hid_agenciaID").value = ("0");
+    document.querySelector("#txt_Codigo").value = ("");
+    document.querySelector("#txt_Abrev").value = ("");
+    document.querySelector("#txt_Nombre").value = ("");
+    document.querySelector("#txt_Ciudad").value = ("");
+    document.querySelector("#txt_Direccion").value = ("");
+    document.querySelector("#txt_Telefonos").value = ("");
+    document.querySelector("#txt_Observac").value = ("");
+    appLlenarDataEnComboBox(resp.comboRegiones,"#cbo_Region",1014); //region arequipa
+    appLlenarDataEnComboBox(resp.comboProvincias,"#cbo_Provincia",1401); //provincia arequipa
+    appLlenarDataEnComboBox(resp.comboDistritos,"#cbo_Distrito",140101); //distrito arequipa
+    document.querySelector("#grid").style.display = 'none';
+    document.querySelector("#edit").style.display = 'block';
+  } catch(err){
+    console.error('Error al cargar datos:', err);
   }
-
-  appFetch(datos,rutaSQL).then(resp => {
-    try{
-      $(".form-group").removeClass("has-error");
-      document.querySelector("#hid_agenciaID").value = resp.ID;
-      document.querySelector("#txt_Codigo").value = (resp.codigo);
-      document.querySelector("#txt_Abrev").value = (resp.abrev);
-      document.querySelector("#txt_Nombre").value = (resp.nombre);
-      document.querySelector("#txt_Ciudad").value = (resp.ciudad);
-      document.querySelector("#txt_Direccion").value = (resp.direccion);
-      document.querySelector("#txt_Telefonos").value = (resp.telefonos);
-      document.querySelector("#txt_Observac").value = (resp.observac);
-      appLlenarDataEnComboBox(resp.comboRegiones,"#cbo_Region",resp.id_region); //region arequipa
-      appLlenarDataEnComboBox(resp.comboProvincias,"#cbo_Provincia",resp.id_provincia); //provincia arequipa
-      appLlenarDataEnComboBox(resp.comboDistritos,"#cbo_Distrito",resp.id_distrito); //distrito arequipa
-      document.querySelector('#grid').style.display = 'none';
-      document.querySelector('#edit').style.display = 'block';
-    } catch(err){
-      console.log(err);
-    }
-    finally{
-      document.querySelector("#btnUpdate").style.display = (menu.mtto.submenu.agencias.cmdUpdate==1)?('inline'):('none');
-      document.querySelector("#btnInsert").style.display = 'none';
-    }
-    
-  });
 }
 
-function appAgenciaInsert(){
+async function appAgenciaView(agenciaID){
+  document.querySelector("#btnUpdate").style.display = (menu.mtto.submenu.agencias.cmdUpdate==1)?('inline'):('none');
+  document.querySelector("#btnInsert").style.display = 'none';
+  try{
+    const resp = await appAsynFetch({
+      TipoQuery : 'editAgencia',
+      agenciaID : agenciaID
+    },rutaSQL);
+    //respuesta
+    $(".form-group").removeClass("has-error");
+    document.querySelector("#hid_agenciaID").value = resp.ID;
+    document.querySelector("#txt_Codigo").value = (resp.codigo);
+    document.querySelector("#txt_Abrev").value = (resp.abrev);
+    document.querySelector("#txt_Nombre").value = (resp.nombre);
+    document.querySelector("#txt_Ciudad").value = (resp.ciudad);
+    document.querySelector("#txt_Direccion").value = (resp.direccion);
+    document.querySelector("#txt_Telefonos").value = (resp.telefonos);
+    document.querySelector("#txt_Observac").value = (resp.observac);
+    appLlenarDataEnComboBox(resp.comboRegiones,"#cbo_Region",resp.id_region); //region arequipa
+    appLlenarDataEnComboBox(resp.comboProvincias,"#cbo_Provincia",resp.id_provincia); //provincia arequipa
+    appLlenarDataEnComboBox(resp.comboDistritos,"#cbo_Distrito",resp.id_distrito); //distrito arequipa
+    document.querySelector('#grid').style.display = 'none';
+    document.querySelector('#edit').style.display = 'block';
+  } catch(err){
+    console.error('Error al cargar datos:', err);
+  }
+}
+
+async function appAgenciaInsert(){
   let datos = modGetDataToDataBase();
   if(datos!=""){
     datos.TipoQuery = 'insAgencia';
-    appFetch(datos,rutaSQL).then(resp => {
-      appAgenciasGrid();
-      appAgenciaCancel();
-    });
+    try{
+      const resp = await appAsynFetch(datos,rutaSQL);
+      if(!resp.error) {
+        appAgenciasGrid();
+        appAgenciaCancel();
+      }
+    } catch(err){
+      console.error('Error al cargar datos:', err);
+    }
   } else {
     alert("!!!Faltan Datos!!!");
   }
 }
 
-function appAgenciaUpdate(){
+async function appAgenciaUpdate(){
   let datos = modGetDataToDataBase();
   if(datos!=""){
     datos.TipoQuery = 'updAgencia';
-    appFetch(datos,rutaSQL).then(resp => {
-      appAgenciasGrid();
-      appAgenciaCancel();
-    });
+    try{
+      const resp = await appAsynFetch(datos,rutaSQL);
+      if(!resp.error){ 
+        appAgenciasGrid();
+        appAgenciaCancel();
+      }
+    } catch(err){
+      console.error('Error al cargar datos:', err);
+    }
   } else {
     alert("!!!Faltan Datos!!!");
   }
 }
 
-function appAgenciasDelete(){
+async function appAgenciasDelete(){
   //let arr = $('[name="chk_Borrar"]:checked').map(function(){return this.value}).get();
   let arr = Array.from(document.querySelectorAll('[name="chk_Borrar"]:checked')).map(function(obj){return obj.attributes[2].nodeValue});
   if(arr.length>0){
     if(confirm("¿Esta seguro de continuar?")) {
-      appFetch({ TipoQuery:'delAgencias', arr:arr },rutaSQL).then(resp => {
-        if (resp.error == false) { //sin errores
+      try{
+        const resp = await appAsynFetch({ TipoQuery:'delAgencias', arr:arr },rutaSQL);
+        if (!resp.error) { //sin errores
           appAgenciasGrid();
           appAgenciaCancel();
         }
-      });
+      } catch(err){
+        console.error('Error al cargar datos:', err);
+      }
     }
   } else {
     alert("NO eligio borrar ninguno");
@@ -177,27 +186,31 @@ function appAgenciaCancel(){
   document.querySelector('#edit').style.display = 'none';
 }
 
-function comboProvincias(){
-  let datos = { 
-    TipoQuery : "comboUbigeo",
-    tipoID  : 3,
-    padreID : document.querySelector("#cbo_Region").value
-  };
-
-  appFetch(datos,rutaSQL).then(resp => {
+async function comboProvincias(){
+  try{
+    const resp = ({ 
+      TipoQuery : "comboUbigeo",
+      tipoID  : 3,
+      padreID : document.querySelector("#cbo_Region").value
+    },rutaSQL);
+    //respuesta
     appLlenarDataEnComboBox(resp.provincias,"#cbo_Provincia",0); //provincia
     appLlenarDataEnComboBox(resp.distritos,"#cbo_Distrito",0); //distrito
-  });
+  } catch(err){
+    console.error('Error al cargar datos:', err);
+  }
 }
 
-function comboDistritos(){
-  let datos = { 
-    TipoQuery : "comboUbigeo",
-    tipoID  : 4,
-    padreID : document.querySelector("#cbo_Provincia").value
-  };
-
-  appFetch(datos,rutaSQL).then(resp => {
+async function comboDistritos(){
+  try{
+    const resp = await appAsynFetch({ 
+      TipoQuery : "comboUbigeo",
+      tipoID  : 4,
+      padreID : document.querySelector("#cbo_Provincia").value
+    },rutaSQL);
+    //respuesta
     appLlenarDataEnComboBox(resp.distritos,"#cbo_Distrito",0); //distrito
-  });
+  } catch(err){
+    console.error('Error al cargar datos:', err);
+  }
 }

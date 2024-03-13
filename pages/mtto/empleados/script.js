@@ -21,14 +21,13 @@ var zSetting = {
 };
 
 //=========================funciones============================
-function appWorkersGrid(){
+async function appWorkersGrid(){
   document.querySelector('#grdDatos').innerHTML = ('<tr><td colspan="9"><div class="progress progress-xs active"><div class="progress-bar progress-bar-success progress-bar-striped" style="width:100%"></div></td></tr>');
-  let txtBuscar = document.querySelector("#txtBuscar").value.toUpperCase();
-  let datos = { TipoQuery: 'selWorkers', buscar: txtBuscar };
-
-  appFetch(datos,rutaSQL).then(resp => {
-    let disabledDelete = (menu.mtto.submenu.empleados.cmdDelete===1) ? "" : "disabled";
+  const txtBuscar = document.querySelector("#txtBuscar").value.toUpperCase();
+  const disabledDelete = (menu.mtto.submenu.empleados.cmdDelete===1) ? "" : "disabled";
+  try{
     document.querySelector("#chk_All").disabled = (menu.mtto.submenu.empleados.cmdDelete===1) ? false : true;
+    const resp = await appAsynFetch({ TipoQuery:'selWorkers', buscar:txtBuscar },rutaSQL);
     if(resp.tabla.length>0){
       let fila = "";
       resp.tabla.forEach((valor,key)=>{
@@ -50,24 +49,27 @@ function appWorkersGrid(){
       document.querySelector('#grdDatos').innerHTML = ('<tr><td colspan="9" style="text-align:center;color:red;">Sin Resultados '+(res)+'</td></tr>');
     }
     document.querySelector('#grdCount').innerHTML = (resp.tabla.length+"/"+resp.cuenta);
-  });
+  } catch(err) {
+    console.error('Error al cargar datos:', err);
+  }
 }
 
-function appWorkersReset(){
-  appFetch({ TipoQuery:'selDataUser' },"includes/sess_interfaz.php").then(resp => {
-    //configurar treeview
-    zTreeObj = $.fn.zTree.init($("#appTreeView"), zSetting, null);
+async function appWorkersReset(){
+  zTreeObj = $.fn.zTree.init($("#appTreeView"), zSetting, null); //configurar treeview
+  document.querySelector("#txtBuscar").value = ("");
+  document.querySelector("#grdDatos").innerHTML = ("");
+
+  try{
+    const resp = await appAsynFetch({TipoQuery:'selDataUser'},"includes/sess_interfaz.php");
     
-    //otros controles
     menu = JSON.parse(resp.menu);
     document.querySelector("#btn_DEL").style.display = (menu.mtto.submenu.empleados.cmdDelete==1)?('inline'):('none');
     document.querySelector("#btn_NEW").style.display = (menu.mtto.submenu.empleados.cmdInsert==1)?('inline'):('none');
-
-    document.querySelector("#txtBuscar").value = ("");
-    document.querySelector("#grdDatos").innerHTML = ("");
     document.querySelector("#div_PersAuditoria").style.display = ((resp.rolID==101)?('block'):('none'));
     appWorkersGrid();
-  });
+  } catch(err){
+    console.error('Error al cargar datos:', err);
+  }
 }
 
 function appWorkersBuscar(e){
@@ -81,111 +83,128 @@ function appWorkersBotonCancel(){
   document.querySelector("#edit").style.display = 'none';
 }
 
-function appWorkersBotonInsert(){
+async function appWorkersBotonInsert(){
   let datos = appWorkerGetDatosToDatabase();
 
   if(datos!=null){
     datos.TipoQuery = "insWorker";
     datos.usuario = appUserGetDatosToDatabase();
-    appFetch(datos,rutaSQL).then(resp => {
-      appWorkersBotonCancel();
-    });
+    try{
+      const resp = await appAsynFetch(datos,rutaSQL);
+      if(!resp.error) { appWorkersBotonCancel(); }
+    } catch(err) {
+      console.error('Error al cargar datos:', err);
+    }
   }
 }
 
-function appWorkersBotonUpdate(){
+async function appWorkersBotonUpdate(){
   let datos = appWorkerGetDatosToDatabase();
   
   if(datos!=null){
     datos.TipoQuery = "updWorker";
     datos.usuario = appUserGetDatosToDatabase();
-    appFetch(datos,rutaSQL).then(resp => {
-      appWorkersBotonCancel();
-    });
+    try{
+      const resp = await appAsynFetch(datos,rutaSQL);
+      if(!resp.error) { appWorkersBotonCancel(); }
+    } catch(err) {
+      console.error('Error al cargar datos:', err);
+    }
   }
 }
 
 function appWorkerBotonNuevo(){
   Persona.openBuscar('VerifyWorker',rutaSQL,true,true,false);
-  $('#btn_modPersInsert').on('click',function(e) {
-    if(Persona.sinErrores()){ //sin errores
-      Persona.ejecutaSQL().then(resp => {
-        appPersonaSetData(resp.tablaPers);
-        appFetch({TipoQuery : 'startWorker'},rutaSQL).then(resp => {
-          appWorkerClear(resp);
-          appUserClear(resp);
-          document.querySelector('#grid').style.display = 'none';
-          document.querySelector('#edit').style.display = 'block';
-          Persona.close();
-        });
-      });
-    } else {
-      alert("!!!Faltan llenar Datos!!!");
-    }
-    e.stopImmediatePropagation();
-    $('#btn_modPersInsert').off('click');
-  });
-  $('#btn_modPersAddToForm').on('click',function(e) {
-    let datos = {
-      TipoQuery : 'viewPersona',
-      personaID : Persona.tablaPers.ID,
-      fullQuery : 2
-    }
-    appFetch(datos,'pages/mtto/personas/sql.php').then(resp => {
-      appPersonaSetData(Persona.tablaPers); //pestaña Personales
-      appFetch({TipoQuery : 'startWorker'},rutaSQL).then(resp => {
-        appWorkerClear(resp);
-        appUserClear(resp);
-        document.querySelector('#grid').style.display = 'none';
-        document.querySelector('#edit').style.display = 'block';
-        Persona.close();
-      });
-    });
-    e.stopImmediatePropagation();
-    $('#btn_modPersAddToForm').off('click');
-  });
+  $('#btn_modPersInsert').off('click');
+
+  $('#btn_modPersInsert').on('click',handlerWorkersInsert_Click);
+  $('#btn_modPersAddToForm').on('click',handlerWorkersAddToForm_Click);
 }
 
-function appWorkersBotonBorrar(){
+async function handlerWorkersInsert_Click(e){
+  if(Persona.sinErrores()){ 
+    try{
+      const resp = await Persona.ejecutaSQL();
+      appPersonaSetData(resp.tablaPers);
+
+      const rpta = await appAsynFetch({TipoQuery:'startWorker'},rutaSQL);
+      appWorkerClear(rpta);
+      appUserClear(rpta);
+
+      document.querySelector('#grid').style.display = 'none';
+      document.querySelector('#edit').style.display = 'block';
+      Persona.close();
+    } catch(err){
+      console.error('Error al cargar datos:', err);
+    }
+  } else {
+    alert("!!!Faltan llenar Datos!!!");
+  }
+  e.stopImmediatePropagation();
+  $('#btn_modPersInsert').off('click');
+}
+
+async function handlerWorkersAddToForm_Click(e){
+  try{
+    const resp = await appAsynFetch({TipoQuery:'viewPersona', personaID:Persona.tablaPers.ID, fullQuery:2 }, 'pages/mtto/personas/sql.php');
+    appPersonaSetData(Persona.tablaPers); //pestaña Personales
+
+    const rpta = await appAsynFetch({TipoQuery : 'startWorker'},rutaSQL);
+    appWorkerClear(rpta);
+    appUserClear(rpta);
+    document.querySelector('#grid').style.display = 'none';
+    document.querySelector('#edit').style.display = 'block';
+    Persona.close();
+    e.stopImmediatePropagation();
+    $('#btn_modPersAddToForm').off('click');
+  } catch(err){
+    console.error('Error al cargar datos:', err);
+  }
+}
+
+async function appWorkersBotonBorrar(){
   let arr = Array.from(document.querySelectorAll('[name="chk_Borrar"]:checked')).map(function(obj){return obj.attributes[2].nodeValue});
   if(arr.length>0){
     if(confirm("¿Esta seguro de continuar?")) {
-      appFetch({ TipoQuery:'delWorkers', arr:arr },rutaSQL).then(resp => {
-        if (resp.error == false) { //sin errores
-          console.log(resp);
-          appWorkersBotonCancel();
-        }
-      });
+      try{
+        const resp = await appAsynFetch({ TipoQuery:'delWorkers', arr:arr },rutaSQL);
+        if(!resp.error) { appWorkersBotonCancel(); }
+      } catch(err){
+        console.error('Error al cargar datos:', err);
+      }
     }
   } else {
     alert("NO eligio borrar ninguno");
   }
 }
 
-function appWorkerView(personaID){
-  let datos = {
-    TipoQuery : 'viewWorker',
-    personaID : personaID,
-    fullQuery : 2
-  };
-  
-  appFetch(datos,rutaSQL).then(resp => {
+async function appWorkerView(personaID){
+  //tabs default en primer tab
+  $('.nav-tabs li').removeClass('active');
+  $('.tab-content .tab-pane').removeClass('active');
+  $('a[href="#datosWorker"]').closest('li').addClass('active');
+  $('#datosWorker').addClass('active');
+
+  try{
+    const resp = await appAsynFetch({
+      TipoQuery : 'viewWorker',
+      personaID : personaID,
+      fullQuery : 2
+    },rutaSQL);
+    //respuesta
     appPersonaSetData(resp.tablaPers); //pestaña Personales
     appWorkerSetData(resp.tablaWorker);  //pestaña Empleado
     appUserSetData(resp.tablaUser); //pestaña usuario
-
-    //tabs default en primer tab
-    $('.nav-tabs li').removeClass('active');
-    $('.tab-content .tab-pane').removeClass('active');
-    $('a[href="#datosWorker"]').closest('li').addClass('active');
-    $('#datosWorker').addClass('active');
+      
     document.querySelector("#div_WorkerAuditoria").style.display = 'block';
     document.querySelector("#btnUpdate").style.display = (menu.mtto.submenu.empleados.cmdUpdate==1)?('inline'):('none');
     document.querySelector("#btnInsert").style.display = 'none';
 
     document.querySelector('#grid').style.display = 'none';
     document.querySelector('#edit').style.display = 'block';
-  });
+  } catch(err){
+    console.error('Error al cargar datos:', err);
+  }
 }
 
 function appWorkerSetData(data){
@@ -311,12 +330,15 @@ function appPersonaSetData(data){
 
 function appPersonaEditar(){
   Persona.editar(document.querySelector('#lbl_ID').innerHTML,'S');
-  $('#btn_modPersUpdate').on('click',function(e) {
+  $('#btn_modPersUpdate').on('click',async function(e) {
     if(Persona.sinErrores()){ //sin errores
-      Persona.ejecutaSQL().then(resp => {
+      try{
+        const resp = await Persona.ejecutaSQL();
         appPersonaSetData(resp.tablaPers);
         Persona.close();
-      });
+      } catch(err){
+        console.error('Error al cargar datos:', err);
+      }
     } else {
       alert("!!!Faltan llenar Datos!!!");
     }
@@ -352,35 +374,42 @@ function appUserClear(data){
   appUserEsUsuario();
 }
 
-function appUserCambioPassw(userID){
+async function appUserCambioPassw(userID){
   $("#modalChangePassw").modal("show");
-  let datos = {
-    TipoQuery:"selUserPass",
-    userID:userID
-  }
-  appFetch(datos,rutaSQL).then(resp => {
+  document.querySelector("#txt_PassPassNew").value = "";
+  document.querySelector("#txt_PassPassRe").value = "";
+  try{
+    const resp = await appAsynFetch({
+      TipoQuery:"selUserPass",
+      userID:userID
+    }, rutaSQL);
+    //respuesta
     document.querySelector("#hid_PassID").value = resp.ID;
     document.querySelector("#lbl_PassNombrecorto").innerHTML = resp.nombrecorto;
     document.querySelector("#lbl_PassLogin").innerHTML = resp.login;
-    document.querySelector("#txt_PassPassNew").value = "";
-    document.querySelector("#txt_PassPassRe").value = "";
-  });
+  } catch(err){
+    console.error('Error al cargar datos:', err);
+  }
 }
 
-function modUserBotonUpdatePassw(){
+async function modUserBotonUpdatePassw(){
   if(document.querySelector("#txt_PassPassNew").value!=""){
     if(document.querySelector("#txt_PassPassNew").value===document.querySelector("#txt_PassPassRe").value){
-      let datos = {
-        TipoQuery:"changeUserPass",
-        userID : document.querySelector("#hid_PassID").value,
-        passw : SHA1(document.querySelector("#txt_PassPassNew").value).toString().toUpperCase()
-      }
-      appFetch(datos,rutaSQL).then(resp => {
+      try{
+        const resp = await appAsynFetch({
+          TipoQuery:"changeUserPass",
+          userID : document.querySelector("#hid_PassID").value,
+          passw : SHA1(document.querySelector("#txt_PassPassNew").value).toString().toUpperCase()
+        }, rutaSQL);
+        
+        //respuesta
         if (!resp.error) { 
           alert("El PASSWORD se modifico correctamente");
           $("#modalChangePassw").modal("hide");
         }
-      });
+      } catch(err){
+        console.error('Error al cargar datos:', err);
+      }
     } else {
       alert("!!!El PASSWORD es distintos en ambos campos!!!");
     }
@@ -432,17 +461,20 @@ function appUserGetDatosToDatabase(){
   return rpta;
 }
 
-function appUserPerfilMenu(perfilID){
-  let datos = {
-    TipoQuery : "selSisMenu",
-    perfilID : perfilID
-  }
-  
-  appFetch(datos,rutaSQL).then(resp => {
-    let mnu = JSON.parse(resp.menu);
+async function appUserPerfilMenu(perfilID){
+  try{
+    const resp = await appAsynFetch({
+      TipoQuery : "selSisMenu",
+      perfilID : perfilID
+    }, rutaSQL);
+    
+    const mnu = JSON.parse(resp.menu);
     zTreeObj = $.fn.zTree.init($("#appTreeView"), zSetting, transformData(mnu));
-  });
+  } catch(err){
+    console.error('Error al cargar datos:', err);
+  }
 }
+
 
 //menu
 function transformData(data) {
@@ -498,27 +530,6 @@ function getTreeNodes(nodes) {
 }
 
 function beforeDrag(treeId, treeNodes) { return false; }
-
-
-
-
-
-function appFiltro(treeId, parentNode, childNodes) {
-  return childNodes;
-}
-
-function refreshNode(e) {
-  var zTree = $.fn.zTree.getZTreeObj("appTreeView");
-  var nodes = zTree.getSelectedNodes();
-  if (nodes.length == 0) {
-    alert("!!!Debe seleccionar una UBICACION!!!");
-  } else {
-    switch(e.data.type){
-      case "add": appNew(nodes[0]); break;
-      case "edt": appEdit(nodes[0]); break;
-    }
-  }
-}
 
 
 //permisos para personas

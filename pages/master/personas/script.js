@@ -1,4 +1,4 @@
-const rutaSQL = "pages/mtto/personas/sql.php";
+const rutaSQL = "pages/master/personas/sql.php";
 
 //=========================funciones para Personas============================
 function appPersonasGrid(){

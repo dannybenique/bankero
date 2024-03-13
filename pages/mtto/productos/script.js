@@ -2,14 +2,14 @@ const rutaSQL = "pages/mtto/productos/sql.php";
 var menu = "";
 
 //=========================funciones para Personas============================
-function appProductosGrid(){
+async function appProductosGrid(){
   document.querySelector('#grdDatos').innerHTML = ('<tr><td colspan="7"><div class="progress progress-xs active"><div class="progress-bar progress-bar-success progress-bar-striped" style="width:100%"></div></td></tr>');
-  let txtBuscar = document.querySelector("#txtBuscar").value;
-  let datos = { TipoQuery: 'selProductos', buscar:txtBuscar };
-
-  appFetch(datos,rutaSQL).then(resp => {
-    let disabledDelete = (menu.mtto.submenu.productos.cmdDelete===1) ? "" : "disabled";
-    document.querySelector("#chk_All").disabled = (menu.mtto.submenu.productos.cmdDelete===1) ? false : true;
+  document.querySelector("#chk_All").disabled = (menu.mtto.submenu.productos.cmdDelete===1) ? false : true;
+  const disabledDelete = (menu.mtto.submenu.productos.cmdDelete===1) ? "" : "disabled";
+  const txtBuscar = document.querySelector("#txtBuscar").value;
+  try{
+    const resp = await appAsynFetch({TipoQuery:'selProductos', buscar:txtBuscar},rutaSQL);
+      
     if(resp.productos.length>0){
       let fila = "";
       resp.productos.forEach((valor,key)=>{
@@ -28,18 +28,22 @@ function appProductosGrid(){
       document.querySelector('#grdDatos').innerHTML = ('<tr><td colspan="7" style="text-align:center;color:red;">Sin Resultados para '+txtBuscar+'</td></tr>');
     }
     document.querySelector('#grdCount').innerHTML = (resp.productos.length);
-  });
+  } catch(err){
+    console.error('Error al cargar datos:', err);
+  }
 }
 
-function appProductosReset(){
-  appFetch({ TipoQuery:'selDataUser' },"includes/sess_interfaz.php").then(resp => {
+async function appProductosReset(){
+  document.querySelector("#txtBuscar").value = ("");
+  try{
+    const resp = await appAsynFetch({ TipoQuery:'selDataUser' },"includes/sess_interfaz.php");
     menu = JSON.parse(resp.menu);
     document.querySelector("#btn_DEL").style.display = (menu.mtto.submenu.productos.cmdDelete==1)?('inline'):('none');
     document.querySelector("#btn_NEW").style.display = (menu.mtto.submenu.productos.cmdInsert==1)?('inline'):('none');
-    
-    document.querySelector("#txtBuscar").value = ("");
     appProductosGrid();
-  });
+  } catch(err){
+    console.error('Error al cargar datos:', err);
+  }
 }
 
 function appProductosBuscar(e){
@@ -47,87 +51,90 @@ function appProductosBuscar(e){
   if(code == 13) { appProductosGrid(); }
 }
 
-function appProductoNuevo(){
+async function appProductoNuevo(){
+  $(".form-group").removeClass("has-error");
   document.querySelector("#btnInsert").style.display = (menu.mtto.submenu.productos.cmdInsert==1)?('inline'):('none');
   document.querySelector("#btnUpdate").style.display = 'none';
-  appFetch({ TipoQuery:'startProducto' },rutaSQL).then(resp => {
-    try{
-      $(".form-group").removeClass("has-error");
-      document.querySelector("#hid_productoID").value = ("0");
-      document.querySelector("#txt_Codigo").value = ("");
-      document.querySelector("#txt_Abrev").value = ("");
-      document.querySelector("#txt_Nombre").value = ("");
-      document.querySelector("#cbo_Obliga").value = (0);
-      appLlenarDataEnComboBox(resp.comboTipoProd,"#cbo_Tipo",0); //tipos de producto
-      document.querySelector("#grid").style.display = 'none';
-      document.querySelector("#edit").style.display = 'block';
-    } catch (err){
-      console.log(err);
-    }
-  });
+  document.querySelector("#hid_productoID").value = ("0");
+  document.querySelector("#txt_Codigo").value = ("");
+  document.querySelector("#txt_Abrev").value = ("");
+  document.querySelector("#txt_Nombre").value = ("");
+  document.querySelector("#cbo_Obliga").value = (0);
+  try{
+    const resp = await appAsynFetch({ TipoQuery:'startProducto' },rutaSQL);
+    appLlenarDataEnComboBox(resp.comboTipoProd,"#cbo_Tipo",0); //tipos de producto
+    document.querySelector("#grid").style.display = 'none';
+    document.querySelector("#edit").style.display = 'block';
+  } catch(err){
+    console.error('Error al cargar datos:', err);
+  }
 }
 
-function appProductoView(productoID){
+async function appProductoView(productoID){
+  $(".form-group").removeClass("has-error");
   document.querySelector("#btnUpdate").style.display = (menu.mtto.submenu.productos.cmdUpdate==1)?('inline'):('none');
   document.querySelector("#btnInsert").style.display = 'none';
-  $(".form-group").removeClass("has-error");
 
-  let datos = {
-    TipoQuery : 'editProducto',
-    productoID : productoID
+  try{
+    const resp = await appAsynFetch({
+      TipoQuery : 'editProducto',
+      productoID : productoID
+    }, rutaSQL);
+    //respuesta
+    document.querySelector("#hid_productoID").value = resp.ID;
+    document.querySelector("#txt_Codigo").value = (resp.codigo);
+    document.querySelector("#txt_Abrev").value = (resp.abrev);
+    document.querySelector("#txt_Nombre").value = (resp.nombre);
+    document.querySelector("#cbo_Obliga").value = ((resp.obliga)?1:0);
+    appLlenarDataEnComboBox(resp.comboTipoProd,"#cbo_Tipo",resp.id_padre); //tipo producto
+    document.querySelector('#grid').style.display = 'none';
+    document.querySelector('#edit').style.display = 'block';
+  } catch(err){
+    console.error('Error al cargar datos:', err);
   }
-
-  appFetch(datos,rutaSQL).then(resp => {
-    console.log(resp);
-    try{
-      document.querySelector("#hid_productoID").value = resp.ID;
-      document.querySelector("#txt_Codigo").value = (resp.codigo);
-      document.querySelector("#txt_Abrev").value = (resp.abrev);
-      document.querySelector("#txt_Nombre").value = (resp.nombre);
-      document.querySelector("#cbo_Obliga").value = ((resp.obliga)?1:0);
-      appLlenarDataEnComboBox(resp.comboTipoProd,"#cbo_Tipo",resp.id_padre); //tipo producto
-      document.querySelector('#grid').style.display = 'none';
-      document.querySelector('#edit').style.display = 'block';
-    } catch(err){
-      console.log(err);
-    }
-  });
 }
 
-function appProductoInsert(){
+async function appProductoInsert(){
   let datos = modGetDataToDataBase();
   if(datos!=""){
     datos.TipoQuery = 'insProducto';
-    appFetch(datos,rutaSQL).then(resp => {
-      appProductoCancel();
-    });
+    try{
+      const resp = await appAsynFetch(datos, rutaSQL);
+      if(!resp.error) { appProductoCancel(); }
+    } catch(err){
+      console.error('Error al cargar datos:', err);
+    }
   } else {
     alert("!!!Faltan Datos!!!");
   }
 }
 
-function appProductoUpdate(){
+async function appProductoUpdate(){
   let datos = modGetDataToDataBase();
   if(datos!=""){
     datos.TipoQuery = 'updProducto';
-    appFetch(datos,rutaSQL).then(resp => {
-      appProductoCancel();
-    });
+    try{
+      const resp = await appAsynFetch(datos, rutaSQL);
+      if(!resp.error) { appProductoCancel(); }
+    } catch(err){
+      console.error('Error al cargar datos:', err);
+    }
   } else {
     alert("!!!Faltan Datos!!!");
   }
 }
 
-function appProductosBorrar(){
+async function appProductosBorrar(){
   //let arr = $('[name="chk_Borrar"]:checked').map(function(){return this.value}).get();
   let arr = Array.from(document.querySelectorAll('[name="chk_Borrar"]:checked')).map(function(obj){return obj.attributes[2].nodeValue});
   if(arr.length>0){
     if(confirm("¿Esta seguro de continuar?")) {
-      appFetch({ TipoQuery:'delProductos', arr:arr },rutaSQL).then(resp => {
-        if (resp.error == false) { //sin errores
-          appProductoCancel();
-        }
-      });
+      try{
+        const resp = await appAsynFetch({TipoQuery:'delProductos', arr:arr},rutaSQL);
+        if (!resp.error) { appProductoCancel(); }
+      } catch(err){
+        console.error('Error al cargar datos:', err);
+      }
     }
   } else {
     alert("NO eligio borrar ninguno");

@@ -2,14 +2,13 @@ const rutaSQL = "pages/mtto/socios/sql.php";
 var menu = "";
 
 //=========================funciones para Personas============================
-function appSociosGrid(){
+async function appSociosGrid(){
   document.querySelector('#grdDatos').innerHTML = ('<tr><td colspan="8"><div class="progress progress-xs active"><div class="progress-bar progress-bar-success progress-bar-striped" style="width:100%"></div></td></tr>');
-  let txtBuscar = document.querySelector("#txtBuscar").value.toUpperCase();
-  let datos = { TipoQuery: 'selSocios', buscar: txtBuscar };
-
-  appFetch(datos,rutaSQL).then(resp => {
-    let disabledDelete = (menu.mtto.submenu.socios.cmdDelete===1) ? "" : "disabled";
-    document.querySelector("#chk_All").disabled = (menu.mtto.submenu.socios.cmdDelete===1) ? false : true;
+  document.querySelector("#chk_All").disabled = (menu.mtto.submenu.socios.cmdDelete===1) ? false : true;
+  const disabledDelete = (menu.mtto.submenu.socios.cmdDelete===1) ? "" : "disabled";
+  const txtBuscar = document.querySelector("#txtBuscar").value.toUpperCase();
+  try{
+    const resp = await appAsynFetch({ TipoQuery:'selSocios', buscar:txtBuscar },rutaSQL);
     if(resp.tabla.length>0){
       let fila = "";
       resp.tabla.forEach((valor,key)=>{
@@ -28,20 +27,24 @@ function appSociosGrid(){
       document.querySelector('#grdDatos').innerHTML = ('<tr><td colspan="8" style="text-align:center;color:red;">Sin Resultados '+(res)+'</td></tr>');
     }
     document.querySelector('#grdCount').innerHTML = (resp.tabla.length+"/"+resp.cuenta);
-  });
+  } catch(err){
+    console.error('Error al cargar datos:', err);
+  }
 }
 
-function appSociosReset(){
-  appFetch({ TipoQuery:'selDataUser' },"includes/sess_interfaz.php").then(resp => {
+async function appSociosReset(){
+  document.querySelector("#txtBuscar").value = ("");
+  document.querySelector("#grdDatos").innerHTML = ("");
+  try{
+    const resp = await appAsynFetch({ TipoQuery:'selDataUser' },"includes/sess_interfaz.php");
     menu = JSON.parse(resp.menu);
     document.querySelector("#btn_DEL").style.display = (menu.mtto.submenu.socios.cmdDelete==1)?('inline'):('none');
     document.querySelector("#btn_NEW").style.display = (menu.mtto.submenu.socios.cmdInsert==1)?('inline'):('none');
-
-    document.querySelector("#txtBuscar").value = ("");
-    document.querySelector("#grdDatos").innerHTML = ("");
     document.querySelector("#div_PersAuditoria").style.display = ((resp.rolID==101)?('block'):('none'));
     appSociosGrid();
-  });
+  } catch(err){
+    console.error('Error al cargar datos:', err);
+  }
 }
 
 function appSociosBuscar(e){
@@ -55,54 +58,64 @@ function appSociosBotonCancel(){
   document.querySelector("#edit").style.display = 'none';
 }
 
-function appSociosBotonInsert(){
+async function appSociosBotonInsert(){
   let datos = appSocioGetDatosToDatabase();
   
   if(datos!=""){
     datos.TipoQuery = "insSocio";
-    appFetch(datos,rutaSQL).then(resp => {
-      appSociosBotonCancel();
-    });
+    try{
+      const resp = await appAsynFetch(datos,rutaSQL);
+      if(!resp.error){ appSociosBotonCancel(); }
+    } catch(err){
+      console.error('Error al cargar datos:', err);
+    }
   }
 }
 
-function appSociosBotonUpdate(){
+async function appSociosBotonUpdate(){
   let datos = appSocioGetDatosToDatabase();
 
   if(datos!=""){
     datos.TipoQuery = "updSocio";
-    appFetch(datos,rutaSQL).then(resp => {
-      appSociosBotonCancel();
-    });
+    try{
+      const resp = await appAsynFetch(datos,rutaSQL);
+      if(!resp.error){ appSociosBotonCancel(); }
+    } catch(err){
+      console.error('Error al cargar datos:', err);
+    }
   }
 }
 
 function appSocioBotonNuevo(){
   Persona.openBuscar('VerifySocio',rutaSQL,true,true,false);
-  $('#btn_modPersInsert').on('click',function(e) {
+  $('#btn_modPersInsert').on('click',async function(e) {
     if(Persona.sinErrores()){ //sin errores
       document.querySelector('#grid').style.display = 'none';
       document.querySelector('#edit').style.display = 'block';
-      Persona.ejecutaSQL().then(resp => {
+      try{
+        const resp = await Persona.ejecutaSQL();
         appPersonaSetData(resp.tablaPers);
         appLaboralClear();
         appConyugeClear();
         appSocioClear();
         Persona.close();
-      });
+      } catch(err){
+        console.error('Error al cargar datos:', err);
+      }
     } else {
       alert("!!!Faltan llenar Datos!!!");
     }
     e.stopImmediatePropagation();
     $('#btn_modPersInsert').off('click');
   });
-  $('#btn_modPersAddToForm').on('click',function(e) {
-    let datos = {
-      TipoQuery : 'viewPersona',
-      personaID : Persona.tablaPers.ID,
-      fullQuery : 2
-    }
-    appFetch(datos,'pages/mtto/personas/sql.php').then(resp => {
+  $('#btn_modPersAddToForm').on('click',async function(e) {
+    try{
+      const resp = await appAsynFetch({
+        TipoQuery : 'viewPersona',
+        personaID : Persona.tablaPers.ID,
+        fullQuery : 2
+      },'pages/mtto/personas/sql.php');
+
       document.querySelector('#grid').style.display = 'none';
       document.querySelector('#edit').style.display = 'block';
       appPersonaSetData(Persona.tablaPers); //pestaña Personales
@@ -110,35 +123,31 @@ function appSocioBotonNuevo(){
       appConyugeSetData(resp.tablaCony); //pestaña de Conyuge
       appSocioClear();
       Persona.close();
-    });
-    e.stopImmediatePropagation();
-    $('#btn_modPersAddToForm').off('click');
+      e.stopImmediatePropagation();
+      $('#btn_modPersAddToForm').off('click');
+    } catch(err){
+      console.error('Error al cargar datos:', err);
+    }
   });
 }
 
-function appSociosBotonBorrar(){
+async function appSociosBotonBorrar(){
   let arr = Array.from(document.querySelectorAll('[name="chk_Borrar"]:checked')).map(function(obj){return obj.attributes[2].nodeValue});
   if(arr.length>0){
     if(confirm("¿Esta seguro de continuar?")) {
-      appFetch({ TipoQuery:'delSocios', arr:arr },rutaSQL).then(resp => {
-        if (resp.error == false) { //sin errores
-          console.log(resp);
-          appSociosBotonCancel();
-        }
-      });
+      try{
+        const resp = await appAsynFetch({ TipoQuery:'delSocios', arr:arr },rutaSQL);
+        if(!resp.error) { appSociosBotonCancel(); }
+      } catch(err){
+        console.error('Error al cargar datos:', err);
+      }
     }
   } else {
     alert("NO eligio borrar ninguno");
   }
 }
 
-function appSocioView(personaID){
-  let datos = {
-    TipoQuery : 'viewSocio',
-    personaID : personaID,
-    fullQuery : 2
-  };
-  
+async function appSocioView(personaID){
   //tabs default en primer tab
   $('.nav-tabs li').removeClass('active');
   $('.tab-content .tab-pane').removeClass('active');
@@ -147,16 +156,23 @@ function appSocioView(personaID){
   document.querySelector("#div_SocAuditoria").style.display = 'block';
   document.querySelector("#btnUpdate").style.display = (menu.mtto.submenu.socios.cmdUpdate==1)?('inline'):('none');
   document.querySelector("#btnInsert").style.display = 'none';
+  try{
+    const resp = await appAsynFetch({
+      TipoQuery : 'viewSocio',
+      personaID : personaID,
+      fullQuery : 2
+    }, rutaSQL);
 
-  appFetch(datos,rutaSQL).then(resp => {
+    //respuesta
     appSocioSetData(resp.tablaSocio);  //pestaña Socio
     appPersonaSetData(resp.tablaPers); //pestaña Personales
     appLaboralSetData(resp.tablaLabo); //pestaña laborales
     appConyugeSetData(resp.tablaCony); //pestaña de Conyuge
-    
     document.querySelector('#grid').style.display = 'none';
     document.querySelector('#edit').style.display = 'block';
-  });
+  } catch(err){
+    console.error('Error al cargar datos:', err);
+  }
 }
 
 function appSocioSetData(data){
@@ -172,11 +188,7 @@ function appSocioSetData(data){
   document.querySelector("#lbl_SocSysUser").innerHTML = (data.usermod);
 }
 
-function appSocioClear(){
-  let datos = {
-    TipoQuery : 'startSocio'
-  }
-
+async function appSocioClear(){
   //tabs default en primer tab
   $('.nav-tabs li').removeClass('active');
   $('.tab-content .tab-pane').removeClass('active');
@@ -188,15 +200,20 @@ function appSocioClear(){
   document.querySelector("#div_SocAuditoria").style.display = 'none';
   document.querySelector("#btnInsert").style.display = (menu.mtto.submenu.socios.cmdInsert==1)?('inline'):('none');
   document.querySelector("#btnUpdate").style.display = 'none';
+  document.querySelector("#txt_SocCodigo").placeholder = ("00-000000");
+  document.querySelector("#txt_SocCodigo").value = ("");
+  document.querySelector("#txt_SocObserv").value = ("");
 
-  appFetch(datos,rutaSQL).then(resp => {
+  try{
+    const resp = await appAsynFetch({
+      TipoQuery : 'startSocio'
+    }, rutaSQL);
     //pestaña de socio
     appLlenarDataEnComboBox(resp.comboAgencias,"#cbo_SocAgencia",0);
     document.querySelector('#txt_SocFechaIng').value = (moment(resp.fecha).format("DD/MM/YYYY"));
-    document.querySelector("#txt_SocCodigo").placeholder = ("00-000000");
-    document.querySelector("#txt_SocCodigo").value = ("");
-    document.querySelector("#txt_SocObserv").value = ("");
-  });
+  } catch(err){
+    console.error('Error al cargar datos:', err);
+  }
 }
 
 function appSocioGetDatosToDatabase(){
@@ -275,12 +292,15 @@ function appPersonaSetData(data){
 
 function appPersonaEditar(){
   Persona.editar(document.querySelector('#lbl_ID').innerHTML,'S');
-  $('#btn_modPersUpdate').on('click',function(e) {
+  $('#btn_modPersUpdate').on('click',async function(e) {
     if(Persona.sinErrores()){ //sin errores
-      Persona.ejecutaSQL().then(resp => {
+      try{
+        const resp = await Persona.ejecutaSQL();
         appPersonaSetData(resp.tablaPers);
         Persona.close();
-      });
+      } catch(err){
+        console.error('Error al cargar datos:', err);
+      }
     } else {
       alert("!!!Faltan llenar Datos!!!");
     }
@@ -319,12 +339,15 @@ function appLaboralClear(){
 
 function appLaboralNuevo(){
   Laboral.nuevo(document.querySelector('#lbl_ID').innerHTML);
-  $('#btn_modLaboInsert').on('click',function(e) {
+  $('#btn_modLaboInsert').on('click',async function(e) {
     if(Laboral.sinErrores()){
-      Laboral.ejecutaSQL().then(resp => {
+      try{
+        const resp = await Laboral.ejecutaSQL();
         appLaboralSetData(resp.tablaLabo);
         Laboral.close();
-      });
+      } catch(err){
+        console.error('Error al cargar datos:', err);
+      }
     } else {
       alert("!!!Faltan llenar Datos!!!");
     }
@@ -335,12 +358,15 @@ function appLaboralNuevo(){
 
 function appLaboralEditar(laboralID){
   Laboral.editar(laboralID);
-  $('#btn_modLaboUpdate').on('click',function(e) {
+  $('#btn_modLaboUpdate').on('click',async function(e) {
     if(Laboral.sinErrores()){ 
-      Laboral.ejecutaSQL().then(resp => {
+      try{
+        const resp = await Laboral.ejecutaSQL();
         appLaboralSetData(resp.tablaLabo);
         Laboral.close();
-      });
+      } catch(err){
+        console.error('Error al cargar datos:', err);
+      }
     } else {
       alert("!!!Faltan llenar Datos!!!");
     }
@@ -349,17 +375,20 @@ function appLaboralEditar(laboralID){
   });
 }
 
-function appLaboralDelete(laboralID){
+async function appLaboralDelete(laboralID){
   if(confirm("¿Realmente desea eliminar los datos laborales?")) {
-    let personaID = document.querySelector("#lbl_ID").innerHTML;
-    Laboral.borrar(personaID,laboralID).then(resp => {
+    const personaID = document.querySelector("#lbl_ID").innerHTML;
+    try{
+      const resp = await Laboral.borrar(personaID,laboralID);
       if(!resp.error){
         appLaboralSetData(resp.tablaLabo);
         Laboral.close();
       } else {
         alert("!!!Hubo un error al momento de eliminar estos datos!!!");
       }
-    });
+    } catch(err){
+      console.error('Error al cargar datos:', err);
+    }
   }
 }
 
@@ -410,12 +439,15 @@ function appConyugeClear(){
 
 function appConyugeNuevo(){
   Conyuge.nuevo(document.querySelector('#lbl_ID').innerHTML,rutaSQL);
-  $('#btn_modConyInsert').on('click',function(e) {
+  $('#btn_modConyInsert').on('click',async function(e) {
     if(Conyuge.sinErrores()){ //guardamos datos del conyuge
-      Conyuge.ejecutaSQL().then(resp => {
+      try{
+        const resp = await Conyuge.ejecutaSQL();
         appConyugeSetData(resp.tablaCony);
         Conyuge.close();
-      });
+      } catch(err){
+        console.error('Error al cargar datos:', err);
+      }
     } else {
       alert("!!!Faltan llenar Datos!!!");
     }
@@ -426,12 +458,15 @@ function appConyugeNuevo(){
 
 function appConyugeEditar(){
   Conyuge.editar(document.querySelector('#lbl_ID').innerHTML);
-  $('#btn_modConyUpdate').on('click',function(e) {
-    if(Conyuge.sinErrores()){ 
-      Conyuge.ejecutaSQL().then(resp => {
+  $('#btn_modConyUpdate').on('click',async function(e) {
+    if(Conyuge.sinErrores()){
+      try{
+        const resp = await Conyuge.ejecutaSQL();
         appConyugeSetData(resp.tablaCony);
         Conyuge.close();
-      });
+      } catch(err){
+        console.error('Error al cargar datos:', err);
+      }
     } else {
       alert("!!!Faltan llenar Datos!!!");
     }
@@ -440,40 +475,18 @@ function appConyugeEditar(){
   });
 }
 
-function appConyugeDelete(){
+async function appConyugeDelete(){
   if(confirm("¿Realmente desea eliminar los datos de Conyuge?")) {
-    Conyuge.borrar(document.querySelector('#lbl_ID').innerHTML).then(resp => {
+    try{
+      const resp = await Conyuge.borrar(document.querySelector('#lbl_ID').innerHTML);
       if(!resp.error){
         appConyugeClear();
         Conyuge.close();
       } else {
         alert("!!!Hubo un error al momento de eliminar estos datos!!!");
       }
-    });
+    } catch(err){
+      console.error('Error al cargar datos:', err);
+    }
   }
-}
-
-//permisos para personas
-function appPermisoPersonas(){
-  let datos = { TipoQuery:'insNotifi', tabla:'tb_personas', personaID:$("#lbl_ID").html() }
-  appAjaxInsert(datos,"pages/global/notifi/sql.php").done(function(resp){
-    if(!resp.error){ $("#btn_PersPermiso").hide(); }
-    else { alert("!!!Hubo un error... "+(resp.mensaje)+"!!!"); }
-  });
-}
-
-function appPermisoLaboral(){
-  let datos = { TipoQuery:'OneNotificacion', tabla:'tb_personas_labo', personaID:$("#lbl_ID").html() }
-  appAjaxInsert(datos).done(function(resp){
-    if(resp.error==false){ $("#btn_LaboPermiso").hide(); }
-    else { alert("!!!Hubo un error... "+(resp.mensaje)+"!!!"); }
-  });
-}
-
-function appPermisoConyuge(){
-  let datos = { TipoQuery:'OneNotificacion', tabla:'tb_personas_cony', personaID:$("#lbl_ID").html() }
-  appAjaxInsert(datos).done(function(resp){
-    if(resp.error==false){ $("#btn_ConyPermiso").hide(); }
-    else { alert("!!!Hubo un error... "+(resp.mensaje)+"!!!"); }
-  });
 }
