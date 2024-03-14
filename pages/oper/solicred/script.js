@@ -2,17 +2,19 @@ const rutaSQL = "pages/oper/solicred/sql.php";
 var menu = "";
 
 //=========================funciones para Personas============================
-function appSoliCredGrid(){
+async function appSoliCredGrid(){
   document.querySelector('#grdDatos').innerHTML = ('<tr><td colspan="10"><div class="progress progress-xs active"><div class="progress-bar progress-bar-success progress-bar-striped" style="width:100%"></div></td></tr>');
-  let txtBuscar = document.querySelector("#txtBuscar").value;
-  let datos = {
-    TipoQuery: 'selSoliCred',
-    buscar: txtBuscar
-  };
+  document.querySelector("#chk_All").disabled = (menu.oper.submenu.solicred.cmdDelete===1) ? false : true;
+  const disabledDelete = (menu.oper.submenu.solicred.cmdDelete===1) ? "" : "disabled";
+  const txtBuscar = document.querySelector("#txtBuscar").value;
 
-  appFetch(datos,rutaSQL).then(resp => {
-    let disabledDelete = (menu.oper.submenu.solicred.cmdDelete===1) ? "" : "disabled";
-    document.querySelector("#chk_All").disabled = (menu.oper.submenu.solicred.cmdDelete===1) ? false : true;
+  try{
+    const resp = await appAsynFetch({
+      TipoQuery: 'selSoliCred',
+      buscar: txtBuscar
+    }, rutaSQL);
+
+    //respuesta
     if(resp.tabla.length>0){
       let fila = "";
       resp.tabla.forEach((valor,key)=>{
@@ -35,20 +37,25 @@ function appSoliCredGrid(){
       $('#grdDatos').html('<tr><td colspan="10" style="text-align:center;color:red;">Sin Resultados '+(res)+'</td></tr>');
     }
     $('#grdCount').html(resp.tabla.length+"/"+resp.cuenta);
-  });
+  } catch(err){
+    console.error('Error al cargar datos:'+err);
+  }
 }
 
-function appSoliCredReset(){
-  appFetch({ TipoQuery:'selDataUser' },"includes/sess_interfaz.php").then(resp => {
+async function appSoliCredReset(){
+  document.querySelector("#grdDatos").innerHTML = ("");
+  document.querySelector("#txtBuscar").value = ("");
+  document.querySelector("#btn_DEL").style.display = (menu.oper.submenu.solicred.cmdDelete==1)?('inline'):('none');
+  document.querySelector("#btn_NEW").style.display = (menu.oper.submenu.solicred.cmdInsert==1)?('inline'):('none');
+  
+  try {
+    const resp = await appAsynFetch({ TipoQuery:'selDataUser' },"includes/sess_interfaz.php");
     menu = JSON.parse(resp.menu);
-    document.querySelector("#btn_DEL").style.display = (menu.oper.submenu.solicred.cmdDelete==1)?('inline'):('none');
-    document.querySelector("#btn_NEW").style.display = (menu.oper.submenu.solicred.cmdInsert==1)?('inline'):('none');
-
-    document.querySelector("#txtBuscar").value = ("");
-    document.querySelector("#grdDatos").innerHTML = ("");
     document.querySelector("#div_PersAuditoria").style.display = ((resp.rolID==resp.rolROOT)?('block'):('none'));
     appSoliCredGrid();
-  });
+  } catch(err){
+    console.error('Error al cargar datos:'+err);
+  }
 }
 
 function appSoliCredBuscar(e){
@@ -62,71 +69,87 @@ function appSoliCredBotonCancel(){
   $('#edit').hide();
 }
 
-function appSoliCredBotonInsert(){
+async function appSoliCredBotonInsert(){
   if(appSoliCredValidarCampos()){
     alert("¡¡¡Faltan datos!!!");
   } else {
     let datos = appSoliCredGetDatosToDatabase();
     datos.TipoExec = "INS";
-    appFetch(datos,rutaSQL).then(resp => {
-      appSoliCredBotonCancel();
-    });
+    try{
+      const resp = await appAsynFetch(datos,rutaSQL);
+      if(!resp.error) { appSoliCredBotonCancel(); }
+    } catch(err){
+      console.error('Error al cargar datos:'+err);
+    }
   }
 }
 
-function appSoliCredBotonUpdate(){
+async function appSoliCredBotonUpdate(){
   if(appSoliCredValidarCampos()){
     alert("¡¡¡Faltan datos!!!");
   } else {
     let datos = appSoliCredGetDatosToDatabase();
     datos.TipoExec = "UPD";
-    appFetch(datos,rutaSQL).then(resp => {
-      appSoliCredBotonCancel();
-    });
+
+    try{
+      const resp = await appAsynFetch(datos,rutaSQL);
+      if(!resp.error) { appSoliCredBotonCancel(); }
+    } catch(err){
+      console.error('Error al cargar datos:'+err);
+    }
   }
 }
 
-function appSoliCredBotonNuevo(){
+async function appSoliCredBotonNuevo(){
   Persona.openBuscar('VerifySoliCred',rutaSQL,false,true,true);
-  $('#btn_modPersAddToForm').on('click',function(e) {
-    let datos = {
-      TipoQuery : 'viewPersona',
-      personaID : Persona.tablaPers.ID,
-      fullQuery : 0
-    }
-    appFetch(datos,'pages/mtto/personas/sql.php').then(resp => {
+  $('#btn_modPersAddToForm').on('click',async function(e) {
+    try{
+      const resp = await appAsynFetch({
+        TipoQuery : 'viewPersona',
+        personaID : Persona.tablaPers.ID,
+        fullQuery : 0
+      }, 'pages/master/personas/sql.php');
+
+      //respuesta
       appSoliCredClear(Persona.tablaPers.persona);
       appPersonaSetData(Persona.tablaPers); //pestaña Personales
       document.querySelector("#grid").style.display = 'none';
       document.querySelector("#edit").style.display = 'block';
       Persona.close();
-    });
+    } catch(err){
+      console.error('Error al cargar datos:'+err);
+    }
+    
     e.stopImmediatePropagation();
     $('#btn_modPersAddToForm').off('click');
   });
 }
 
-function appSoliCredBotonBorrar(){
+async function appSoliCredBotonBorrar(){
   let arr = Array.from(document.querySelectorAll('[name="chk_Borrar"]:checked')).map(function(obj){return obj.attributes[2].nodeValue});
   if(arr.length>0){
     if(confirm("¿Esta seguro de continuar?")) {
-      appFetch({ TipoQuery:'delSoliCred', arr:arr },rutaSQL).then(resp => {
-        console.log(resp);
+      try{
+        const resp = await appAsynFetch({ TipoQuery:'delSoliCred', arr:arr },rutaSQL);
         if (!resp.error) { appSoliCredBotonCancel(); }
-      });
+      } catch(err){
+        console.error('Error al cargar datos:'+err);
+      }
     }
   } else {
     alert("NO eligio borrar ninguno");
   }
 }
 
-function appSoliCredAprueba(solicredID){
+async function appSoliCredAprueba(solicredID){
   $("#modalAprueba").modal("show");
-  let datos = {
-    TipoQuery: 'viewApruebaSoliCred',
-    SoliCredID: solicredID
-  }
-  appFetch(datos,rutaSQL).then(resp => {
+  try{
+    const resp = await appAsynFetch({
+      TipoQuery: 'viewApruebaSoliCred',
+      SoliCredID: solicredID
+    }, rutaSQL);
+
+    //respuesta
     document.querySelector("#txt_modApruebaFechaAprueba").disabled = (resp.rolUser==resp.rolROOT) ? (false):(true);
     $("#txt_modApruebaFechaAprueba").datepicker("setDate",moment(resp.fecha_aprueba).format("DD/MM/YYYY"));
 
@@ -155,30 +178,33 @@ function appSoliCredAprueba(solicredID){
     document.querySelector("#lbl_modApruebaCuota").innerHTML = ("&nbsp;<small style='font-size:10px;'>"+resp.mon_abrevia+"</small>&nbsp;&nbsp;"+resp.cuota+"&nbsp;");
     document.querySelector("#lbl_modApruebaObservac").innerHTML = (resp.observac);
     document.querySelector("#lbl_modEtiqFrecuencia").style.display = (resp.tipocredID==1)?('none'):('inherit');
-  });
+  } catch(err){
+    console.error('Error al cargar datos:'+err);
+  }
 }
 
-function appSoliCredView(solicredID){
-  let datos = {
-    TipoQuery : 'viewSoliCred',
-    SoliCredID : solicredID
-  };
-  
-  appFetch(datos,rutaSQL).then(resp => {
-    //tabs default en primer tab
-    $('.nav-tabs li').removeClass('active');
-    $('.tab-content .tab-pane').removeClass('active');
-    $('a[href="#datosSoliCred"]').closest('li').addClass('active');
-    $('#datosSoliCred').addClass('active');
-    document.querySelector("#btnUpdate").style.display = (menu.oper.submenu.solicred.cmdUpdate==1)?('inline'):('none');
-    document.querySelector("#btnInsert").style.display = 'none';
+async function appSoliCredView(solicredID){
+  //tabs default en primer tab
+  $('.nav-tabs li').removeClass('active');
+  $('.tab-content .tab-pane').removeClass('active');
+  $('a[href="#datosSoliCred"]').closest('li').addClass('active');
+  $('#datosSoliCred').addClass('active');
 
+  document.querySelector("#btnUpdate").style.display = (menu.oper.submenu.solicred.cmdUpdate==1)?('inline'):('none');
+  document.querySelector("#btnInsert").style.display = 'none';
+  try{
+    const resp = await appAsynFetch({
+      TipoQuery : 'viewSoliCred',
+      SoliCredID : solicredID
+    }, rutaSQL);
     appSoliCredSetData(resp.tablaSoliCred,resp.tablaPers.persona);  //pestaña Solicitud de credito
     appPersonaSetData(resp.tablaPers); //pestaña Personales
 
     document.querySelector('#grid').style.display = 'none';
     document.querySelector('#edit').style.display = 'block';
-  });
+  } catch(err){
+    console.error('Error al cargar datos:'+err);
+  }
 }
 
 function appSoliCredSetData(data,txtSocio){
@@ -214,12 +240,7 @@ function appSoliCredSetData(data,txtSocio){
   document.querySelector("#txt_SoliCredObserv").value = (data.observac);
 }
 
-function appSoliCredClear(txtSocio){
-  let datos = {
-    TipoQuery : 'newSoliCred'
-  }
-
-  //todos los inputs sin error y panel error deshabilitado
+async function appSoliCredClear(txtSocio){
   $('.form-group').removeClass('has-error');
     
   //tabs default en primer tab
@@ -230,17 +251,19 @@ function appSoliCredClear(txtSocio){
   document.querySelector("#btnUpdate").style.display = 'none';
   document.querySelector("#btnInsert").style.display = 'inline';
   
-  appFetch(datos,rutaSQL).then(resp => {
-    appLlenarDataEnComboBox(resp.comboAgencias,"#cbo_SoliCredAgencia",0);
-    appLlenarDataEnComboBox(resp.comboEmpleados,"#cbo_SoliCredPromotor",0);
-    appLlenarDataEnComboBox(resp.comboEmpleados,"#cbo_SoliCredAnalista",0);
-    appLlenarDataEnComboBox(resp.comboProductos,"#cbo_SoliCredProducto",0);
-    appLlenarDataEnComboBox(resp.comboTipoSBS,"#cbo_SoliCredTipoSBS",0);
-    appLlenarDataEnComboBox(resp.comboDestSBS,"#cbo_SoliCredDestSBS",0);
-    appLlenarDataEnComboBox(resp.comboClasifica,"#cbo_SoliCredClasifica",131);
-    appLlenarDataEnComboBox(resp.comboCondicion,"#cbo_SoliCredCondicion",141);
-    appLlenarDataEnComboBox(resp.comboMoneda,"#cbo_SoliCredMoneda",0);
-    
+  appLlenarDataEnComboBox(resp.comboAgencias,"#cbo_SoliCredAgencia",0);
+  appLlenarDataEnComboBox(resp.comboEmpleados,"#cbo_SoliCredPromotor",0);
+  appLlenarDataEnComboBox(resp.comboEmpleados,"#cbo_SoliCredAnalista",0);
+  appLlenarDataEnComboBox(resp.comboProductos,"#cbo_SoliCredProducto",0);
+  appLlenarDataEnComboBox(resp.comboTipoSBS,"#cbo_SoliCredTipoSBS",0);
+  appLlenarDataEnComboBox(resp.comboDestSBS,"#cbo_SoliCredDestSBS",0);
+  appLlenarDataEnComboBox(resp.comboClasifica,"#cbo_SoliCredClasifica",131);
+  appLlenarDataEnComboBox(resp.comboCondicion,"#cbo_SoliCredCondicion",141);
+  appLlenarDataEnComboBox(resp.comboMoneda,"#cbo_SoliCredMoneda",0);
+
+  try{
+    const resp = await appAsynFetch({ TipoQuery:'newSoliCred' }, rutaSQL);
+
     document.querySelector("#hid_SoliCredID").value = (0);
     document.querySelector("#txt_SoliCredSocio").value = (txtSocio);
     document.querySelector("#txt_SoliCredFechaSolici").disabled = (resp.rolUser==resp.rolROOT) ? (false):(true);
@@ -252,13 +275,14 @@ function appSoliCredClear(txtSocio){
     document.querySelector("#txt_SoliCredNroCuotas").value = ("12");
     document.querySelector("#txt_SoliCredFrecuencia").value = ("");
     document.querySelector("#txt_SoliCredObserv").value = ("");
-
     $("#txt_SoliCredFechaSolici").datepicker("setDate",moment(resp.fecha).format("DD/MM/YYYY"));
     $('#txt_SoliCredFechaOtorga').datepicker("setDate",moment(resp.fecha).format("DD/MM/YYYY"));
     $('#txt_SoliCredFechaOtorga').datepicker().on('changeDate', function(e) { appSoliCredUpdatePriCuotaByFechaOtorga(); });
     $('#txt_SoliCredFechaPriCuota').datepicker("setDate",moment(resp.fecha).add(1,'M').format("DD/MM/YYYY"));
     $('#txt_SoliCredFrecuencia').on('input', function(e) { appSoliCredUpdatePriCuotaByFrecuencia(); });
-  });
+  } catch(err){
+    console.error('Error al cargar datos:'+err);
+  }
 }
 
 function appSoliCredCambiarTipoCredito(){
@@ -297,43 +321,45 @@ function appSoliCredUpdatePriCuotaByFrecuencia(){
   }
 }
 
-function appSoliCredCambiarTipoSBS(){ 
-  //se debe afinar 
-  //aun no esta en produccion
-  let datos = {
-    TipoQuery : "cambiarTipoSBS",
-    padreID : document.querySelector("#cbo_SoliCredTipoSBS").value
+async function appSoliCredCambiarTipoSBS(){  //corregir
+  try{
+    const resp = await appAsynFetch({
+      TipoQuery : "cambiarTipoSBS",
+      padreID : document.querySelector("#cbo_SoliCredTipoSBS").value
+    },rutaSQL);
+      //appLlenarDataEnComboBox(resp,"#cbo_SoliCredDestSBS",0); //destino SBS
+  } catch(err){
+    console.error('Error al cargar datos:'+err);
   }
-  appFetch(datos,rutaSQL).then(resp => {
-    //appLlenarDataEnComboBox(resp,"#cbo_SoliCredDestSBS",0); //destino SBS
-  });
 }
 
-function appSoliCredGenerarPlanPagos(){
+async function appSoliCredGenerarPlanPagos(){
   if(appSoliCredValidarCampos()){
     alert("¡¡¡Faltan datos!!!");
     document.querySelector("#txt_SoliCredCuota").value = "";
   } else {
-    let datos = {
-      TipoQuery : "simulaCredito",
-      TipoCredito : document.querySelector("#cbo_SoliCredTipo").value,
-      importe : appConvertToNumero(document.querySelector("#txt_SoliCredImporte").value),
-      TEA : appConvertToNumero(document.querySelector("#txt_SoliCredTasa").value),
-      mora : appConvertToNumero(document.querySelector("#txt_SoliCredMora").value),
-      segDesgr : appConvertToNumero(document.querySelector("#txt_SoliCredSegDesgr").value),
-      nroCuotas: appConvertToNumero(document.querySelector("#txt_SoliCredNroCuotas").value),
-      fecha : appConvertToFecha(document.querySelector("#txt_SoliCredFechaOtorga").value,""),
-      pricuota : appConvertToFecha(document.querySelector("#txt_SoliCredFechaPriCuota").value,""),
-      frecuencia : appConvertToNumero(document.querySelector("#txt_SoliCredFrecuencia").value)
-    }
-  
-    appFetch(datos,rutaSQL).then(resp => {
+    try{
+      const resp = await appAsynFetch({
+        TipoQuery : "simulaCredito",
+        TipoCredito : document.querySelector("#cbo_SoliCredTipo").value,
+        importe : appConvertToNumero(document.querySelector("#txt_SoliCredImporte").value),
+        TEA : appConvertToNumero(document.querySelector("#txt_SoliCredTasa").value),
+        mora : appConvertToNumero(document.querySelector("#txt_SoliCredMora").value),
+        segDesgr : appConvertToNumero(document.querySelector("#txt_SoliCredSegDesgr").value),
+        nroCuotas: appConvertToNumero(document.querySelector("#txt_SoliCredNroCuotas").value),
+        fecha : appConvertToFecha(document.querySelector("#txt_SoliCredFechaOtorga").value,""),
+        pricuota : appConvertToFecha(document.querySelector("#txt_SoliCredFechaPriCuota").value,""),
+        frecuencia : appConvertToNumero(document.querySelector("#txt_SoliCredFrecuencia").value)
+      }, rutaSQL);
+
       if(resp!=undefined){
         document.querySelector("#txt_SoliCredCuota").value = resp.tabla.cuota;
       } else {
         alert("Sucedio un Error");
       }
-    });
+    } catch(err){
+      console.error('Error al cargar datos:'+err);
+    }
   }
 }
 
@@ -427,19 +453,23 @@ function appPersonaSetData(data){
   document.querySelector("#lbl_PersSysUser").innerHTML = (data.sysuserPers);
 }
 
-function modAprueba_BotonAprobar(){
+async function modAprueba_BotonAprobar(){
   if(confirm("¿Esta seguro de continuar?")) {
-    let datos = {
-      ID : document.querySelector("#hid_modApruebaID").value,
-      FechaAprueba : appConvertToFecha(document.querySelector("#txt_modApruebaFechaAprueba").value),
-      TipoQuery : "aprobarSoliCred",
-      TipoExec : "APRU" //aprueba solicitud de credito
-    }
-    appFetch(datos,rutaSQL).then(resp => {
+    try{
+      const resp = await appAsynFetch({
+        ID : document.querySelector("#hid_modApruebaID").value,
+        FechaAprueba : appConvertToFecha(document.querySelector("#txt_modApruebaFechaAprueba").value),
+        TipoQuery : "aprobarSoliCred",
+        TipoExec : "APRU" //aprueba solicitud de credito
+      }, rutaSQL);
+
+      //respuesta
       if (!resp.error) { 
         appSoliCredBotonCancel();
         $("#modalAprueba").modal("hide");
       }
-    });
+    } catch(err){
+      console.error('Error al cargar datos:'+err);
+    }
   }
 }

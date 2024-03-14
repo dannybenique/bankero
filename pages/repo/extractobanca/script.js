@@ -2,11 +2,14 @@ const rutaSQL = "pages/repo/extractobanca/sql.php";
 var menu = "";
 
 //=========================funciones para Personas============================
-function appReset(){
-  appFetch({ TipoQuery:'selDataUser' },"includes/sess_interfaz.php").then(resp => {
+async function appReset(){
+  document.querySelector("#div_InfoCorta").innerHTML = '';
+  try{
+    const resp = await appAsynFetch({TipoQuery:'selDataUser'},"includes/sess_interfaz.php");
     menu = JSON.parse(resp.menu);
-    document.querySelector("#div_InfoCorta").innerHTML = '';
-  });
+  } catch (err) {
+    console.error('Error al cargar datos:', err);
+  }
 }
 
 function appBotonBuscar(){
@@ -32,14 +35,13 @@ function modalSocioBuscar(){
   }
 }
 
-function modalSocioGrid(){
+async function modalSocioGrid(){
   document.querySelector('#modalSocio_Wait').innerHTML = ('<div class="progress progress-xs active"><div class="progress-bar progress-bar-success progress-bar-striped" style="width:100%"></div></div>');
-  let txtBuscar = document.querySelector("#modalSocio_TxtBuscar").value;
-  let datos = { TipoQuery: 'selSocios', buscar:txtBuscar };
-
-  appFetch(datos,rutaSQL).then(resp => {
-    document.querySelector('#modalSocio_Wait').innerHTML = "";
-    document.querySelector("#modalSocio_Grid").style.display = 'block';
+  document.querySelector("#modalSocio_Grid").style.display = 'block';
+  document.querySelector('#modalSocio_Wait').innerHTML = "";
+  const txtBuscar = document.querySelector("#modalSocio_TxtBuscar").value;
+  try{
+    const resp = await appAsynFetch({ TipoQuery: 'selSocios', buscar:txtBuscar },rutaSQL);
     if(resp.socios.length>0){
       let fila = "";
       resp.socios.forEach((valor,key)=>{
@@ -53,16 +55,20 @@ function modalSocioGrid(){
     } else {
       document.querySelector('#modalSocio_GridBody').innerHTML = ('<tr><td colspan="5" style="text-align:center;color:red;">Sin Resultados para '+txtBuscar+'</td></tr>');
     }
-  });
+  } catch (err) {
+    console.error('Error al cargar datos:', err);
+  }
 }
 
-function appSociosOperView(socioID){
+async function appSociosOperView(socioID){
   $('#modalSocio').modal('hide');
-  let datos = {
-    TipoQuery: 'viewSocio',
-    socioID:socioID
-  }
-  appFetch(datos,rutaSQL).then(resp => {
+  try{
+    const resp = await appAsynFetch({
+      TipoQuery: 'viewSocio',
+      socioID:socioID
+    }, rutaSQL);
+
+    //respuesta
     let fila = '';
     resp.prods.forEach((valor,key)=>{
       fila += '<li class="list-group-item"><a href="javascript:appSociosViewMovimProd('+(valor.saldoID)+','+(valor.operID)+');"><span>'+(valor.producto)+'&raquo; '+(valor.cod_prod)+'</span></a> <a class="pull-right">'+appFormatMoney(valor.saldo,2)+'</a></li>';
@@ -74,23 +80,25 @@ function appSociosOperView(socioID){
       '<br/><br/>'+
       '<ul class="list-group list-group-unbordered">'+(fila)+'</ul></div>';
     document.querySelector("#div_TablaMovim").innerHTML = '';
-  });
+  } catch (err) {
+    console.error('Error al cargar datos:', err);
+  }
 }
 
-function appSociosViewMovimProd(saldoID,tipoOperID){
-  let result = document.querySelector("#div_TablaMovim").innerHTML = '';
+async function appSociosViewMovimProd(saldoID,tipoOperID){
   document.querySelector("#div_title_movim").innerHTML = '<div class="progress progress-xs active"><div class="progress-bar progress-bar-success progress-bar-striped" style="width:100%"></div></div>';
-  switch(tipoOperID){
-    case 121: //aportes
-      let datAportes = {
-        TipoQuery : 'viewMovimAportes',
-        saldoID : saldoID
-      }
-      appFetch(datAportes,rutaSQL).then(resp => {
+  let result = document.querySelector("#div_TablaMovim").innerHTML = '';
+  try{
+    let resp = null;
+    let fila = "";
+    let totOtros = 0;
+    switch(tipoOperID){
+      case 121: //aportes
+        resp = await appAsynFetch({ TipoQuery:'viewMovimAportes', saldoID:saldoID }, rutaSQL);
+
+        //respuesta
         let totIngresos = 0;
         let totSalidas = 0;
-        let totOtros = 0;
-        let fila = "";
         resp.movim.forEach((valor,key)=>{
           totIngresos += valor.ingresos;
           totSalidas += valor.salidas;
@@ -129,20 +137,14 @@ function appSociosViewMovimProd(saldoID,tipoOperID){
           '</table>';
         document.querySelector("#div_title_movim").innerHTML = '<h3 class="box-title" style="font-family:flexoregular;font-weight:bold;">'+resp.producto+'</h3>';
         document.querySelector("#div_TablaMovim").innerHTML = result;
-      });
-      break;
-    case 124: //creditos
-      let datCred = {
-        TipoQuery : 'viewMovimCreditos',
-        saldoID : saldoID
-      }
-      appFetch(datCred,rutaSQL).then(resp => {
-        console.log(resp);
+        break;
+      case 124: //creditos
+        resp = await appAsynFetch({ TipoQuery:'viewMovimCreditos', saldoID:saldoID },rutaSQL);
+
+        //respuesta
         let totCapital = 0;
         let totInteres = 0;
         let totMora = 0;
-        let totOtros = 0;
-        let fila = "";
         resp.movim.forEach((valor,key)=>{
           totCapital += valor.capital;
           totInteres += valor.interes;
@@ -192,7 +194,9 @@ function appSociosViewMovimProd(saldoID,tipoOperID){
           '</table>';
         document.querySelector("#div_title_movim").innerHTML = '<h3 class="box-title" style="font-family:flexoregular;font-weight:bold;">'+resp.producto.producto+'</h3>';
         document.querySelector("#div_TablaMovim").innerHTML = result;
-      });
-      break;
+        break;
+    }
+  } catch (err) {
+    console.error('Error al cargar datos:', err);
   }
 }

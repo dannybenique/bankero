@@ -3,17 +3,18 @@ var menu = "";
 var desemb = null;
 
 //=========================funciones para Personas============================
-function appDesembGrid(){
+async function appDesembGrid(){
   document.querySelector('#grdDatos').innerHTML = ('<tr><td colspan="9"><div class="progress progress-xs active"><div class="progress-bar progress-bar-success progress-bar-striped" style="width:100%"></div></td></tr>');
-  let txtBuscar = document.querySelector("#txtBuscar").value;
-  let datos = {
-    TipoQuery: 'selDesembolsos',
-    buscar: txtBuscar
-  };
+  document.querySelector("#chk_All").disabled = (menu.caja.submenu.desemb.cmdDelete===1) ? false : true;
+  const disabledDelete = (menu.caja.submenu.desemb.cmdDelete===1) ? "" : "disabled";
+  const txtBuscar = document.querySelector("#txtBuscar").value;
+  try{
+    const resp = await appAsynFetch({
+      TipoQuery: 'selDesembolsos',
+      buscar: txtBuscar
+    }, rutaSQL);
 
-  appFetch(datos,rutaSQL).then(resp => {
-    let disabledDelete = (menu.caja.submenu.desemb.cmdDelete===1) ? "" : "disabled";
-    document.querySelector("#chk_All").disabled = (menu.caja.submenu.desemb.cmdDelete===1) ? false : true;
+    //respuesta
     if(resp.tabla.length>0){
       let fila = "";
       resp.tabla.forEach((valor,key)=>{
@@ -33,20 +34,24 @@ function appDesembGrid(){
       $('#grdDatos').html('<tr><td colspan="9" style="text-align:center;color:red;">Sin Resultados '+((txtBuscar==="")?(""):("para "+txtBuscar))+'</td></tr>');
     }
     $('#grdCount').html(resp.tabla.length+"/"+resp.cuenta);
-  });
+  } catch(err){
+    console.error('Error al cargar datos:'+err);
+  }
 }
 
-function appDesembReset(){
-  appFetch({ TipoQuery:'selDataUser' },"includes/sess_interfaz.php").then(resp => {
-    desemb = null;
+async function appDesembReset(){
+  desemb = null;
+  document.querySelector("#txtBuscar").value = ("");
+  document.querySelector("#grdDatos").innerHTML = ("");
+  try{
+    const resp = await appAsynFetch({ TipoQuery:'selDataUser' },"includes/sess_interfaz.php");
     menu = JSON.parse(resp.menu);
     document.querySelector("#btn_DEL").style.display = (menu.caja.submenu.desemb.cmdDelete==1)?('inline'):('none');
-
-    document.querySelector("#txtBuscar").value = ("");
-    document.querySelector("#grdDatos").innerHTML = ("");
     document.querySelector("#div_PersAuditoria").style.display = ((resp.rolID==101)?('block'):('none'));
     appDesembGrid();
-  });
+  } catch(err){
+    console.error('Error al cargar datos:'+err);
+  }
 }
 
 function appDesembBuscar(e){
@@ -60,7 +65,7 @@ function appDesembBotonCancel(){
   $('#edit').hide();
 }
 
-function appDesembBotonDesembolsar(){
+async function appDesembBotonDesembolsar(){
   // //obliga a desembolsar en la fecha actual
   // let desemb = appConvertToFecha(document.querySelector("#txt_DesembFecha").value,"-");
   // let inicio = appConvertToFecha(document.querySelector("#lbl_DesembFechaIniCred").innerHTML,"-");
@@ -69,28 +74,28 @@ function appDesembBotonDesembolsar(){
   // console.log("resta: "+(moment(desemb).diff(moment(inicio),"days")));
 
   if(confirm("¿Esta seguro de continuar?")) {
-    let datos = {
-      TipoQuery : 'ejecutarDesembolso',
-      ID : desemb.id,
-      socioID : desemb.socioID,
-      monedaID : desemb.monedaID,
-      agenciaID : desemb.agenciaID,
-      tipopagoID : desemb.tipopagoID,
-      tipocredID : desemb.tipocredID,
-      productoID : desemb.productoID,
-      cod_prod : document.querySelector("#lbl_DesembCodigo").innerHTML,
-      fecha_desemb : appConvertToFecha(document.querySelector("#txt_DesembFecha").value,""),
-      fecha_otorga : appConvertToFecha(document.querySelector("#lbl_DesembFechaOtorga").innerHTML),
-      importe : appConvertToNumero(document.querySelector("#lbl_DesembImporte").innerHTML),
-      tasa_cred : appConvertToNumero(document.querySelector("#lbl_DesembTasaCred").innerHTML),
-      tasa_desgr : appConvertToNumero(document.querySelector("#lbl_DesembTasaDesgr").innerHTML),
-      nrocuotas : document.querySelector("#lbl_DesembNrocuotas").innerHTML,
-      pivot : (desemb.tipocredID==1)?(appConvertToFecha(document.querySelector("#lbl_DesembFechaPriCuota").innerHTML)):(document.querySelector("#lbl_DesembFrecuencia").innerHTML),
-      observac: document.querySelector("#lbl_DesembObservac").innerHTML
-    }
-    // console.log(datos);
-    appFetch(datos,rutaSQL).then(resp => {
-      console.log(resp);
+    try{
+      const resp = await appAsynFetch({
+        TipoQuery : 'ejecutarDesembolso',
+        ID : desemb.id,
+        socioID : desemb.socioID,
+        monedaID : desemb.monedaID,
+        agenciaID : desemb.agenciaID,
+        tipopagoID : desemb.tipopagoID,
+        tipocredID : desemb.tipocredID,
+        productoID : desemb.productoID,
+        cod_prod : document.querySelector("#lbl_DesembCodigo").innerHTML,
+        fecha_desemb : appConvertToFecha(document.querySelector("#txt_DesembFecha").value,""),
+        fecha_otorga : appConvertToFecha(document.querySelector("#lbl_DesembFechaOtorga").innerHTML),
+        importe : appConvertToNumero(document.querySelector("#lbl_DesembImporte").innerHTML),
+        tasa_cred : appConvertToNumero(document.querySelector("#lbl_DesembTasaCred").innerHTML),
+        tasa_desgr : appConvertToNumero(document.querySelector("#lbl_DesembTasaDesgr").innerHTML),
+        nrocuotas : document.querySelector("#lbl_DesembNrocuotas").innerHTML,
+        pivot : (desemb.tipocredID==1)?(appConvertToFecha(document.querySelector("#lbl_DesembFechaPriCuota").innerHTML)):(document.querySelector("#lbl_DesembFrecuencia").innerHTML),
+        observac: document.querySelector("#lbl_DesembObservac").innerHTML
+      }, rutaSQL);
+      
+      //respuesta
       if (!resp.error) { 
         if(confirm("¿Desea Imprimir el desembolso?")){
           $("#modalPrint").modal("show");
@@ -99,45 +104,51 @@ function appDesembBotonDesembolsar(){
         }
         appDesembBotonCancel(); 
       }
-    });
+    } catch(err){
+      console.error('Error al cargar datos:'+err);
+    }
   }
 }
 
-function appDesembBotonBorrar(){
+async function appDesembBotonBorrar(){
   let arr = Array.from(document.querySelectorAll('[name="chk_Borrar"]:checked')).map(function(obj){return obj.attributes[2].nodeValue});
   if(arr.length>0){
     if(confirm("¿Esta seguro de continuar?")) {
-      appFetch({ TipoQuery:'delDesembolsos', arr:arr },rutaSQL).then(resp => {
-        if (resp.error == false) { //sin errores
-          //console.log(resp);
-          appDesembGrid();
-        }
-      });
+      try{
+        const resp = await appAsynFetch({ TipoQuery:'delDesembolsos', arr:arr },rutaSQL);
+        if (!resp.error) { appDesembGrid(); }
+      } catch(err){
+        console.error('Error al cargar datos:'+err);
+      }
     }
   } else {
     alert("NO eligio borrar ninguno");
   }
 }
 
-function appDesembView(solicredID){
-  let datos = {
-    TipoQuery : 'viewDesembolso',
-    SoliCredID : solicredID
-  };
-  
-  appFetch(datos,rutaSQL).then(resp => {
-    //tabs default en primer tab
-    $('.nav-tabs li').removeClass('active');
-    $('.tab-content .tab-pane').removeClass('active');
-    $('a[href="#datosSoliCred"]').closest('li').addClass('active');
-    $('#datosSoliCred').addClass('active');
-    document.querySelector("#btnInsert").style.display = (menu.caja.submenu.desemb.cmdUpdate==1)?('inline'):('none');
+async function appDesembView(solicredID){
+  //tabs default en primer tab
+  $('.nav-tabs li').removeClass('active');
+  $('.tab-content .tab-pane').removeClass('active');
+  $('a[href="#datosSoliCred"]').closest('li').addClass('active');
+  $('#datosSoliCred').addClass('active');
+  document.querySelector("#btnInsert").style.display = (menu.caja.submenu.desemb.cmdUpdate==1)?('inline'):('none');
+
+  try{
+    const resp = await appAsynFetch({
+      TipoQuery : 'viewDesembolso',
+      SoliCredID : solicredID
+    }, rutaSQL);
+
+    //respuesta
     document.querySelector('#grid').style.display = 'none';
     document.querySelector('#edit').style.display = 'block';
 
     appDesembSetData(resp.tablaDesembolso);  //pestaña Solicitud de credito
     appPersonaSetData(resp.tablaPers);
-  });
+  } catch(err){
+    console.error('Error al cargar datos:'+err);
+  }
 }
 
 function appDesembSetData(data){

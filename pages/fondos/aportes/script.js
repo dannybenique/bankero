@@ -2,15 +2,14 @@ const rutaSQL = "pages/fondos/aportes/sql.php";
 var menu = "";
 
 //=========================funciones para Personas============================
-function appAportesGrid(){
+async function appAportesGrid(){
   document.querySelector('#grdDatos').innerHTML = ('<tr><td colspan="5"><div class="progress progress-xs active"><div class="progress-bar progress-bar-success progress-bar-striped" style="width:100%"></div></td></tr>');
-  let txtBuscar = document.querySelector("#txtBuscar").value;
-  let datos = { TipoQuery: 'selAportes', buscar: txtBuscar };
-
-  appFetch(datos,rutaSQL).then(resp => {
-    console.log(resp);
-    let disabledDelete = (menu.fondos.submenu.aportes.cmdDelete===1) ? "" : "disabled";
-    document.querySelector("#chk_All").disabled = (menu.fondos.submenu.aportes.cmdDelete===1) ? false : true;
+  document.querySelector("#chk_All").disabled = (menu.fondos.submenu.aportes.cmdDelete===1) ? false : true;
+  const disabledDelete = (menu.fondos.submenu.aportes.cmdDelete===1) ? "" : "disabled";
+  const txtBuscar = document.querySelector("#txtBuscar").value;
+  
+  try{
+    const resp = await appAsynFetch({ TipoQuery:'selAportes', buscar:txtBuscar },rutaSQL);
     if(resp.tabla.length>0){
       let fila = "";
       resp.tabla.forEach((valor,key)=>{
@@ -28,17 +27,22 @@ function appAportesGrid(){
       $('#grdDatos').html('<tr><td colspan="5" style="text-align:center;color:red;">Sin Resultados '+(res)+'</td></tr>');
     }
     $('#grdCount').html(resp.tabla.length+"/"+resp.cuenta);
-  });
+  } catch(err){
+    console.error('Error al cargar datos:'+err);
+  }
 }
 
-function appAportesReset(){
-  appFetch({ TipoQuery:'selDataUser' },"includes/sess_interfaz.php").then(resp => {
+async function appAportesReset(){
+  document.querySelector("#txtBuscar").value = ("");
+  try{
+    const resp = await appAsynFetch({ TipoQuery:'selDataUser' },"includes/sess_interfaz.php");
     menu = JSON.parse(resp.menu);
     document.querySelector("#btn_DEL").style.display = (menu.fondos.submenu.aportes.cmdDelete==1)?('inline'):('none');
     document.querySelector("#btn_NEW").style.display = (menu.fondos.submenu.aportes.cmdInsert==1)?('inline'):('none');
-    document.querySelector("#txtBuscar").value = ("");
     appAportesGrid();
-  });
+  } catch(err){
+    console.error('Error al cargar datos:'+err);
+  }
 }
 
 function appAportesBuscar(e){
@@ -57,52 +61,56 @@ function appAportesBotonCancel(){
   $('#edit').hide();
 }
 
-function appAportesBotonNuevo(){
+async function appAportesBotonNuevo(){
   Persona.openBuscar('VerifyAportes',rutaSQL,false,true,false);
-  $('#btn_modPersAddToForm').on('click',function(e) {
+  $('#btn_modPersAddToForm').on('click',async function(e) {
     if(confirm('Confirme que realmente desea agregar APORTES a este socio')){
-      let datos = {
-        TipoQuery : 'insAportes',
-        socioID : Persona.tablaPers.ID
-      }
-      appFetch(datos,rutaSQL).then(resp => {
+      try{
+        const resp = await appAsynFetch({
+          TipoQuery : 'insAportes',
+          socioID : Persona.tablaPers.ID
+        }, rutaSQL);
         appAportesGrid();
         Persona.close();
-      });
-      e.stopImmediatePropagation();
-      $('#btn_modPersAddToForm').off('click');
+        e.stopImmediatePropagation();
+        $('#btn_modPersAddToForm').off('click');
+      } catch(err){
+        console.error('Error al cargar datos:'+err);
+      }
     }
   });
 }
 
-function appAportesBotonBorrar(){
+async function appAportesBotonBorrar(){
   let arr = Array.from(document.querySelectorAll('[name="chk_Borrar"]:checked')).map(function(obj){return obj.attributes[2].nodeValue});
   if(arr.length>0){
     if(confirm("¿Esta seguro de continuar?")) {
-      appFetch({ TipoQuery:'delAportes', arr:arr },rutaSQL).then(resp => {
-        if (resp.error == false) { //sin errores
-          console.log(resp);
-          appAportesBotonCancel();
-        }
-      });
+      try{
+        const resp = await appAsynFetch({ TipoQuery:'delAportes', arr:arr },rutaSQL);
+        if(!resp.error) { appAportesBotonCancel(); }
+      } catch(err){
+        console.error('Error al cargar datos:'+err);
+      }
     }
   } else {
     alert("NO eligio borrar ninguno");
   }
 }
 
-function appAportesView(aporteID){
-  let datos = {
-    TipoQuery : 'viewAporte',
-    aporteID : aporteID
-  };
-  
-  appFetch(datos,rutaSQL).then(resp => {
+async function appAportesView(aporteID){
+  try{
+    const resp = await appAsynFetch({
+      TipoQuery : 'viewAporte',
+      aporteID : aporteID
+    }, rutaSQL);
+    //respuesta
     appAportesSetData(resp.aporte);
     appMovimSetData(resp.movim);
     document.querySelector('#grid').style.display = 'none';
     document.querySelector('#edit').style.display = 'block';
-  });
+  } catch(err){
+    console.error('Error al cargar datos:'+err);
+  }
 }
 
 function appAportesSetData(data){

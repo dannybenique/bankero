@@ -146,7 +146,7 @@ async function handlerWorkersInsert_Click(e){
 
 async function handlerWorkersAddToForm_Click(e){
   try{
-    const resp = await appAsynFetch({TipoQuery:'viewPersona', personaID:Persona.tablaPers.ID, fullQuery:2 }, 'pages/mtto/personas/sql.php');
+    const resp = await appAsynFetch({TipoQuery:'viewPersona', personaID:Persona.tablaPers.ID, fullQuery:2 }, 'pages/master/personas/sql.php');
     appPersonaSetData(Persona.tablaPers); //pestaña Personales
 
     const rpta = await appAsynFetch({TipoQuery : 'startWorker'},rutaSQL);

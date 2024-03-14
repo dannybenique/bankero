@@ -41,25 +41,28 @@ function appNotificacionesData(resp){
   }
 }
 
-function inicioAPP(){
+async function inicioAPP(){
+  try{
   //const user = JSON.parse(localStorage.getItem("user"));
-  appFetch({ TipoQuery:'selDataUser' },"includes/sess_interfaz.php").then(resp => {
-    resp.menu = JSON.parse(resp.menu);
-    //console.log(resp.menu);
-    
-    
-    /*if(resp.rolID>102){ //oncontextmenu="return false;" ondragstart="return false;" onselectstart="return false;"
-      $(document.body).attr("oncontextmenu","return false;");
-      $(document.body).attr("onselectstart","return false;");
-      $(document.body).attr("ondragstart","return false;");
-    }*/
-    document.querySelector("#ifaz_menu_imagen").src = (resp.urlfoto);
-    document.querySelector("#ifaz_menu_nombrecorto").innerHTML = (resp.nombrecorto);
-    document.querySelector("#ifaz_menu_login").innerHTML = (resp.login);
-    document.querySelector("#ifaz_barra_imagen").src = (resp.urlfoto);
-    document.querySelector("#ifaz_barra_nombrecorto").innerHTML = (resp.nombrecorto);
-    document.querySelector("#ifaz_perfil_imagen").src = (resp.urlfoto);
-    document.querySelector("#ifaz_perfil_nombrecorto").innerHTML = (resp.nombrecorto);
-    document.querySelector("#ifaz_perfil_cargo").innerHTML = (resp.cargo);
-  });
+  const resp = await appAsynFetch({ TipoQuery:'selDataUser' },"includes/sess_interfaz.php");
+  resp.menu = JSON.parse(resp.menu);
+  
+  document.querySelector("#ifaz_menu_imagen").src = (resp.urlfoto);
+  document.querySelector("#ifaz_menu_nombrecorto").innerHTML = (resp.nombrecorto);
+  document.querySelector("#ifaz_menu_login").innerHTML = (resp.login);
+  document.querySelector("#ifaz_barra_imagen").src = (resp.urlfoto);
+  document.querySelector("#ifaz_barra_nombrecorto").innerHTML = (resp.nombrecorto);
+  document.querySelector("#ifaz_perfil_imagen").src = (resp.urlfoto);
+  document.querySelector("#ifaz_perfil_nombrecorto").innerHTML = (resp.nombrecorto);
+  document.querySelector("#ifaz_perfil_cargo").innerHTML = (resp.cargo);
+
+  /*if(resp.rolID>102){ //oncontextmenu="return false;" ondragstart="return false;" onselectstart="return false;"
+    $(document.body).attr("oncontextmenu","return false;");
+    $(document.body).attr("onselectstart","return false;");
+    $(document.body).attr("ondragstart","return false;");
+  }*/
+  } catch(err){
+    console.error('Error al cargar datos:', err);
+  }
+  
 }

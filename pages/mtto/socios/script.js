@@ -114,7 +114,7 @@ function appSocioBotonNuevo(){
         TipoQuery : 'viewPersona',
         personaID : Persona.tablaPers.ID,
         fullQuery : 2
-      },'pages/mtto/personas/sql.php');
+      },'pages/master/personas/sql.php');
 
       document.querySelector('#grid').style.display = 'none';
       document.querySelector('#edit').style.display = 'block';

@@ -10,33 +10,37 @@ function appAhorrosFechaFin(){
   document.querySelector("#dias_FechaFin").innerHTML = (fechaFin.diff(fechaIni,'days'));
 }
 
-function appAhorrosReset(){
+async function appAhorrosReset(){
   $('#date_FechaIni').datepicker("setDate",moment().format("DD/MM/YYYY"));
   appAhorrosFechaFin();
-  appFetch({ TipoQuery:"selProductos" },rutaSQL).then(resp => {
+  try{
+    const resp = await appAsynFetch({ TipoQuery:"selProductos" },rutaSQL);
     appLlenarDataEnComboBox(resp,"#cbo_Productos",0); 
-  });
+  } catch(err){
+    console.error('Error al cargar datos:'+err);
+  }
 }
 
-function appAhorrosGenerarIntereses(){
+async function appAhorrosGenerarIntereses(){
   let tiempo = document.querySelector("#txt_TiempoMeses").value;
   let productoID = document.querySelector("#cbo_Productos").value;
   let fecha = appConvertToFecha(document.querySelector("#date_FechaIni").value,"-");
   let capital = appConvertToNumero(document.querySelector("#txt_Importe").value);
-  let datos = {
-    TipoQuery : 'simulaAhorro',
-    fechaIni : moment(fecha).format("YYYYMMDD"),
-    fechaFin : moment(fecha).add(tiempo,'months').format("YYYYMMDD"),
-    productoID : productoID,
-    importe : capital,
-    segDesgr : 0.1,
-    tasa : appConvertToNumero($("#txt_Tasa").val())
-  }
-  appFetch(datos,rutaSQL).then(resp => {
+  try{
+    const resp = await appAsynFetch({
+      TipoQuery : 'simulaAhorro',
+      fechaIni : moment(fecha).format("YYYYMMDD"),
+      fechaFin : moment(fecha).add(tiempo,'months').format("YYYYMMDD"),
+      productoID : productoID,
+      importe : capital,
+      segDesgr : 0.1,
+      tasa : appConvertToNumero($("#txt_Tasa").val())
+    }, rutaSQL);
+
+    //respuesta
     let fila = "";
     let total = 0;
     let interes = appConvertToNumero(resp.interes);
-
     switch(productoID){
       case "106": //ahorrosuperpension
         interes = interes/tiempo;
@@ -70,9 +74,10 @@ function appAhorrosGenerarIntereses(){
                 '</tr>';
         break;
     }
-
     document.querySelector('#grdDatos').innerHTML = (fila);
-  });
+  } catch(err){
+    console.error('Error al cargar datos:'+err);
+  }
 }
 
 
@@ -104,21 +109,22 @@ function appCreditosCambiarTipoCredito(){
   }
 }
 
-function appCreditosGenerarPlanPagos(){
+async function appCreditosGenerarPlanPagos(){
   document.querySelector('#grdDatos').innerHTML = ('<tr><td colspan="9"><div class="progress progress-xs active"><div class="progress-bar progress-bar-success progress-bar-striped" style="width:100%"></div></td></tr>');
-  let datos = {
-    TipoQuery : 'simulaCredito',
-    TipoCredito : document.querySelector("#cbo_TipoCredito").value,
-    importe : appConvertToNumero(document.querySelector("#txt_Importe").value),
-    TEA : document.querySelector("#txt_TEA").value,
-    segDesgr : document.querySelector("#txt_SegDesgr").value,
-    nroCuotas: document.querySelector("#txt_NroCuotas").value,
-    fecha : appConvertToFecha(document.querySelector("#txt_FechaSimula").value,""),
-    pricuota : appConvertToFecha(document.querySelector("#txt_FechaPriCuota").value,""),
-    frecuencia : document.querySelector("#txt_Frecuencia").value
-  }
+  try{
+    const resp = await appAsynFetch({
+      TipoQuery : 'simulaCredito',
+      TipoCredito : document.querySelector("#cbo_TipoCredito").value,
+      importe : appConvertToNumero(document.querySelector("#txt_Importe").value),
+      TEA : document.querySelector("#txt_TEA").value,
+      segDesgr : document.querySelector("#txt_SegDesgr").value,
+      nroCuotas: document.querySelector("#txt_NroCuotas").value,
+      fecha : appConvertToFecha(document.querySelector("#txt_FechaSimula").value,""),
+      pricuota : appConvertToFecha(document.querySelector("#txt_FechaPriCuota").value,""),
+      frecuencia : document.querySelector("#txt_Frecuencia").value
+    }, rutaSQL);
 
-  appFetch(datos,rutaSQL).then(resp => {
+    //respuesta
     if(resp.tabla.length>0){
       let fila = "";
       let tot_Cuota = 0;
@@ -161,5 +167,7 @@ function appCreditosGenerarPlanPagos(){
     }else{
       document.querySelector('#grdDatos').innerHTML = ("");
     }
-  });
+  } catch(err){
+    console.error('Error al cargar datos:'+err);
+  }
 }

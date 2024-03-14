@@ -2,15 +2,16 @@ const rutaSQL = "pages/oper/creditos/sql.php";
 var menu = "";
 
 //=========================funciones para Personas============================
-function appCreditosGrid(){
+async function appCreditosGrid(){
   document.querySelector('#grdDatos').innerHTML = ('<tr><td colspan="10"><div class="progress progress-xs active"><div class="progress-bar progress-bar-success progress-bar-striped" style="width:100%"></div></td></tr>');
-  let txtBuscar = document.querySelector("#txtBuscar").value;
-  let datos = {
-    TipoQuery: 'selCreditos',
-    buscar: txtBuscar
-  };
+  const txtBuscar = document.querySelector("#txtBuscar").value;
+  try{
+    const resp = await appAsynFetch({
+      TipoQuery: 'selCreditos',
+      buscar: txtBuscar
+    }, rutaSQL);
 
-  appFetch(datos,rutaSQL).then(resp => {
+    //respuesta
     if(resp.tabla.length>0){
       let fila = "";
       resp.tabla.forEach((valor,key)=>{
@@ -31,15 +32,20 @@ function appCreditosGrid(){
       $('#grdDatos').html('<tr><td colspan="10" style="text-align:center;color:red;">Sin Resultados '+(res)+'</td></tr>');
     }
     $('#grdCount').html(resp.tabla.length+"/"+resp.cuenta);
-  });
+  } catch(err){
+    console.error('Error al cargar datos:'+err);
+  }
 }
 
-function appCreditosReset(){
-  appFetch({ TipoQuery:'selDataUser' },"includes/sess_interfaz.php").then(resp => {
+async function appCreditosReset(){
+  document.querySelector("#txtBuscar").value = ("");
+  try{
+    const resp = await appAsynFetch({ TipoQuery:'selDataUser' },"includes/sess_interfaz.php");
     menu = JSON.parse(resp.menu);
-    document.querySelector("#txtBuscar").value = ("");
     appCreditosGrid();
-  });
+  } catch(err){
+    console.error('Error al cargar datos:'+err);
+  }
 }
 
 function appCreditosBuscar(e){
@@ -58,18 +64,21 @@ function appCreditosBotonCancel(){
   $('#edit').hide();
 }
 
-function appCreditosView(prestamoID){
-  let datos = {
-    TipoQuery : 'viewCredito',
-    prestamoID : prestamoID
-  };
-  
-  appFetch(datos,rutaSQL).then(resp => {
+async function appCreditosView(prestamoID){
+  try{
+    const resp = await appAsynFetch({
+      TipoQuery : 'viewCredito',
+      prestamoID : prestamoID
+    }, rutaSQL);
+    
+    //respuesta
     appCreditoSetData(resp.prestamo);
     appDetalleSetData(resp.detalle);
     document.querySelector('#grid').style.display = 'none';
     document.querySelector('#edit').style.display = 'block';
-  });
+  } catch(err){
+    console.error('Error al cargar datos:'+err);
+  }
 }
 
 function appCreditoSetData(data){

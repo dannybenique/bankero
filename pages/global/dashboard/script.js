@@ -1,13 +1,16 @@
 const rutaSQL = "pages/global/dashboard/sql.php";
 
 //=========================funciones para Dashboard============================
-function appDashBoard(){
-  appFetch({ TipoQuery : 'dashboard' },rutaSQL).then(resp => {
+async function appDashBoard(){
+  try{
+    const resp = await appAsynFetch({ TipoQuery:'dashboard' },rutaSQL);
     // console.log(resp);
     $("#appTotalAgencias").html(resp.agencias);
     $("#appTotalSocios").html(resp.socios);
     $("#appTotalCreditos").html(resp.creditos);
-  });
+  } catch(err){
+    console.error('Error al cargar datos:'+err);
+  }
 }
 
 function appGraph(data){

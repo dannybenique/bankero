@@ -7,8 +7,19 @@ var tipoOperAporte = null;
 var aporte = null;
 
 //=========================funciones para Personas============================
-function appPagosReset(){
-  appFetch({ TipoQuery:'selDataUser' },"includes/sess_interfaz.php").then(resp => {
+async function appPagosReset(){
+  document.querySelector('#lbl_aporteSocio').innerHTML = ("");
+  document.querySelector('#lbl_aporteTipoDUI').innerHTML = ("DUI");
+  document.querySelector('#lbl_aporteNroDUI').innerHTML = ("");
+  document.querySelector('#lbl_aporteSaldo').innerHTML = ("");
+
+  document.querySelector('#txt_aporteFecha').value = ("");
+  document.querySelector('#txt_aporteImporte').value = ("");
+  document.querySelector('#cbo_aporteMedioPago').innerHTML = ("");
+  document.querySelector('#cbo_aporteMonedas').innerHTML = ("");
+  
+  try{
+    const resp = await appAsynFetch({ TipoQuery:'selDataUser' },"includes/sess_interfaz.php");
     menu = JSON.parse(resp.menu);
     agenciaID = resp.agenciaID;
     tipoOperAporte = null;
@@ -19,21 +30,12 @@ function appPagosReset(){
       productoID : null,
       esObligatorio : null
     }
-
     document.querySelector("#btn_NEW").style.display = (menu.caja.submenu.aportes.cmdInsert==1)?('inline'):('none');
     document.querySelector("#btn_RET").style.display = (menu.caja.submenu.aportes.cmdInsert==1)?('inline'):('none');
     document.querySelector("#btn_EXEC").disabled = true;
-    
-    document.querySelector('#lbl_aporteSocio').innerHTML = ("");
-    document.querySelector('#lbl_aporteTipoDUI').innerHTML = ("DUI");
-    document.querySelector('#lbl_aporteNroDUI').innerHTML = ("");
-    document.querySelector('#lbl_aporteSaldo').innerHTML = ("");
-
-    document.querySelector('#txt_aporteFecha').value = ("");
-    document.querySelector('#txt_aporteImporte').value = ("");
-    document.querySelector('#cbo_aporteMedioPago').innerHTML = ("");
-    document.querySelector('#cbo_aporteMonedas').innerHTML = ("");
-  });
+  } catch(err){
+    console.error('Error al cargar datos:'+err);
+  }
 }
 
 function appAportesBotonIngreso(){
@@ -46,7 +48,7 @@ function appAportesBotonRetiro(){
   appPreparaModalPersonas();
 }
 
-function appAportesBotonExec(){
+async function appAportesBotonExec(){
   let importe = appConvertToNumero(document.querySelector("#txt_aporteImporte").value);
   if(isNaN(importe)){
     alert("el IMPORTE debe ser una cantidad valida");
@@ -61,19 +63,19 @@ function appAportesBotonExec(){
           alert("!!!El saldo NO puede quedar en CERO 0.00!!!");
         } else {
           if(confirm("¿Esta seguro de continuar con la operacion?")){
-            let datos = {
-              TipoQuery : 'insOperacion',
-              agenciaID : agenciaID,
-              saldoID : aporte.id,
-              socioID : aporte.socioID,
-              productoID : aporte.productoID,
-              medioPagoID : document.querySelector("#cbo_aporteMedioPago").value*1,
-              monedaID : document.querySelector("#cbo_aporteMonedas").value*1,
-              tipoOperAporte : tipoOperAporte,
-              importe : importe
-            };
-            // console.log(datos);
-            appFetch(datos,rutaSQL).then(resp => {
+            try{
+              const resp = await appAsynFetch({
+                TipoQuery : 'insOperacion',
+                agenciaID : agenciaID,
+                saldoID : aporte.id,
+                socioID : aporte.socioID,
+                productoID : aporte.productoID,
+                medioPagoID : document.querySelector("#cbo_aporteMedioPago").value*1,
+                monedaID : document.querySelector("#cbo_aporteMonedas").value*1,
+                tipoOperAporte : tipoOperAporte,
+                importe : importe
+              }, rutaSQL);
+              //respuesta
               if (!resp.error) { 
                 if(confirm("¿Desea Imprimir el pago?")){
                   $("#modalPrint").modal("show");
@@ -82,7 +84,9 @@ function appAportesBotonExec(){
                 }
                 appPagosReset();
               }
-            });
+            } catch(err){
+              console.error('Error al cargar datos:'+err);
+            }
           }
         }
       }
@@ -104,12 +108,11 @@ function modalAporteBuscar(){
   }
 }
 
-function modalAporteGrid(){
+async function modalAporteGrid(){
   document.querySelector('#modalAporte_Wait').innerHTML = ('<div class="progress progress-xs active"><div class="progress-bar progress-bar-success progress-bar-striped" style="width:100%"></div></div>');
-  let txtBuscar = document.querySelector("#modalAporte_TxtBuscar").value;
-  let datos = { TipoQuery: 'selAportes', buscar:txtBuscar };
-
-  appFetch(datos,rutaSQL).then(resp => {
+  const txtBuscar = document.querySelector("#modalAporte_TxtBuscar").value;
+  try{
+    const resp = await appAsynFetch({ TipoQuery:'selAportes', buscar:txtBuscar }, rutaSQL);
     document.querySelector('#modalAporte_Wait').innerHTML = "";
     document.querySelector("#modalAporte_Grid").style.display = 'block';
     if(resp.aportes.length>0){
@@ -126,17 +129,20 @@ function modalAporteGrid(){
     }else{
       document.querySelector('#modalAporte_GridBody').innerHTML = ('<tr><td colspan="5" style="text-align:center;color:red;">Sin Resultados para '+txtBuscar+'</td></tr>');
     }
-  });
+  } catch(err){
+    console.error('Error al cargar datos:'+err);
+  }
 }
 
-function appAportesOperView(saldoID){
+async function appAportesOperView(saldoID){
   $('#modalAporte').modal('hide');
-  let datos = {
-    TipoQuery : 'viewAporte',
-    saldoID : saldoID
-  };
-  
-  appFetch(datos,rutaSQL).then(resp => {
+  try{
+    const resp = await appAsynFetch({
+      TipoQuery : 'viewAporte',
+      saldoID : saldoID
+    }, rutaSQL);
+    
+    //respuesta
     aporte.id = (saldoID);
     aporte.saldo = (resp.aporte.saldo);
     aporte.socioID = (resp.aporte.socioID);
@@ -152,7 +158,9 @@ function appAportesOperView(saldoID){
     document.querySelector('#txt_aporteFecha').value = (moment(resp.fecha).format("DD/MM/YYYY"));
     document.querySelector("#btn_EXEC").disabled = false;
     document.querySelector("#btn_EXEC").innerHTML = (tipoOperAporte==cIngreso) ? '<i class="fa fa-plus"></i> Aplicar Ingreso' : '<i class="fa fa-minus"></i> Aplicar Retiro';
-  });
+  } catch(err){
+    console.error('Error al cargar datos:'+err);
+  }
 }
 
 function appPreparaModalPersonas(){
