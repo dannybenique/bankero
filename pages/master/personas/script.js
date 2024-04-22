@@ -3,12 +3,12 @@ const rutaSQL = "pages/master/personas/sql.php";
 //=========================funciones para Personas============================
 async function appPersonasGrid(){
   document.querySelector('#grdDatos').innerHTML = ('<tr><td colspan="6"><div class="progress progress-xs active"><div class="progress-bar progress-bar-success progress-bar-striped" style="width:100%"></div></td></tr>');
-  document.querySelector("#chk_All").disabled = (resp.rolID===resp.rootID) ? false : true;
   const txtBuscar = document.querySelector("#txtBuscar").value.toUpperCase();
   try{
-    const datosresp = await appAsynFetch({ TipoQuery: 'selPersonas', buscar:txtBuscar },rutaSQL);
+    const resp = await appAsynFetch({ TipoQuery:'selPersonas', buscar:txtBuscar },rutaSQL);
     //respuesta
-    let disabledDelete = (resp.rolID===resp.rootID) ? (""):("disabled");
+    const disabledDelete = (resp.rolID===resp.rootID) ? (""):("disabled");
+    document.querySelector("#chk_All").disabled = (resp.rolID===resp.rootID) ? false : true;
     if(resp.tabla.length>0){
       let fila = "";
       resp.tabla.forEach((valor,key)=>{

@@ -45,7 +45,7 @@ async function appTiposReset(){
     menu = JSON.parse(resp.menu);
     
     const rpta = await appAsynFetch({TipoQuery:'startTipos'},rutaSQL);
-    appLlenarDataEnComboBox(resp.comboTipos,"#cbo_Tipos",0); //tipos de pago
+    appLlenarDataEnComboBox(rpta.comboTipos,"#cbo_Tipos",0); //tipos de pago
     appTiposGrid();
   } catch(err){
     console.error('Error al cargar datos:', err);
