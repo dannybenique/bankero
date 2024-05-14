@@ -32,7 +32,7 @@
           $_SESSION['usr_data'] = ($user);
           
           //respuesta  
-          $rpta = array("error" => 0);
+          $rpta = array("error" => false);
         }
       } else {
         $rpta = array("error" => 1,"data" => "credenciales sin acceso");
