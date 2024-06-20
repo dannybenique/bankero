@@ -21,12 +21,14 @@ var zSetting = {
 };
 
 //=========================funciones============================
+function appWorkersBuscar(e){ if(e.keyCode === 13) { appWorkersGrid(); } }
+
 async function appWorkersGrid(){
-  document.querySelector('#grdDatos').innerHTML = ('<tr><td colspan="9"><div class="progress progress-xs active"><div class="progress-bar progress-bar-success progress-bar-striped" style="width:100%"></div></td></tr>');
-  const txtBuscar = document.querySelector("#txtBuscar").value.toUpperCase();
+  $('#grdDatos').html('<tr><td colspan="9"><div class="progress progress-xs active"><div class="progress-bar progress-bar-success progress-bar-striped" style="width:100%"></div></td></tr>');
+  const txtBuscar = $("#txtBuscar").val().toUpperCase();
   const disabledDelete = (menu.mtto.submenu.empleados.cmdDelete===1) ? "" : "disabled";
   try{
-    document.querySelector("#chk_All").disabled = (menu.mtto.submenu.empleados.cmdDelete===1) ? false : true;
+    $("#chk_All").prop("disabled", !(menu.mtto.submenu.empleados.cmdDelete === 1));
     const resp = await appAsynFetch({ TipoQuery:'selWorkers', buscar:txtBuscar },rutaSQL);
     if(resp.tabla.length>0){
       let fila = "";
@@ -43,12 +45,12 @@ async function appWorkersGrid(){
                 '<td>'+(valor.agencia)+'</td>'+
                 '</tr>';
       });
-      document.querySelector('#grdDatos').innerHTML = (fila);
+      $('#grdDatos').html(fila);
     } else {
       let res = (txtBuscar==="") ? ("") : ("para "+txtBuscar);
-      document.querySelector('#grdDatos').innerHTML = ('<tr><td colspan="9" style="text-align:center;color:red;">Sin Resultados '+(res)+'</td></tr>');
+      $('#grdDatos').html('<tr><td colspan="9" style="text-align:center;color:red;">Sin Resultados '+(res)+'</td></tr>');
     }
-    document.querySelector('#grdCount').innerHTML = (resp.tabla.length+"/"+resp.cuenta);
+    $('#grdCount').html(resp.tabla.length+"/"+resp.cuenta);
   } catch(err) {
     console.error('Error al cargar datos:', err);
   }
@@ -56,31 +58,26 @@ async function appWorkersGrid(){
 
 async function appWorkersReset(){
   zTreeObj = $.fn.zTree.init($("#appTreeView"), zSetting, null); //configurar treeview
-  document.querySelector("#txtBuscar").value = ("");
-  document.querySelector("#grdDatos").innerHTML = ("");
+  $("#txtBuscar").val("");
+  $("#grdDatos").html("");
 
   try{
     const resp = await appAsynFetch({TipoQuery:'selDataUser'},"includes/sess_interfaz.php");
     
     menu = JSON.parse(resp.menu);
-    document.querySelector("#btn_DEL").style.display = (menu.mtto.submenu.empleados.cmdDelete==1)?('inline'):('none');
-    document.querySelector("#btn_NEW").style.display = (menu.mtto.submenu.empleados.cmdInsert==1)?('inline'):('none');
-    document.querySelector("#div_PersAuditoria").style.display = ((resp.rolID==101)?('block'):('none'));
+    $("#btn_DEL").toggle(menu.mtto.submenu.empleados.cmdDelete == 1);
+    $("#btn_NEW").toggle(menu.mtto.submenu.empleados.cmdInsert == 1);
+    $("#div_PersAuditoria").toggle(resp.rolID == 101);
     appWorkersGrid();
   } catch(err){
     console.error('Error al cargar datos:', err);
   }
 }
 
-function appWorkersBuscar(e){
-  let code = (e.keyCode ? e.keyCode : e.which);
-  if(code == 13) { appWorkersGrid(); }
-}
-
 function appWorkersBotonCancel(){
   appWorkersGrid();
-  document.querySelector("#grid").style.display = 'block';
-  document.querySelector("#edit").style.display = 'none';
+  $("#grid").show();
+  $("#edit").hide();
 }
 
 async function appWorkersBotonInsert(){
@@ -115,10 +112,8 @@ async function appWorkersBotonUpdate(){
 
 function appWorkerBotonNuevo(){
   Persona.openBuscar('VerifyWorker',rutaSQL,true,true,false);
-  $('#btn_modPersInsert').off('click');
-
-  $('#btn_modPersInsert').on('click',handlerWorkersInsert_Click);
-  $('#btn_modPersAddToForm').on('click',handlerWorkersAddToForm_Click);
+  $('#btn_modPersInsert').off('click').on('click',handlerWorkersInsert_Click);
+  $('#btn_modPersAddToForm').off('click').on('click',handlerWorkersAddToForm_Click);
 }
 
 async function handlerWorkersInsert_Click(e){
@@ -131,17 +126,17 @@ async function handlerWorkersInsert_Click(e){
       appWorkerClear(rpta);
       appUserClear(rpta);
 
-      document.querySelector('#grid').style.display = 'none';
-      document.querySelector('#edit').style.display = 'block';
+      $('#grid').hide();
+      $('#edit').show();
       Persona.close();
+      e.stopImmediatePropagation();
+      $('#btn_modPersInsert').off('click');
     } catch(err){
       console.error('Error al cargar datos:', err);
     }
   } else {
     alert("!!!Faltan llenar Datos!!!");
   }
-  e.stopImmediatePropagation();
-  $('#btn_modPersInsert').off('click');
 }
 
 async function handlerWorkersAddToForm_Click(e){
@@ -152,8 +147,8 @@ async function handlerWorkersAddToForm_Click(e){
     const rpta = await appAsynFetch({TipoQuery : 'startWorker'},rutaSQL);
     appWorkerClear(rpta);
     appUserClear(rpta);
-    document.querySelector('#grid').style.display = 'none';
-    document.querySelector('#edit').style.display = 'block';
+    $('#grid').hide();
+    $('#edit').show();
     Persona.close();
     e.stopImmediatePropagation();
     $('#btn_modPersAddToForm').off('click');
@@ -163,7 +158,7 @@ async function handlerWorkersAddToForm_Click(e){
 }
 
 async function appWorkersBotonBorrar(){
-  let arr = Array.from(document.querySelectorAll('[name="chk_Borrar"]:checked')).map(function(obj){return obj.attributes[2].nodeValue});
+  const arr = $('[name="chk_Borrar"]:checked').map(function() { return this.value}).get();
   if(arr.length>0){
     if(confirm("¿Esta seguro de continuar?")) {
       try{
@@ -196,12 +191,12 @@ async function appWorkerView(personaID){
     appWorkerSetData(resp.tablaWorker);  //pestaña Empleado
     appUserSetData(resp.tablaUser); //pestaña usuario
       
-    document.querySelector("#div_WorkerAuditoria").style.display = 'block';
-    document.querySelector("#btnUpdate").style.display = (menu.mtto.submenu.empleados.cmdUpdate==1)?('inline'):('none');
-    document.querySelector("#btnInsert").style.display = 'none';
+    $("#div_WorkerAuditoria").show();
+    $("#btnUpdate").toggle(menu.mtto.submenu.empleados.cmdUpdate == 1);
+    $("#btnInsert").hide();
 
-    document.querySelector('#grid').style.display = 'none';
-    document.querySelector('#edit').style.display = 'block';
+    $('#grid').hide();
+    $('#edit').show();
   } catch(err){
     console.error('Error al cargar datos:', err);
   }
@@ -209,26 +204,26 @@ async function appWorkerView(personaID){
 
 function appWorkerSetData(data){
   //info corta
-  document.querySelector("#lbl_Codigo").innerHTML = (data.codigo);
-  document.querySelector("#lbl_Agencia").innerHTML = (data.agencia);
+  $("#lbl_Codigo").html(data.codigo);
+  $("#lbl_Agencia").html(data.agencia);
   //pestaña de Empleado
   appLlenarDataEnComboBox(data.comboAgencias,"#cbo_WorkerAgencia",data.agenciaID);
   appLlenarDataEnComboBox(data.comboCargos,"#cbo_WorkerCargo",data.cargoID);
-  document.querySelector('#txt_WorkerFechaIng').value = (moment(data.fecha_ing).format("DD/MM/YYYY"));
-  document.querySelector("#txt_WorkerCodigo").value = (data.codigo);
-  document.querySelector("#txt_WorkerNombreCorto").value = (data.nombrecorto);
-  document.querySelector("#txt_WorkerCorreo").value = (data.correo);
-  document.querySelector("#txt_WorkerObserv").value = (data.observac);
-  document.querySelector("#lbl_WorkerSysFecha").innerHTML = (moment(data.sys_fecha).format("DD/MM/YYYY"));
-  document.querySelector("#lbl_WorkerSysUser").innerHTML = (data.usermod);
+  $('#txt_WorkerFechaIng').val(moment(data.fecha_ing).format("DD/MM/YYYY"));
+  $("#txt_WorkerCodigo").val(data.codigo);
+  $("#txt_WorkerNombreCorto").val(data.nombrecorto);
+  $("#txt_WorkerCorreo").val(data.correo);
+  $("#txt_WorkerObserv").val(data.observac);
+  $("#lbl_WorkerSysFecha").html(moment(data.sys_fecha).format("DD/MM/YYYY"));
+  $("#lbl_WorkerSysUser").html(data.usermod);
 }
 
 function appWorkerClear(data){
   //todos los inputs sin error y panel error deshabilitado
   $('.form-group').removeClass('has-error');
-  document.querySelector("#div_WorkerAuditoria").style.display = 'none';
-  document.querySelector("#btnInsert").style.display = (menu.mtto.submenu.empleados.cmdInsert==1)?('inline'):('none');
-  document.querySelector("#btnUpdate").style.display = 'none';
+  $("#div_WorkerAuditoria").hide();
+  $("#btnInsert").toggle(menu.mtto.submenu.empleados.cmdInsert==1);
+  $("#btnUpdate").hide();
 
   //tabs default en primer tab
   $('.nav-tabs li').removeClass('active');
@@ -239,32 +234,31 @@ function appWorkerClear(data){
   //pestaña de Empleado
   appLlenarDataEnComboBox(data.comboAgencias,"#cbo_WorkerAgencia",0);
   appLlenarDataEnComboBox(data.comboCargos,"#cbo_WorkerCargo",0);
-  document.querySelector('#txt_WorkerFechaIng').value = (moment(data.fecha).format("DD/MM/YYYY"));
-  document.querySelector("#txt_WorkerCodigo").placeholder = ("00-000000");
-  document.querySelector("#txt_WorkerCodigo").value = ("");
-  document.querySelector("#txt_WorkerNombreCorto").value = ("");
-  document.querySelector("#txt_WorkerObserv").value = ("");
+  $('#txt_WorkerFechaIng').val(moment(data.fecha).format("DD/MM/YYYY"));
+  $("#txt_WorkerCodigo").val("").attr("placeholder", "00-000000");
+  $("#txt_WorkerNombreCorto, #txt_WorkerObserv").val("");
 }
 
 function appWorkerGetDatosToDatabase(){
   let rpta = null;
   let esError = false;
+
   $('.form-group').removeClass('has-error');
-  if(document.querySelector("#txt_WorkerNombreCorto").value=="") { 
-    document.querySelector("#div_WorkerNombreCorto").className = "form-group has-error"; 
+  if($("#txt_WorkerNombreCorto").val()==="") { 
+    $("#div_WorkerNombreCorto").addClass("has-error"); 
     esError = true; 
     alert("!!!Falta Nombre Corto en el Empleado!!!");
   }
 
   if(!esError){
     rpta = {
-      workerID : document.querySelector("#lbl_ID").innerHTML,
-      agenciaID : document.querySelector("#cbo_WorkerAgencia").value,
-      cargoID : document.querySelector("#cbo_WorkerCargo").value,
-      nombrecorto : document.querySelector("#txt_WorkerNombreCorto").value,
-      correo : document.querySelector("#txt_WorkerCorreo").value,
-      fecha : appConvertToFecha(document.querySelector("#txt_WorkerFechaIng").value,""),
-      observac : document.querySelector("#txt_WorkerObserv").value,
+      workerID : $("#lbl_ID").html(),
+      agenciaID : $("#cbo_WorkerAgencia").val(),
+      cargoID : $("#cbo_WorkerCargo").val(),
+      nombrecorto : $("#txt_WorkerNombreCorto").val(),
+      correo : $("#txt_WorkerCorreo").val(),
+      fecha : appConvertToFecha($("#txt_WorkerFechaIng").val(),""),
+      observac : $("#txt_WorkerObserv").val(),
       usuario : null
     }
   }
@@ -273,86 +267,80 @@ function appWorkerGetDatosToDatabase(){
 
 function appPersonaSetData(data){
   //info corta
-  document.querySelector('#img_Foto').src = (data.urlfoto=="")?("data/personas/fotouser.jpg"):(data.urlfoto);
-  document.querySelector("#lbl_Nombres").innerHTML = (data.nombres);
-  document.querySelector("#lbl_Apellidos").innerHTML = (data.ap_paterno+" "+data.ap_materno);
-  document.querySelector("#lbl_ID").innerHTML = (data.ID);
-  document.querySelector("#lbl_TipoDNI").innerHTML = (data.tipoDUI);
-  document.querySelector("#lbl_DNI").innerHTML = (data.nroDUI);
-  document.querySelector("#lbl_Celular").innerHTML = (data.celular);
+  $('#img_Foto').attr('src', data.urlfoto === "" ? "data/personas/fotouser.jpg" : data.urlfoto);
+  $('#lbl_Nombres').text(data.nombres);
+  $('#lbl_Apellidos').text(data.ap_paterno + " " + data.ap_materno);
+  $('#lbl_ID').text(data.ID);
+  $('#lbl_TipoDNI').text(data.tipoDUI);
+  $('#lbl_DNI').text(data.nroDUI);
+  $('#lbl_Celular').text(data.celular);
 
   //pestaña datos personales
   if(data.tipoPersona==2){ //persona juridica
-    document.querySelector("#lbl_PersTipoNombres").innerHTML = ("Razon Social");
-    document.querySelector("#lbl_PersTipoProfesion").innerHTML = ("Rubro");
-    document.querySelector("#lbl_PersTipoApellidos").style.display = 'none';
-    document.querySelector("#lbl_PersTipoSexo").style.display = 'none';
-    document.querySelector("#lbl_PersTipoECivil").style.display = 'none';
-    document.querySelector("#lbl_PersTipoGIntruc").style.display = 'none';
+    $("#lbl_PersTipoNombres").html("Razon Social");
+    $("#lbl_PersTipoProfesion").html("Rubro");
+    $("#lbl_PersTipoApellidos, #lbl_PersTipoSexo, #lbl_PersTipoECivil, #lbl_PersTipoGIntruc").hide();
   }else{
-    document.querySelector("#lbl_PersTipoNombres").innerHTML = ("Nombres");
-    document.querySelector("#lbl_PersTipoProfesion").innerHTML = ("Profesion");
-    document.querySelector("#lbl_PersTipoApellidos").style.display = 'block';
-    document.querySelector("#lbl_PersTipoSexo").style.display = 'block';
-    document.querySelector("#lbl_PersTipoECivil").style.display = 'block';
-    document.querySelector("#lbl_PersTipoGIntruc").style.display = 'block';
+    $("#lbl_PersTipoNombres").html("Nombres");
+    $("#lbl_PersTipoProfesion").html("Profesion");
+    $("#lbl_PersTipoApellidos, #lbl_PersTipoSexo, #lbl_PersTipoECivil, #lbl_PersTipoGIntruc").show();
   }
-  document.querySelector("#lbl_PersNombres").innerHTML = (data.nombres);
-  document.querySelector("#lbl_PersApellidos").innerHTML = (data.ap_paterno+" "+data.ap_materno);
-  document.querySelector("#lbl_PersTipoDNI").innerHTML = (data.tipoDUI);
-  document.querySelector("#lbl_PersNroDNI").innerHTML = (data.nroDUI);
-  document.querySelector("#lbl_PersFechaNac").innerHTML = (moment(data.fechanac).format("DD/MM/YYYY"));
-  document.querySelector("#lbl_PersEdad").innerHTML = (moment().diff(moment(data.fechanac),"years")+" años");
-  document.querySelector("#lbl_PersPaisNac").innerHTML = (data.paisnac);
-  document.querySelector("#lbl_PersLugarNac").innerHTML = (data.lugarnac);
-  document.querySelector("#lbl_PersSexo").innerHTML = (data.sexo);
-  document.querySelector("#lbl_PersEcivil").innerHTML = (data.ecivil);
-  document.querySelector("#lbl_PersCelular").innerHTML = (data.celular);
-  document.querySelector("#lbl_PersTelefijo").innerHTML = (data.telefijo);
-  document.querySelector("#lbl_PersEmail").innerHTML = (data.correo);
-  document.querySelector("#lbl_PersGInstruccion").innerHTML = (data.ginstruc);
-  document.querySelector("#lbl_PersProfesion").innerHTML = (data.profesion);
-  document.querySelector("#lbl_PersOcupacion").innerHTML = (data.ocupacion);
-  document.querySelector("#lbl_PersUbicacion").innerHTML = (data.region+" - "+data.provincia+" - "+data.distrito);
-  document.querySelector("#lbl_PersDireccion").innerHTML = (data.direccion);
-  document.querySelector("#lbl_PersReferencia").innerHTML = (data.referencia);
-  document.querySelector("#lbl_PersMedidorluz").innerHTML = (data.medidorluz);
-  document.querySelector("#lbl_PersMedidorAgua").innerHTML = (data.medidoragua);
-  document.querySelector("#lbl_PersTipovivienda").innerHTML = (data.tipovivienda);
-  document.querySelector("#lbl_PersObservac").innerHTML = (data.observPers);
-  document.querySelector("#lbl_PersSysFecha").innerHTML = (moment(data.sysfechaPers).format("DD/MM/YYYY HH:mm:ss"));
-  document.querySelector("#lbl_PersSysUser").innerHTML = (data.sysuserPers);
+  $("#lbl_PersNombres").html(data.nombres);
+  $("#lbl_PersApellidos").html(data.ap_paterno+" "+data.ap_materno);
+  $("#lbl_PersTipoDNI").html(data.tipoDUI);
+  $("#lbl_PersNroDNI").html(data.nroDUI);
+  $("#lbl_PersFechaNac").html(moment(data.fechanac).format("DD/MM/YYYY"));
+  $("#lbl_PersEdad").html(moment().diff(moment(data.fechanac),"years")+" años");
+  $("#lbl_PersPaisNac").html(data.paisnac);
+  $("#lbl_PersLugarNac").html(data.lugarnac);
+  $("#lbl_PersSexo").html(data.sexo);
+  $("#lbl_PersEcivil").html(data.ecivil);
+  $("#lbl_PersCelular").html(data.celular);
+  $("#lbl_PersTelefijo").html(data.telefijo);
+  $("#lbl_PersEmail").html(data.correo);
+  $("#lbl_PersGInstruccion").html(data.ginstruc);
+  $("#lbl_PersProfesion").html(data.profesion);
+  $("#lbl_PersOcupacion").html(data.ocupacion);
+  $("#lbl_PersUbicacion").html(data.region+" - "+data.provincia+" - "+data.distrito);
+  $("#lbl_PersDireccion").html(data.direccion);
+  $("#lbl_PersReferencia").html(data.referencia);
+  $("#lbl_PersMedidorluz").html(data.medidorluz);
+  $("#lbl_PersMedidorAgua").html(data.medidoragua);
+  $("#lbl_PersTipovivienda").html(data.tipovivienda);
+  $("#lbl_PersObservac").html(data.observPers);
+  $("#lbl_PersSysFecha").html(moment(data.sysfechaPers).format("DD/MM/YYYY HH:mm:ss"));
+  $("#lbl_PersSysUser").html(data.sysuserPers);
 
   //permisos
-  document.querySelector("#btn_PersUpdate").style.display = 'block';
-  document.querySelector("#btn_PersPermiso").style.display = 'none';
+  $("#btn_PersUpdate").show();
+  $("#btn_PersPermiso").hide();
 }
 
 function appPersonaEditar(){
-  Persona.editar(document.querySelector('#lbl_ID').innerHTML,'S');
+  Persona.editar($('#lbl_ID').html(),'S');
   $('#btn_modPersUpdate').on('click',async function(e) {
     if(Persona.sinErrores()){ //sin errores
       try{
         const resp = await Persona.ejecutaSQL();
         appPersonaSetData(resp.tablaPers);
         Persona.close();
+        e.stopImmediatePropagation();
+        $('#btn_modPersUpdate').off('click');
       } catch(err){
         console.error('Error al cargar datos:', err);
       }
     } else {
       alert("!!!Faltan llenar Datos!!!");
     }
-    e.stopImmediatePropagation();
-    $('#btn_modPersUpdate').off('click');
   });
 }
 
 function appUserSetData(data){
   if(data.ID!=null){
-    document.querySelector("#chk_UserEsUsuario").checked = true;
-    document.querySelector("#txt_UserLogin").value = (data.login);
-    document.querySelector("#txt_UserRePassword").value = document.querySelector("#txt_UserPassword").value = 'demo';
-    document.querySelector("#div_UserRePassword").style.display = document.querySelector("#div_UserPassword").style.display = 'none';
+    $("#chk_UserEsUsuario").prop("checked", true);
+    $("#txt_UserLogin").val(data.login);
+    $("#txt_UserPassword, #txt_UserRePassword").val('demo');
+    $("#div_UserPassword, #div_UserRePassword").hide();
     appLlenarDataEnComboBox(data.comboRoles,"#cbo_UserRol",data.rolID);
 
     zMnuEmpleado = data.menu = JSON.parse(data.menu);
@@ -365,41 +353,35 @@ function appUserSetData(data){
 
 function appUserClear(data){
   appLlenarDataEnComboBox(data.comboRoles,"#cbo_UserRol",0);
-  document.querySelector("#chk_UserEsUsuario").checked = false;
-  document.querySelector('#txt_UserLogin').value = ("");
-  document.querySelector('#txt_UserPassword').value = ("");
-  document.querySelector('#txt_UserRePassword').value = ("");
-  document.querySelector("#div_UserPassword").style.display = 'block';
-  document.querySelector("#div_UserRePassword").style.display = 'block';
+  $("#chk_UserEsUsuario").prop("checked", false);
+  $('#txt_UserLogin, #txt_UserPassword, #txt_UserRePassword').val("");
+  $("#div_UserPassword, #div_UserRePassword").show();
   appUserEsUsuario();
 }
 
 async function appUserCambioPassw(userID){
   $("#modalChangePassw").modal("show");
-  document.querySelector("#txt_PassPassNew").value = "";
-  document.querySelector("#txt_PassPassRe").value = "";
+  $("#txt_PassPassNew, #txt_PassPassRe").value("");
   try{
-    const resp = await appAsynFetch({
-      TipoQuery:"selUserPass",
-      userID:userID
-    }, rutaSQL);
+    const resp = await appAsynFetch({ TipoQuery:"selUserPass",  userID:userID }, rutaSQL);
+
     //respuesta
-    document.querySelector("#hid_PassID").value = resp.ID;
-    document.querySelector("#lbl_PassNombrecorto").innerHTML = resp.nombrecorto;
-    document.querySelector("#lbl_PassLogin").innerHTML = resp.login;
+    $("#hid_PassID").val(resp.ID);
+    $("#lbl_PassNombrecorto").html(resp.nombrecorto);
+    $("#lbl_PassLogin").html(resp.login);
   } catch(err){
     console.error('Error al cargar datos:', err);
   }
 }
 
 async function modUserBotonUpdatePassw(){
-  if(document.querySelector("#txt_PassPassNew").value!=""){
-    if(document.querySelector("#txt_PassPassNew").value===document.querySelector("#txt_PassPassRe").value){
+  if($("#txt_PassPassNew").val()!=""){
+    if($("#txt_PassPassNew").val()===$("#txt_PassPassRe").val()){
       try{
         const resp = await appAsynFetch({
           TipoQuery:"changeUserPass",
-          userID : document.querySelector("#hid_PassID").value,
-          passw : SHA1(document.querySelector("#txt_PassPassNew").value).toString().toUpperCase()
+          userID : $("#hid_PassID").val(),
+          passw : SHA1($("#txt_PassPassNew").val()).toString().toUpperCase()
         }, rutaSQL);
         
         //respuesta
@@ -419,13 +401,8 @@ async function modUserBotonUpdatePassw(){
 }
 
 function appUserEsUsuario(){
-  let estado = document.querySelector("#chk_UserEsUsuario").checked;
-  document.querySelector("#txt_UserLogin").disabled = !estado;
-  document.querySelector("#txt_UserPassword").disabled = !estado;
-  document.querySelector("#txt_UserRePassword").disabled = !estado;
-  document.querySelector("#cbo_UserRol").disabled = !estado;
-  document.querySelector("#btn_UserPerfilRoot").disabled = !estado;
-  document.querySelector("#btn_UserPerfilCaja").disabled = !estado;
+  const estado = $("#chk_UserEsUsuario").is(":checked");
+  $("#txt_UserLogin, #txt_UserPassword, #txt_UserRePassword, #cbo_UserRol, #btn_UserPerfilRoot, #btn_UserPerfilCaja").prop("disabled", !estado);
   
   //menu
   zTreeObj = $.fn.zTree.init($("#appTreeView"), zSetting, (estado==false)?(null):(transformData(zMnuEmpleado)));
@@ -434,15 +411,15 @@ function appUserEsUsuario(){
 function appUserGetDatosToDatabase(){
   let rpta = null;
   let esError = false;
-  let esUsuario = document.querySelector("#chk_UserEsUsuario").checked;
+  let esUsuario = $("#chk_UserEsUsuario").is(":checked");
 
   $('.form-group').removeClass('has-error');
   if(esUsuario){
-    if(document.querySelector("#txt_UserLogin").value=="") { document.querySelector("#div_UserLogin").className = "form-group has-error"; esError = true; }
-    if(document.querySelector("#txt_UserPassword").value=="") { document.querySelector("#div_UserPassword").className = "form-group has-error"; esError = true; }
-    if(document.querySelector("#txt_UserRePassword").value != document.querySelector("#txt_UserPassword").value) { 
-      document.querySelector("#div_UserPassword").className = "form-group has-error";
-      document.querySelector("#div_UserRePassword").className = "form-group has-error";
+    if($("#txt_UserLogin").val()==="") { $("#div_UserLogin").addClass("has-error"); esError = true; }
+    if($("#txt_UserPassword").val()==="") { $("#div_UserPassword").addClass("has-error"); esError = true; }
+    if($("#txt_UserRePassword").val() != $("#txt_UserPassword").val()) { 
+      $("#div_UserPassword").addClass("has-error");
+      $("#div_UserRePassword").addClass("has-error");
       alert("el Password NO coincide");
       esError = true;
     }
@@ -452,9 +429,9 @@ function appUserGetDatosToDatabase(){
 
   if(esError==false && esUsuario==true){
     rpta = {
-      login : document.querySelector("#txt_UserLogin").value,
-      passw : SHA1(document.querySelector("#txt_UserPassword").value).toString().toUpperCase(),
-      rolID : document.querySelector("#cbo_UserRol").value,
+      login : $("#txt_UserLogin").val(),
+      passw : SHA1($("#txt_UserPassword").val()).toString().toUpperCase(),
+      rolID : $("#cbo_UserRol").val(),
       menu : JSON.stringify(getTreeJSON(zTreeObj))
     }
   }
@@ -477,6 +454,8 @@ async function appUserPerfilMenu(perfilID){
 
 
 //menu
+function beforeDrag(treeId, treeNodes) { return false; }
+
 function transformData(data) {
   var nodes = [];
   
@@ -527,32 +506,4 @@ function getTreeNodes(nodes) {
     }
   }
   return arr;
-}
-
-function beforeDrag(treeId, treeNodes) { return false; }
-
-
-//permisos para personas
-function appPermisoPersonas(){
-  let datos = { TipoQuery:'insNotifi', tabla:'tb_personas', personaID:$("#lbl_ID").html() }
-  appAjaxInsert(datos,"pages/global/notifi/sql.php").done(function(resp){
-    if(!resp.error){ $("#btn_PersPermiso").hide(); }
-    else { alert("!!!Hubo un error... "+(resp.mensaje)+"!!!"); }
-  });
-}
-
-function appPermisoLaboral(){
-  let datos = { TipoQuery:'OneNotificacion', tabla:'tb_personas_labo', personaID:$("#lbl_ID").html() }
-  appAjaxInsert(datos).done(function(resp){
-    if(resp.error==false){ $("#btn_LaboPermiso").hide(); }
-    else { alert("!!!Hubo un error... "+(resp.mensaje)+"!!!"); }
-  });
-}
-
-function appPermisoConyuge(){
-  let datos = { TipoQuery:'OneNotificacion', tabla:'tb_personas_cony', personaID:$("#lbl_ID").html() }
-  appAjaxInsert(datos).done(function(resp){
-    if(resp.error==false){ $("#btn_ConyPermiso").hide(); }
-    else { alert("!!!Hubo un error... "+(resp.mensaje)+"!!!"); }
-  });
 }

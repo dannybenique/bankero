@@ -13,7 +13,7 @@
         lnkConyuge : function(){
           Persona.openBuscar('VerifyConyuge',Conyuge.rutaSQL,true,true,false);
 
-          $('#btn_modPersInsert').on('click',async function(e) {
+          $('#btn_modPersInsert').off('click').on('click',async function(e) {
             if(Persona.sinErrores()){
               try{
                 const resp = await Persona.ejecutaSQL();
@@ -34,12 +34,12 @@
             e.stopImmediatePropagation();
             $('#btn_modPersInsert').off('click');
           });
-          $('#btn_modPersUpdate').on('click',function(e) {
+          $('#btn_modPersUpdate').off('click').on('click',function(e) {
             console.log("ingreso por update aun no esta definido");
             e.stopImmediatePropagation();
             $('#btn_modPersUpdate').off('click');
           });
-          $('#btn_modPersAddToForm').on('click',function(e) {
+          $('#btn_modPersAddToForm').off('click').on('click',function(e) {
             //console.log(otro);
             Persona.close();
             Conyuge.datosToForm({
@@ -61,9 +61,9 @@
           Conyuge.commandSQL = "INS";
           Conyuge.personaID = personaID;
           Conyuge.datosToForm(datos);
-          document.querySelector("#modConyTitulo").innerHTML = ("Nuevo Datos Conyugales");
-          document.querySelector("#btn_modConyInsert").style.display = 'inline';
-          document.querySelector("#btn_modConyUpdate").style.display = 'none';
+          $("#modConyTitulo").html("Nuevo Datos Conyugales");
+          $("#btn_modConyInsert").show();
+          $("#btn_modConyUpdate").hide();
           Conyuge.lnkConyuge();
         },
         editar : async function(personaID){
@@ -76,9 +76,9 @@
             Conyuge.commandSQL = "UPD";
             Conyuge.personaID = personaID;
             Conyuge.datosToForm(resp);
-            document.querySelector("#modConyTitulo").innerHTML = ("Editar Datos Conyugales");
-            document.querySelector("#btn_modConyUpdate").style.display = 'inline';
-            document.querySelector("#btn_modConyInsert").style.display = 'none';
+            $("#modConyTitulo").html("Editar Datos Conyugales");
+            $("#btn_modConyUpdate").show();
+            $("#btn_modConyInsert").hide();
             $("#modalCony").modal();
           } catch(err) {
             console.error('Error al cargar datos:', err);
@@ -99,7 +99,7 @@
         sinErrores : function(){
           let Error = true;
           $('.form-group').removeClass('has-error');
-          if(document.querySelector("#txt_modConyTiempoRela").value.trim()=="") { document.querySelector("#div_modConyTiempoRela").className = "form-group has-error"; Error = false; }
+          if($("#txt_modConyTiempoRela").val().trim()=="") { $("#div_modConyTiempoRela").addClass("has-error"); Error = false; }
           if(Conyuge.conyugeID==0) { Error = false; }
           return Error;
         },
@@ -109,8 +109,8 @@
             commandSQL : Conyuge.commandSQL,
             personaID : Conyuge.personaID,
             conyugeID : Conyuge.conyugeID,
-            permisoID : document.querySelector('#hid_modConyPermisoID').value,
-            tiempoRelacion : document.querySelector("#txt_modConyTiempoRela").value
+            permisoID : $('#hid_modConyPermisoID').val(),
+            tiempoRelacion : $("#txt_modConyTiempoRela").val()
           };
           return data;
         },
@@ -118,21 +118,17 @@
           //datos personales
           Conyuge.conyugeID = data.id_conyuge;
           if(data.id_conyuge>0){
-            document.querySelector('#lbl_modConyNombres').innerHTML = (data.persona.nombres);
-            document.querySelector('#lbl_modConyApellidos').innerHTML = (data.persona.ap_paterno+" "+data.persona.ap_materno);
-            document.querySelector('#lbl_modConyNroDNI').innerHTML = (data.persona.nroDUI);
-            document.querySelector('#lbl_modConyFechaNac').innerHTML = (moment(data.persona.fechanac).format("DD/MM/YYYY"));
-            document.querySelector('#lbl_modConyEcivil').innerHTML = (data.persona.ecivil);
+            $('#lbl_modConyNombres').html(data.persona.nombres);
+            $('#lbl_modConyApellidos').html(data.persona.ap_paterno+" "+data.persona.ap_materno);
+            $('#lbl_modConyNroDNI').html(data.persona.nroDUI);
+            $('#lbl_modConyFechaNac').html(moment(data.persona.fechanac).format("DD/MM/YYYY"));
+            $('#lbl_modConyEcivil').html(data.persona.ecivil);
           } else {
-            document.querySelector('#lbl_modConyNombres').innerHTML = ("");
-            document.querySelector('#lbl_modConyApellidos').innerHTML = ("");
-            document.querySelector('#lbl_modConyNroDNI').innerHTML = ("");
-            document.querySelector('#lbl_modConyFechaNac').innerHTML = ("");
-            document.querySelector('#lbl_modConyEcivil').innerHTML = ("");
+            $('#lbl_modConyNombres, #lbl_modConyApellidos, #lbl_modConyNroDNI, #lbl_modConyFechaNac, #lbl_modConyEcivil').html("");
           }
 
           //datos relacion
-          document.querySelector("#txt_modConyTiempoRela").value = (data.tiempoRelacion);
+          $("#txt_modConyTiempoRela").val(data.tiempoRelacion);
         },
         ejecutaSQL : async function(){
           try{

@@ -59,26 +59,19 @@
                     <script type="text/javascript">
                       $("#cbo_modPersTipoPers").change(function(){
                         if(this.options[this.selectedIndex].value==2){ //persona juridica
-                          document.querySelector("#div_modPersApePaterno").style.display = 'none';
-                          document.querySelector("#div_modPersApeMaterno").style.display = 'none';
-                          document.querySelector("#div_modPersGinstruc").style.display = 'none';
-                          document.querySelector("#div_modPersSexoEcivil").style.display = 'none';
-                          $("#cbo_modPersDocumento").prop('disabled','disabled');
-                          document.querySelector("#txt_modPersNombres").placeholder = 'RAZON SOCIAL';
-                          document.querySelector("#txt_modPersApePaterno").value = ("");
-                          document.querySelector("#txt_modPersApeMaterno").value = ("");
+                          $("#div_modPersApePaterno, #div_modPersApeMaterno, #div_modPersGinstruc, #div_modPersSexoEcivil").hide();
+                          $("#cbo_modPersDocumento").prop('disabled',true);
+                          $("#txt_modPersNombres").attr("placeholder", "RAZON SOCIAL");
+                          $("#txt_modPersApePaterno, #txt_modPersApeMaterno").val("");
                           $("#cbo_modPersGinstruc").get(0).selectedIndex=0;
                           $("#cbo_modPersEcivil").get(0).selectedIndex=0;
                           $("#cbo_modPersSexo").get(0).selectedIndex=0;
-                          document.querySelector("#cbo_modPersDocumento").value = (502);
+                          $("#cbo_modPersDocumento").val(502);
                         } else {
-                          document.querySelector("#txt_modPersNombres").placeholder = 'NOMBRES';
-                          document.querySelector("#div_modPersApePaterno").style.display = 'block';
-                          document.querySelector("#div_modPersApeMaterno").style.display = 'block';
-                          document.querySelector("#div_modPersGinstruc").style.display = 'block';
-                          document.querySelector("#div_modPersSexoEcivil").style.display = 'block';
-                          document.querySelector("#cbo_modPersDocumento").removeAttribute('disabled');
-                          document.querySelector("#cbo_modPersDocumento").value = (501);
+                          $("#txt_modPersNombres").attr("placeholder", "NOMBRES");
+                          $("#div_modPersApePaterno, #div_modPersApeMaterno, #div_modPersGinstruc, #div_modPersSexoEcivil").show();
+                          $("#cbo_modPersDocumento").prop('disabled',false);
+                          $("#cbo_modPersDocumento").val(501);
                         }
                       });
                     </script>

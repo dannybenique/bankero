@@ -2,14 +2,16 @@ const rutaSQL = "pages/fondos/aportes/sql.php";
 var menu = "";
 
 //=========================funciones para Personas============================
+function appAportesBuscar(e){ if(e.keyCode === 13) { appAportesGrid(); } }
+
 async function appAportesGrid(){
-  document.querySelector('#grdDatos').innerHTML = ('<tr><td colspan="5"><div class="progress progress-xs active"><div class="progress-bar progress-bar-success progress-bar-striped" style="width:100%"></div></td></tr>');
-  document.querySelector("#chk_All").disabled = (menu.fondos.submenu.aportes.cmdDelete===1) ? false : true;
+  $('#grdDatos').html('<tr><td colspan="5"><div class="progress progress-xs active"><div class="progress-bar progress-bar-success progress-bar-striped" style="width:100%"></div></td></tr>');
+  $("#chk_All").prop("disabled", !(menu.fondos.submenu.aportes.cmdDelete === 1));
   const disabledDelete = (menu.fondos.submenu.aportes.cmdDelete===1) ? "" : "disabled";
-  const txtBuscar = document.querySelector("#txtBuscar").value;
+  const txtBuscar = $("#txtBuscar").val();
   
   try{
-    const resp = await appAsynFetch({ TipoQuery:'selAportes', buscar:txtBuscar },rutaSQL);
+    const resp = await appAsynFetch({ TipoQuery:'aportes_sel', buscar:txtBuscar },rutaSQL);
     if(resp.tabla.length>0){
       let fila = "";
       resp.tabla.forEach((valor,key)=>{
@@ -33,25 +35,20 @@ async function appAportesGrid(){
 }
 
 async function appAportesReset(){
-  document.querySelector("#txtBuscar").value = ("");
+  $("#txtBuscar").val("");
   try{
     const resp = await appAsynFetch({ TipoQuery:'selDataUser' },"includes/sess_interfaz.php");
     menu = JSON.parse(resp.menu);
-    document.querySelector("#btn_DEL").style.display = (menu.fondos.submenu.aportes.cmdDelete==1)?('inline'):('none');
-    document.querySelector("#btn_NEW").style.display = (menu.fondos.submenu.aportes.cmdInsert==1)?('inline'):('none');
+    $("#btn_DEL").toggle(menu.fondos.submenu.aportes.cmdDelete == 1);
+    $("#btn_NEW").toggle(menu.fondos.submenu.aportes.cmdInsert == 1);
     appAportesGrid();
   } catch(err){
     console.error('Error al cargar datos:'+err);
   }
 }
 
-function appAportesBuscar(e){
-  let code = (e.keyCode ? e.keyCode : e.which);
-  if(code == 13) { load_flag = 0; $('#grdDatosBody').html(""); appAportesGrid(); }
-}
-
 function appAportesRefresh(){
-  let aporteID = document.querySelector('#hid_aporteID').value;
+  const aporteID = $('#hid_aporteID').val();
   appAportesView(aporteID);
 }
 
@@ -63,13 +60,11 @@ function appAportesBotonCancel(){
 
 async function appAportesBotonNuevo(){
   Persona.openBuscar('VerifyAportes',rutaSQL,false,true,false);
-  $('#btn_modPersAddToForm').on('click',async function(e) {
+  $('#btn_modPersAddToForm').off('click').on('click',async function(e) {
     if(confirm('Confirme que realmente desea agregar APORTES a este socio')){
       try{
-        const resp = await appAsynFetch({
-          TipoQuery : 'insAportes',
-          socioID : Persona.tablaPers.ID
-        }, rutaSQL);
+        const resp = await appAsynFetch({ TipoQuery:'insAportes', socioID:Persona.tablaPers.ID }, rutaSQL);
+        
         appAportesGrid();
         Persona.close();
         e.stopImmediatePropagation();
@@ -82,7 +77,7 @@ async function appAportesBotonNuevo(){
 }
 
 async function appAportesBotonBorrar(){
-  let arr = Array.from(document.querySelectorAll('[name="chk_Borrar"]:checked')).map(function(obj){return obj.attributes[2].nodeValue});
+  const arr = $('[name="chk_Borrar"]:checked').map(function() { return this.value}).get();
   if(arr.length>0){
     if(confirm("¿Esta seguro de continuar?")) {
       try{
@@ -99,27 +94,25 @@ async function appAportesBotonBorrar(){
 
 async function appAportesView(aporteID){
   try{
-    const resp = await appAsynFetch({
-      TipoQuery : 'viewAporte',
-      aporteID : aporteID
-    }, rutaSQL);
+    const resp = await appAsynFetch({ TipoQuery:'viewAporte', aporteID:aporteID }, rutaSQL);
+    
     //respuesta
     appAportesSetData(resp.aporte);
     appMovimSetData(resp.movim);
-    document.querySelector('#grid').style.display = 'none';
-    document.querySelector('#edit').style.display = 'block';
+    $('#grid').hide();
+    $('#edit').show();
   } catch(err){
     console.error('Error al cargar datos:'+err);
   }
 }
 
 function appAportesSetData(data){
-  document.querySelector('#hid_aporteID').value = (data.ID);
-  document.querySelector('#lbl_aporteSocio').innerHTML = (data.socio);
-  document.querySelector('#lbl_aporteTipoDUI').innerHTML = (data.dui);
-  document.querySelector('#lbl_aporteNroDUI').innerHTML = (data.nro_dui);
-  document.querySelector('#lbl_aporteCodigo').innerHTML = (data.cod_prod);
-  document.querySelector('#lbl_aporteSaldo').innerHTML = (appFormatMoney(data.saldo,2));
+  $('#hid_aporteID').val(data.ID);
+  $('#lbl_aporteSocio').html(data.socio);
+  $('#lbl_aporteTipoDUI').html(data.dui);
+  $('#lbl_aporteNroDUI').html(data.nro_dui);
+  $('#lbl_aporteCodigo').html(data.cod_prod);
+  $('#lbl_aporteSaldo').html(appFormatMoney(data.saldo,2));
 }
 
 function appMovimSetData(data){
@@ -149,6 +142,6 @@ function appMovimSetData(data){
           '<td style="text-align:right;"><b>'+appFormatMoney(totSalidas,2)+'</b></td>'+
           '<td style="text-align:right;"><b>'+appFormatMoney(totOtros,2)+'</b></td>'+
           '</tr>';
-  document.querySelector('#grdDetalleDatos').innerHTML = fila;
-  document.querySelector('#lbl_movimSaldo').innerHTML = appFormatMoney(totIngresos-totSalidas,2);
+  $('#grdDetalleDatos').html(fila);
+  $('#lbl_movimSaldo').html(appFormatMoney(totIngresos-totSalidas,2));
 }

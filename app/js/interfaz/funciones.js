@@ -55,7 +55,7 @@ function appLlenarDataEnComboBox(data,miComboBox,valorSelect){
   data.forEach((valor,key)=>{
     fila += '<option value="'+(valor.ID)+'" '+((valor.ID==valorSelect) ? ("selected") : (""))+'>'+(valor.nombre)+'</option>'; 
   });
-  document.querySelector(miComboBox).innerHTML = (fila);
+  $(miComboBox).html(fila);
 }
 
 //ejecutar ajax desde javascript vanilla

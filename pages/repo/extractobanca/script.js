@@ -1,9 +1,10 @@
 const rutaSQL = "pages/repo/extractobanca/sql.php";
 var menu = "";
 
-//=========================funciones para Personas============================
+function modalSocio_keyBuscar(e){ if(e.keyCode === 13) { modalSocioBuscar(); } }
+
 async function appReset(){
-  document.querySelector("#div_InfoCorta").innerHTML = '';
+  $("#div_InfoCorta").html('');
   try{
     const resp = await appAsynFetch({TipoQuery:'selDataUser'},"includes/sess_interfaz.php");
     menu = JSON.parse(resp.menu);
@@ -13,33 +14,27 @@ async function appReset(){
 }
 
 function appBotonBuscar(){
-  document.querySelector("#modalSocio_Titulo").innerHTML = ("Verificar Aportes por Doc. Identidad");
-  document.querySelector("#modalSocio_Grid").style.display = 'none';
-  document.querySelector("#modalSocio_Wait").innerHTML = ("");
-  document.querySelector("#modalSocio_TxtBuscar").value = ("");
-  $('#modalSocio').modal({keyboard:true});
-  $('#modalSocio').on('shown.bs.modal', ()=> { document.querySelector("#modalSocio_TxtBuscar").focus(); });
-}
-
-function modalSocio_keyBuscar(e){
-  let code = (e.keyCode ? e.keyCode : e.which);
-  if(code == 13) { modalSocioBuscar(); }
+  $("#modalSocio_Titulo").html("Verificar Aportes por Doc. Identidad");
+  $("#modalSocio_Grid").hide();
+  $("#modalSocio_Wait").html("");
+  $("#modalSocio_TxtBuscar").val("");
+  $('#modalSocio').modal({keyboard:true}).on('shown.bs.modal', ()=> { $("#modalSocio_TxtBuscar").focus(); });
 }
 
 function modalSocioBuscar(){
-  document.querySelector("#modalSocio_Grid").style.display = 'none';
-  if(document.querySelector("#modalSocio_TxtBuscar").value.length>=3){ 
+  $("#modalSocio_Grid").hide();
+  if($("#modalSocio_TxtBuscar").val().length>3){ 
     modalSocioGrid();
   } else { 
-    document.querySelector('#modalSocio_Wait').innerHTML = ('<div class="callout callout-warning"><h4>Demasiado Corto</h4><p>El NRO de documento de Identidad debe tener como minimo <b>4 numeros</b></p></div>'); 
+    $('#modalSocio_Wait').html('<div class="callout callout-warning"><h4>Demasiado Corto</h4><p>El NRO de documento de Identidad debe tener como minimo <b>4 numeros</b></p></div>'); 
   }
 }
 
 async function modalSocioGrid(){
-  document.querySelector('#modalSocio_Wait').innerHTML = ('<div class="progress progress-xs active"><div class="progress-bar progress-bar-success progress-bar-striped" style="width:100%"></div></div>');
-  document.querySelector("#modalSocio_Grid").style.display = 'block';
-  document.querySelector('#modalSocio_Wait').innerHTML = "";
-  const txtBuscar = document.querySelector("#modalSocio_TxtBuscar").value;
+  $('#modalSocio_Wait').html('<div class="progress progress-xs active"><div class="progress-bar progress-bar-success progress-bar-striped" style="width:100%"></div></div>');
+  $("#modalSocio_Grid").show();
+  $('#modalSocio_Wait').html("");
+  const txtBuscar = $("#modalSocio_TxtBuscar").val();
   try{
     const resp = await appAsynFetch({ TipoQuery: 'selSocios', buscar:txtBuscar },rutaSQL);
     if(resp.socios.length>0){
@@ -51,9 +46,9 @@ async function modalSocioGrid(){
                 '<td style="text-align:right;">'+(valor.prods)+'</td>'+
                 '</tr>';
       });
-      document.querySelector('#modalSocio_GridBody').innerHTML = (fila);
+      $('#modalSocio_GridBody').html(fila);
     } else {
-      document.querySelector('#modalSocio_GridBody').innerHTML = ('<tr><td colspan="5" style="text-align:center;color:red;">Sin Resultados para '+txtBuscar+'</td></tr>');
+      $('#modalSocio_GridBody').html('<tr><td colspan="5" style="text-align:center;color:red;">Sin Resultados para '+txtBuscar+'</td></tr>');
     }
   } catch (err) {
     console.error('Error al cargar datos:', err);
@@ -73,24 +68,25 @@ async function appSociosOperView(socioID){
     resp.prods.forEach((valor,key)=>{
       fila += '<li class="list-group-item"><a href="javascript:appSociosViewMovimProd('+(valor.saldoID)+','+(valor.operID)+');"><span>'+(valor.producto)+'&raquo; '+(valor.cod_prod)+'</span></a> <a class="pull-right">'+appFormatMoney(valor.saldo,2)+'</a></li>';
     });
-    document.querySelector("#div_InfoCorta").innerHTML = '<div class="box-body">'+
+    $("#div_InfoCorta").html('<div class="box-body">'+
       'Socio: <a>'+(resp.socio.persona)+'</a><br/>'+
       (resp.socio.tipoDUI)+': <a>'+(resp.socio.nroDUI)+'</a><br/>'+
       'Codigo: <a>'+(resp.socio.codigo)+'</a>'+
       '<br/><br/>'+
-      '<ul class="list-group list-group-unbordered">'+(fila)+'</ul></div>';
-    document.querySelector("#div_TablaMovim").innerHTML = '';
+      '<ul class="list-group list-group-unbordered">'+(fila)+'</ul></div>');
+    $("#div_TablaMovim").html('');
   } catch (err) {
     console.error('Error al cargar datos:', err);
   }
 }
 
 async function appSociosViewMovimProd(saldoID,tipoOperID){
-  document.querySelector("#div_title_movim").innerHTML = '<div class="progress progress-xs active"><div class="progress-bar progress-bar-success progress-bar-striped" style="width:100%"></div></div>';
-  let result = document.querySelector("#div_TablaMovim").innerHTML = '';
+  $("#div_title_movim").html('<div class="progress progress-xs active"><div class="progress-bar progress-bar-success progress-bar-striped" style="width:100%"></div></div>');
+  
   try{
-    let resp = null;
     let fila = "";
+    let result = "";
+    let resp = null;
     let totOtros = 0;
     switch(tipoOperID){
       case 121: //aportes
@@ -128,15 +124,15 @@ async function appSociosViewMovimProd(saldoID,tipoOperID){
                 '<th style="width:25px;" title="Usuario">US</th>'+
                 '<th style="width:80px;text-align:center;">Fecha</th>'+
                 '<th style="width:120px;text-align:center;">num_trans</th>'+
-                '<th style="">Detalle</th>'+
+                '<th>Detalle</th>'+
                 '<th style="width:95px;text-align:right;">Depositos</th>'+
                 '<th style="width:80px;text-align:right;">Retiros</th>'+
                 '<th style="width:80px;text-align:right;">Otros</th>'+
               '</tr></thead>'+
             '<tbody>'+fila+'</tbody>'+
           '</table>';
-        document.querySelector("#div_title_movim").innerHTML = '<h3 class="box-title" style="font-family:flexoregular;font-weight:bold;">'+resp.producto+'</h3>';
-        document.querySelector("#div_TablaMovim").innerHTML = result;
+        $("#div_title_movim").html('<h3 class="box-title" style="font-family:flexoregular;font-weight:bold;">'+resp.producto+'</h3>');
+        $("#div_TablaMovim").html(result);
         break;
       case 124: //creditos
         resp = await appAsynFetch({ TipoQuery:'viewMovimCreditos', saldoID:saldoID },rutaSQL);
@@ -192,8 +188,8 @@ async function appSociosViewMovimProd(saldoID,tipoOperID){
                 '<td colspan="4"></td></tr>'+
             '</tfoot>'+
           '</table>';
-        document.querySelector("#div_title_movim").innerHTML = '<h3 class="box-title" style="font-family:flexoregular;font-weight:bold;">'+resp.producto.producto+'</h3>';
-        document.querySelector("#div_TablaMovim").innerHTML = result;
+        $("#div_title_movim").html('<h3 class="box-title" style="font-family:flexoregular;font-weight:bold;">'+resp.producto.producto+'</h3>');
+        $("#div_TablaMovim").html(result);
         break;
     }
   } catch (err) {

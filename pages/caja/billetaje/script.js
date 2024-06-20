@@ -3,17 +3,17 @@ var menu = "";
 
 //=========================funciones para Personas============================
 async function appBillGrid(){
-  document.querySelector('#grdDatos').innerHTML = ('<tr><td colspan="9"><div class="progress progress-xs active"><div class="progress-bar progress-bar-success progress-bar-striped" style="width:100%"></div></td></tr>');
+  $('#grdDatos').html('<tr><td colspan="9"><div class="progress progress-xs active"><div class="progress-bar progress-bar-success progress-bar-striped" style="width:100%"></div></td></tr>');
   try{
     const resp = await appAsynFetch({
       TipoQuery: 'selBilletaje',
-      usuarioID: document.querySelector("#cboUsuarios").value,
-      monedaID: document.querySelector("#cboMonedas").value
+      usuarioID: $("#cboUsuarios").val(),
+      monedaID: $("#cboMonedas").val()
     }, rutaSQL);
 
     //respuesta
     let disabledDelete = (menu.caja.submenu.billetaje.cmdDelete===1) ? "" : "disabled";
-    document.querySelector("#chk_All").disabled = (menu.caja.submenu.billetaje.cmdDelete===1) ? false : true;
+    $("#chk_All").prop("disabled", !(menu.caja.submenu.billetaje.cmdDelete === 1));
     if(resp.tabla.length>0){
       let fila = "";
       resp.tabla.forEach((valor,key)=>{
@@ -40,13 +40,13 @@ async function appBillReset(){
   try{
     const resp = await appAsynFetch({ TipoQuery:'selDataUser' },"includes/sess_interfaz.php");
     menu = JSON.parse(resp.menu);
-    document.querySelector("#btn_DEL").style.display = (menu.caja.submenu.billetaje.cmdDelete==1)?('inline'):('none');
-    document.querySelector("#btn_NEW").style.display = (menu.caja.submenu.billetaje.cmdInsert==1)?('inline'):('none');
-
+    $("#btn_DEL").toggle(menu.caja.submenu.billetaje.cmdDelete == 1);
+    $("#btn_NEW").toggle(menu.caja.submenu.billetaje.cmdInsert == 1);
+    
     const rpta = await appAsynFetch({ TipoQuery:'StartBilletaje' }, rutaSQL);
     appLlenarDataEnComboBox(rpta.comboMonedas,"#cboMonedas",0);
     appLlenarDataEnComboBox(rpta.comboUsuarios,"#cboUsuarios",((rpta.rolID==rpta.root)?(0):(rpta.userID)));
-    document.querySelector("#cboUsuarios").disabled = ((rpta.rolID==rpta.root)?(false):(true));
+    $("#cboUsuarios").prop("disabled", rpta.rolID !== rpta.root);
     appBillGrid();
   } catch(err){
     console.error('Error al cargar datos:'+err);
@@ -60,7 +60,7 @@ function appBillBotonCancel(){
 }
 
 async function appBillBotonBorrar(){
-  let arr = Array.from(document.querySelectorAll('[name="chk_Borrar"]:checked')).map(function(obj){return obj.attributes[2].nodeValue});
+  const arr = $('[name="chk_Borrar"]:checked').map(function() { return this.value}).get();
   if(arr.length>0){
     if(confirm("¿Esta seguro de continuar?")) {
       try{
@@ -76,38 +76,28 @@ async function appBillBotonBorrar(){
 }
 
 async function appBillBotonNuevo(){
-  document.querySelector("#txt_Mx200").value = "";
-  document.querySelector("#txt_Mx100").value = "";
-  document.querySelector("#txt_Mx50").value = "";
-  document.querySelector("#txt_Mx20").value = "";
-  document.querySelector("#txt_Mx10").value = "";
-  document.querySelector("#txt_Mx5").value = "";
-  document.querySelector("#txt_Mx2").value = "";
-  document.querySelector("#txt_Mx1").value = "";
-  document.querySelector("#txt_Mx05").value = "";
-  document.querySelector("#txt_Mx02").value = "";
-  document.querySelector("#txt_Mx01").value = "";
-  document.querySelector("#txt_MxTotal").innerHTML = "0.00";
-  document.querySelector("#btnInsert").style.display = (menu.caja.submenu.billetaje.cmdInsert==1)?('inline'):('none');
-  document.querySelector("#btnUpdate").style.display = 'none';
+  $("#txt_Mx200, #txt_Mx100, #txt_Mx50, #txt_Mx20, #txt_Mx10, #txt_Mx5, #txt_Mx2, #txt_Mx1, #txt_Mx05, #txt_Mx02, #txt_Mx01").val("");
+  $("#txt_MxTotal").html("0.00");
+  $("#btnInsert").toggle(menu.caja.submenu.billetaje.cmdInsert == 1);
+  $("#btnUpdate").hide();
   try{
     const resp = await appAsynFetch({
       TipoQuery:'newBilletaje',
-      monedaID : document.querySelector("#cboMonedas").value,
-      usuarioID : document.querySelector("#cboUsuarios").value 
+      monedaID : $("#cboMonedas").val(),
+      usuarioID : $("#cboUsuarios").val() 
     }, rutaSQL);
 
     //respuesta
     $(".form-group").removeClass("has-error");
     $(".billetaje_mon").html(resp.mon_abrevia);
     $('#txt_Fecha').datepicker("setDate",moment(resp.fecha).format("DD/MM/YYYY"));
-    appLlenarDataEnComboBox(resp.comboMonedas,"#cbo_MonedasEdit",document.querySelector("#cboMonedas").value);
+    appLlenarDataEnComboBox(resp.comboMonedas,"#cbo_MonedasEdit",$("#cboMonedas").val());
     appLlenarDataEnComboBox(resp.comboAgencias,"#cbo_AgenciasEdit",0);
-    document.querySelector("#hid_billID").value = 0;
-    document.querySelector("#hid_usuarioID").value = (document.querySelector("#cboUsuarios").value);
-    document.querySelector("#txt_UsuarioEdit").value = resp.usuario;
-    document.querySelector("#grid").style.display = 'none';
-    document.querySelector("#edit").style.display = 'block';
+    $("#hid_billID").val(0);
+    $("#hid_usuarioID").val($("#cboUsuarios").val());
+    $("#txt_UsuarioEdit").val(resp.usuario);
+    $("#grid").hide();
+    $("#edit").show();
   } catch(err){
     console.error('Error al cargar datos:'+err);
   }
@@ -116,57 +106,53 @@ async function appBillBotonNuevo(){
 async function appBillView(billID){
   $(".form-group").removeClass("has-error");
   try{
-    const resp = await appAsynFetch({
-      TipoQuery : 'viewBilletaje',
-      billID : billID
-    }, rutaSQL);
+    const resp = await appAsynFetch({ TipoQuery:'viewBilletaje', billID }, rutaSQL);
     
     //respuesta
     document.querySelector("#btnUpdate").style.display = (resp.rolUSR===resp.rolROOT)?('inline'):((resp.fecha==resp.tabla.fecha && menu.caja.submenu.billetaje.cmdUpdate==1)?('inline'):('none'));
-    document.querySelector("#btnInsert").style.display = 'none';
-    document.querySelector('#grid').style.display = 'none';
-    document.querySelector('#edit').style.display = 'block';
+    $("#grid, #btnInsert").hide();
+    $('#edit').show();
     
     $(".billetaje_mon").html(resp.tabla.mon_abrevia);
     $('#txt_Fecha').datepicker("setDate",moment(resp.tabla.fecha).format("DD/MM/YYYY"));
     appLlenarDataEnComboBox(resp.comboMonedas,"#cbo_MonedasEdit",resp.tabla.monedaID);
     appLlenarDataEnComboBox(resp.comboAgencias,"#cbo_AgenciasEdit",resp.tabla.agenciaID);
   
-    document.querySelector("#hid_billID").value = resp.tabla.ID;
-    document.querySelector("#hid_usuarioID").value = resp.tabla.usuarioID;
-    document.querySelector("#txt_UsuarioEdit").value = resp.tabla.usuario;
-    document.querySelector("#txt_Mx200").value = resp.tabla.mx_200;
-    document.querySelector("#txt_Mx100").value = resp.tabla.mx_100;
-    document.querySelector("#txt_Mx50").value = resp.tabla.mx_50;
-    document.querySelector("#txt_Mx20").value = resp.tabla.mx_20;
-    document.querySelector("#txt_Mx10").value = resp.tabla.mx_10;
-    document.querySelector("#txt_Mx5").value = resp.tabla.mx_5;
-    document.querySelector("#txt_Mx2").value = resp.tabla.mx_2;
-    document.querySelector("#txt_Mx1").value = resp.tabla.mx_1;
-    document.querySelector("#txt_Mx05").value = resp.tabla.mx_05;
-    document.querySelector("#txt_Mx02").value = resp.tabla.mx_02;
-    document.querySelector("#txt_Mx01").value = resp.tabla.mx_01;
-    document.querySelector("#txt_MxTotal").innerHTML = appFormatMoney(resp.tabla.mx_total,2);
+    $("#hid_billID").val(resp.tabla.ID);
+    $("#hid_usuarioID").val(resp.tabla.usuarioID);
+    $("#txt_UsuarioEdit").val(resp.tabla.usuario);
+    $("#txt_Mx200").val(resp.tabla.mx_200);
+    $("#txt_Mx100").val(resp.tabla.mx_100);
+    $("#txt_Mx50").val(resp.tabla.mx_50);
+    $("#txt_Mx20").val(resp.tabla.mx_20);
+    $("#txt_Mx10").val(resp.tabla.mx_10);
+    $("#txt_Mx5").val(resp.tabla.mx_5);
+    $("#txt_Mx2").val(resp.tabla.mx_2);
+    $("#txt_Mx1").val(resp.tabla.mx_1);
+    $("#txt_Mx05").val(resp.tabla.mx_05);
+    $("#txt_Mx02").val(resp.tabla.mx_02);
+    $("#txt_Mx01").val(resp.tabla.mx_01);
+    $("#txt_MxTotal").html(appFormatMoney(resp.tabla.mx_total,2));
   } catch(err){
     console.error('Error al cargar datos:'+err);
   }
 }
 
 function appBillCalcular(){
-  let mx200 = $.isNumeric(document.querySelector("#txt_Mx200").value) ? (document.querySelector("#txt_Mx200").value*200) : (0);
-  let mx100 = $.isNumeric(document.querySelector("#txt_Mx100").value) ? (document.querySelector("#txt_Mx100").value*100) : (0);
-  let mx50 = $.isNumeric(document.querySelector("#txt_Mx50").value) ? (document.querySelector("#txt_Mx50").value*50) : (0);
-  let mx20 = $.isNumeric(document.querySelector("#txt_Mx20").value) ? (document.querySelector("#txt_Mx20").value*20) : (0);
-  let mx10 = $.isNumeric(document.querySelector("#txt_Mx10").value) ? (document.querySelector("#txt_Mx10").value*10) : (0);
-  let mx5 = $.isNumeric(document.querySelector("#txt_Mx5").value) ? (document.querySelector("#txt_Mx5").value*5) : (0);
-  let mx2 = $.isNumeric(document.querySelector("#txt_Mx2").value) ? (document.querySelector("#txt_Mx2").value*2) : (0);
-  let mx1 = $.isNumeric(document.querySelector("#txt_Mx1").value) ? (document.querySelector("#txt_Mx1").value*1) : (0);
-  let mx05 = $.isNumeric(document.querySelector("#txt_Mx05").value) ? (document.querySelector("#txt_Mx05").value*0.5) : (0);
-  let mx02 = $.isNumeric(document.querySelector("#txt_Mx02").value) ? (document.querySelector("#txt_Mx02").value*0.2) : (0);
-  let mx01 = $.isNumeric(document.querySelector("#txt_Mx01").value) ? (document.querySelector("#txt_Mx01").value*0.1) : (0);
+  let mx200 = $.isNumeric($("#txt_Mx200").val()) ? ($("#txt_Mx200").val()*200) : (0);
+  let mx100 = $.isNumeric($("#txt_Mx100").val()) ? ($("#txt_Mx100").val()*100) : (0);
+  let mx50 = $.isNumeric($("#txt_Mx50").val()) ? ($("#txt_Mx50").val()*50) : (0);
+  let mx20 = $.isNumeric($("#txt_Mx20").val()) ? ($("#txt_Mx20").val()*20) : (0);
+  let mx10 = $.isNumeric($("#txt_Mx10").val()) ? ($("#txt_Mx10").val()*10) : (0);
+  let mx5 = $.isNumeric($("#txt_Mx5").val()) ? ($("#txt_Mx5").val()*5) : (0);
+  let mx2 = $.isNumeric($("#txt_Mx2").val()) ? ($("#txt_Mx2").val()*2) : (0);
+  let mx1 = $.isNumeric($("#txt_Mx1").val()) ? ($("#txt_Mx1").val()*1) : (0);
+  let mx05 = $.isNumeric($("#txt_Mx05").val()) ? ($("#txt_Mx05").val()*0.5) : (0);
+  let mx02 = $.isNumeric($("#txt_Mx02").val()) ? ($("#txt_Mx02").val()*0.2) : (0);
+  let mx01 = $.isNumeric($("#txt_Mx01").val()) ? ($("#txt_Mx01").val()*0.1) : (0);
   let total = mx200 + mx100 + mx50 + mx20 + mx10 + mx5 + mx2 + mx1 + mx05 + mx02 + mx01;
 
-  document.querySelector("#txt_MxTotal").innerHTML = appFormatMoney(total,2);
+  $("#txt_MxTotal").html(appFormatMoney(total,2));
 }
 
 async function appBillInsert(){
@@ -206,27 +192,27 @@ function appGetDataToDataBase(){
   let esError = false;
 
   $(".form-group").removeClass("has-error");
-  if(document.querySelector("#txt_Fecha").value=="") { document.querySelector("#pn_Fecha").className = "form-group has-error"; esError = true; }
+  if($("#txt_Fecha").val()=="") { $("#pn_Fecha").addClass("has-error"); esError = true; }
   
   if(!esError){
     rpta = {
-      ID : document.querySelector("#hid_billID").value,
-      usuarioID: document.querySelector("#hid_usuarioID").value,
-      monedaID : document.querySelector("#cbo_MonedasEdit").value,
-      agenciaID : document.querySelector("#cbo_AgenciasEdit").value,
-      fecha : appConvertToFecha(document.querySelector("#txt_Fecha").value),
-      mx200 : ($.isNumeric(document.querySelector("#txt_Mx200").value)?(document.querySelector("#txt_Mx200").value):(0)),
-      mx100 : ($.isNumeric(document.querySelector("#txt_Mx100").value)?(document.querySelector("#txt_Mx100").value):(0)),
-      mx50 : ($.isNumeric(document.querySelector("#txt_Mx50").value)?(document.querySelector("#txt_Mx50").value):(0)),
-      mx20 : ($.isNumeric(document.querySelector("#txt_Mx20").value)?(document.querySelector("#txt_Mx20").value):(0)),
-      mx10 : ($.isNumeric(document.querySelector("#txt_Mx10").value)?(document.querySelector("#txt_Mx10").value):(0)),
-      mx5 : ($.isNumeric(document.querySelector("#txt_Mx5").value)?(document.querySelector("#txt_Mx5").value):(0)),
-      mx2 : ($.isNumeric(document.querySelector("#txt_Mx2").value)?(document.querySelector("#txt_Mx2").value):(0)),
-      mx1 : ($.isNumeric(document.querySelector("#txt_Mx1").value)?(document.querySelector("#txt_Mx1").value):(0)),
-      mx05 : ($.isNumeric(document.querySelector("#txt_Mx05").value)?(document.querySelector("#txt_Mx05").value):(0)),
-      mx02 : ($.isNumeric(document.querySelector("#txt_Mx02").value)?(document.querySelector("#txt_Mx02").value):(0)),
-      mx01 : ($.isNumeric(document.querySelector("#txt_Mx01").value)?(document.querySelector("#txt_Mx01").value):(0)),
-      mxtotal : appConvertToNumero(document.querySelector("#txt_MxTotal").innerHTML)
+      ID : $("#hid_billID").val(),
+      usuarioID: $("#hid_usuarioID").val(),
+      monedaID : $("#cbo_MonedasEdit").val(),
+      agenciaID : $("#cbo_AgenciasEdit").val(),
+      fecha : appConvertToFecha($("#txt_Fecha").val()),
+      mx200 : ($.isNumeric($("#txt_Mx200").val())?($("#txt_Mx200").val()):(0)),
+      mx100 : ($.isNumeric($("#txt_Mx100").val())?($("#txt_Mx100").val()):(0)),
+      mx50 : ($.isNumeric($("#txt_Mx50").val())?($("#txt_Mx50").val()):(0)),
+      mx20 : ($.isNumeric($("#txt_Mx20").val())?($("#txt_Mx20").val()):(0)),
+      mx10 : ($.isNumeric($("#txt_Mx10").val())?($("#txt_Mx10").val()):(0)),
+      mx5 : ($.isNumeric($("#txt_Mx5").val())?($("#txt_Mx5").val()):(0)),
+      mx2 : ($.isNumeric($("#txt_Mx2").val())?($("#txt_Mx2").val()):(0)),
+      mx1 : ($.isNumeric($("#txt_Mx1").val())?($("#txt_Mx1").val()):(0)),
+      mx05 : ($.isNumeric($("#txt_Mx05").val())?($("#txt_Mx05").val()):(0)),
+      mx02 : ($.isNumeric($("#txt_Mx02").val())?($("#txt_Mx02").val()):(0)),
+      mx01 : ($.isNumeric($("#txt_Mx01").val())?($("#txt_Mx01").val()):(0)),
+      mxtotal : appConvertToNumero($("#txt_MxTotal").html())
     }
   }
   return rpta;

@@ -12,6 +12,12 @@
       else $ipaddress = 'UNKNOWN';
       return $ipaddress; 
     }
+    public function getValorCampo($cadSQL,$campo){ //devuelve el valor de UN SOLO campo segun la consulta
+      $db = $GLOBALS["db"];
+      $qry = $db->query_all($cadSQL);
+      $rs = reset($qry);
+      return $rs[$campo];
+    }
     public function getComboBox($cadSQL) {
       $db = $GLOBALS["db"];
       $tabla = array();
@@ -367,27 +373,6 @@
       }
       return $tabla; 
     }
-    /*
-    public function getOneUsuario($usuarioID){
-      $db = $GLOBALS["db"];
-
-      //obtener datos usuario
-      $qry = $db->select("select * from dbo.vw_usuarios where ID=".$usuarioID);
-      if ($db->has_rows($qry)) {
-          $rs = $db->fetch_array($qry);
-          $tabla = array(
-            "ID" => ($rs["ID"]),
-            "codigo" => ($rs["codigo"]),
-            "usuario" => utf8_encode($rs["usuario"]),
-            "nombrecorto" => utf8_encode($rs["nombrecorto"]),
-            "id_usernivel" => ($rs["id_usernivel"]),
-            "id_agencia" => ($rs["id_agencia"]),
-            "nroDNI" => ($rs["DNI"])
-          );
-      }
-      return $tabla;
-    }
-    */
   }
   $fn = new funciones();
 ?>

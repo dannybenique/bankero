@@ -2,15 +2,14 @@ const rutaSQL = "pages/master/tipos/sql.php";
 var menu = "";
 
 //=========================funciones para Personas============================
+function appTiposBuscar(e){ if(e.keyCode === 13) { appTiposGrid(); } }
+
 async function appTiposGrid(){
-  document.querySelector('#grdDatos').innerHTML = ('<tr><td colspan="9"><div class="progress progress-xs active"><div class="progress-bar progress-bar-success progress-bar-striped" style="width:100%"></div></td></tr>');
-  const txtBuscar = document.querySelector("#txtBuscar").value.toUpperCase();
-  const cboTipo = document.querySelector("#cbo_Tipos").value;
+  $('#grdDatos').html('<tr><td colspan="9"><div class="progress progress-xs active"><div class="progress-bar progress-bar-success progress-bar-striped" style="width:100%"></div></td></tr>');
+  const txtBuscar = $("#txtBuscar").val().toUpperCase();
+  const cboTipo = $("#cbo_Tipos").val();
   try{
-    const resp = await appAsynFetch({ 
-      TipoQuery:'selTipos', 
-      tipo:cboTipo, 
-      buscar:txtBuscar },rutaSQL);
+    const resp = await appAsynFetch({ TipoQuery:'selTipos', tipo:cboTipo, buscar:txtBuscar },rutaSQL);
     //respuesta
     if(resp.tipos.length>0){
       let fila = "";
@@ -27,19 +26,19 @@ async function appTiposGrid(){
                 '<td></td>'+
                 '</tr>';
       });
-      document.querySelector('#grdDatos').innerHTML = (fila);
+      $('#grdDatos').html(fila);
     }else{
-      document.querySelector('#grdDatos').innerHTML = ('<tr><td colspan="9" style="text-align:center;color:red;">Sin Resultados '+((txtBuscar=="")?(""):("para "+txtBuscar))+'</td></tr>');
+      $('#grdDatos').html('<tr><td colspan="9" style="text-align:center;color:red;">Sin Resultados '+((txtBuscar=="")?(""):("para "+txtBuscar))+'</td></tr>');
     }
-    document.querySelector('#grdCount').innerHTML = (resp.tipos.length);
-    document.querySelector('#div_info').style.display = ((cboTipo==5)?('inherit'):('none'));
+    $('#grdCount').html(resp.tipos.length);
+    $('#div_info').toggle(cboTipo == 5);
   } catch(err){
     console.error('Error al cargar datos:', err);
   }
 }
 
 async function appTiposReset(){
-  document.querySelector("#txtBuscar").value = ("");
+  $("#txtBuscar").val("");
   try{
     const resp = await appAsynFetch({ TipoQuery:'selDataUser' },"includes/sess_interfaz.php");
     menu = JSON.parse(resp.menu);
@@ -52,35 +51,25 @@ async function appTiposReset(){
   }
 }
 
-function appTiposBuscar(e){
-  let code = (e.keyCode ? e.keyCode : e.which);
-  if(code == 13) { appTiposGrid(); }
-}
-
 function appTiposCancel(){
-  document.querySelector('#grid').style.display = 'block';
-  document.querySelector('#edit').style.display = 'none';
+  $('#grid').show();
+  $('#edit').hide();
   appTiposGrid();
 }
 
 async function appTipoView(tipoID){
-  document.querySelector('#grid').style.display = 'none';
-  document.querySelector('#edit').style.display = 'block';
-  document.querySelector('#btnInsert').style.display = 'none';
-  document.querySelector('#btnUpdate').style.display = 'inline';
+  $('#grid, #btnInsert').hide();
+  $('#edit, #btnUpdate').show();
   $(".form-group").removeClass("has-error");
   try{
-    const resp = await appAsynFetch({
-      TipoQuery : 'viewTipo',
-      ID : tipoID
-    }, rutaSQL);
+    const resp = await appAsynFetch({ TipoQuery:'viewTipo', ID:tipoID }, rutaSQL);
     
     //respuesta
-    document.querySelector("#hid_tipoID").value = (resp.tipo.ID);
-    document.querySelector("#txt_Codigo").value = (resp.tipo.codigo);
-    document.querySelector("#txt_Abrev").value = (resp.tipo.abrevia);
-    document.querySelector("#txt_Nombre").value = (resp.tipo.nombre);
-    document.querySelector("#txt_Tipo").value = (resp.tipo.tipo);
+    $("#hid_tipoID").val(resp.tipo.ID);
+    $("#txt_Codigo").val(resp.tipo.codigo);
+    $("#txt_Abrev").val(resp.tipo.abrevia);
+    $("#txt_Nombre").val(resp.tipo.nombre);
+    $("#txt_Tipo").val(resp.tipo.tipo);
     appLlenarDataEnComboBox(resp.comboTipos,"#cbo_Padre",resp.padreID);
   } catch(err){
     console.error('Error al cargar datos:', err);

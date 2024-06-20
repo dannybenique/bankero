@@ -4,9 +4,11 @@ var viewTotalPorVencer = false;
 var menu = "";
 
 //=========================funciones para Personas============================
+function appCreditosBuscar(e){ if(e.keyCode === 13) { load_flag = 0; $('#grdDatosBody').html(""); appCreditosGrid(); } }
+
 async function appCreditosGrid(){
-  document.querySelector('#grdDatos').innerHTML = ('<tr><td colspan="10"><div class="progress progress-xs active"><div class="progress-bar progress-bar-success progress-bar-striped" style="width:100%"></div></td></tr>');
-  const txtBuscar = document.querySelector("#txtBuscar").value;
+  $('#grdDatos').html('<tr><td colspan="10"><div class="progress progress-xs active"><div class="progress-bar progress-bar-success progress-bar-striped" style="width:100%"></div></td></tr>');
+  const txtBuscar = $("#txtBuscar").val();
   try{
     const resp = await appAsynFetch({
       TipoQuery: 'selCreditos',
@@ -40,7 +42,7 @@ async function appCreditosGrid(){
 }
 
 async function appCreditosReset(){
-  document.querySelector("#txtBuscar").value = ("");
+  $("#txtBuscar").val("");
   try{
     const resp = await appAsynFetch({ TipoQuery:'selDataUser' },"includes/sess_interfaz.php");
     menu = JSON.parse(resp.menu);
@@ -50,13 +52,8 @@ async function appCreditosReset(){
   }
 }
 
-function appCreditosBuscar(e){
-  let code = (e.keyCode ? e.keyCode : e.which);
-  if(code == 13) { load_flag = 0; $('#grdDatosBody').html(""); appCreditosGrid(); }
-}
-
 function appCreditosRefresh(){
-  let prestamoID = document.querySelector('#hid_crediID').value;
+  const prestamoID = $('#hid_crediID').val();
   appCreditosView(prestamoID);
 }
 
@@ -76,31 +73,31 @@ async function appCreditosView(prestamoID){
     // console.log(resp);
     appCabeceraSetData(resp.prestamo);
     appDetalleSetData(resp.detalle);
-    document.querySelector('#grid').style.display = 'none';
-    document.querySelector('#edit').style.display = 'block';
+    $('#grid').hide();
+    $('#edit').show();
   } catch(err){
     console.error('Error al cargar datos:'+err);
   }
 }
 
 function appCabeceraSetData(data){
-  document.querySelector('#hid_crediID').value = (data.ID);
-  document.querySelector('#lbl_crediSocio').innerHTML = (data.socio);
-  document.querySelector('#lbl_crediTipoDUI').innerHTML = (data.dui);
-  document.querySelector('#lbl_crediNroDUI').innerHTML = (data.nro_dui);
-  document.querySelector('#lbl_crediID').innerHTML = (data.ID);
-  document.querySelector('#lbl_crediFecha').innerHTML = (moment(data.fecha_otorga).format("DD/MM/YYYY"));
-  document.querySelector('#lbl_crediProducto').innerHTML = (data.producto);
-  document.querySelector('#lbl_crediCodigo').innerHTML = (data.codigo);
-  document.querySelector('#lbl_crediCodigo').title = (data.ID);
-  document.querySelector('#lbl_crediTasaCred').innerHTML = (appFormatMoney(data.tasa,2)+'% <span style="font-size:10px;">(TEA)</span>');
-  document.querySelector('#lbl_crediTasaMora').innerHTML = (appFormatMoney(data.mora,2)+'% <span style="font-size:10px;">(TEA)</span>');
-  document.querySelector('#lbl_crediMoneda').innerHTML = (data.moneda+' <span style="font-size:10px;">('+data.mon_abrevia+')</span>');
-  document.querySelector('#lbl_crediAgencia').innerHTML = (data.agencia);
-  document.querySelector('#lbl_crediPromotor').innerHTML = (data.promotor);
-  document.querySelector('#lbl_crediAnalista').innerHTML = (data.analista);
-  document.querySelector('#lbl_crediImporte').innerHTML = (appFormatMoney(data.importe,2));
-  document.querySelector('#lbl_crediSaldo').innerHTML = (appFormatMoney(data.saldo,2));
+  $('#hid_crediID').val(data.ID);
+  $('#lbl_crediSocio').html(data.socio);
+  $('#lbl_crediTipoDUI').html(data.dui);
+  $('#lbl_crediNroDUI').html(data.nro_dui);
+  $('#lbl_crediID').html(data.ID);
+  $('#lbl_crediFecha').html(moment(data.fecha_otorga).format("DD/MM/YYYY"));
+  $('#lbl_crediProducto').html(data.producto);
+  $('#lbl_crediCodigo').html(data.codigo);
+  $('#lbl_crediCodigo').title = (data.ID);
+  $('#lbl_crediTasaCred').html(appFormatMoney(data.tasa,2)+'% <span style="font-size:10px;">(TEA)</span>');
+  $('#lbl_crediTasaMora').html(appFormatMoney(data.mora,2)+'% <span style="font-size:10px;">(TEA)</span>');
+  $('#lbl_crediMoneda').html(data.moneda+' <span style="font-size:10px;">('+data.mon_abrevia+')</span>');
+  $('#lbl_crediAgencia').html(data.agencia);
+  $('#lbl_crediPromotor').html(data.promotor);
+  $('#lbl_crediAnalista').html(data.analista);
+  $('#lbl_crediImporte').html(appFormatMoney(data.importe,2));
+  $('#lbl_crediSaldo').html(appFormatMoney(data.saldo,2));
 }
 
 function appDetalleSetData(data){
@@ -206,13 +203,13 @@ function appDetalleSetData(data){
 }
 
 function appCreditosViewTotalPagado(){
-  document.querySelector("#iconTotalPagado").innerHTML = (viewTotalPagado==true)?('<i class="fa fa-toggle-off"></i>'):('<i class="fa fa-toggle-on"></i>');
+  $("#iconTotalPagado").html(viewTotalPagado==true)?('<i class="fa fa-toggle-off"></i>'):('<i class="fa fa-toggle-on"></i>');
   viewTotalPagado = !viewTotalPagado;
   appCreditosRefresh();
 }
 
 function appCreditosViewTotalPorVencer(){
-  document.querySelector("#iconTotalPorVencer").innerHTML = (viewTotalPorVencer==true)?('<i class="fa fa-toggle-off"></i>'):('<i class="fa fa-toggle-on"></i>');
+  $("#iconTotalPorVencer").html(viewTotalPorVencer==true)?('<i class="fa fa-toggle-off"></i>'):('<i class="fa fa-toggle-on"></i>');
   viewTotalPorVencer = !viewTotalPorVencer;
   appCreditosRefresh();
 }

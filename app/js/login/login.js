@@ -7,8 +7,8 @@ async function btn_submit(event){
     event.preventDefault();
     let data = new FormData();
     data.append('frmLogin', JSON.stringify({
-      login : document.querySelector('#txt_UserName').value,
-      passw : SHA1(document.querySelector("#txt_UserPass").value).toString().toUpperCase()
+      login : $('#txt_UserName').val(),
+      passw : SHA1($("#txt_UserPass").val()).toString().toUpperCase()
     }));
     const ruta = await fetch('includes/sess_login.php', { method: 'POST', body: data });
     const resp = await ruta.json();
@@ -18,16 +18,16 @@ async function btn_submit(event){
       $('.login_WarningText').fadeIn('fast');
       setTimeout(function() {
         $('.login_WarningText').fadeOut('fast');
-        document.querySelector('#txt_UserName').value="";
-        document.querySelector('#txt_UserPass').value="";
+        $('#txt_UserName').val("");
+        $('#txt_UserPass').val("");
         $('#txt_UserName').focus();
-        document.querySelector('#botonOK').value="ACCESAR";
+        $('#botonOK').val("ACCESAR");
       }, 2000);
     }
   } catch(err) {
     console.log(err);
     $('#pn_Warning').slideDown('fast');
     setTimeout(function() { $('#pn_Warning').slideUp('fast'); }, 2000);
-    document.querySelector('#botonOK').value="ACCESAR";
+    $('#botonOK').val("ACCESAR");
   }
 };

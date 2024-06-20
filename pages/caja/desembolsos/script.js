@@ -3,16 +3,15 @@ var menu = "";
 var desemb = null;
 
 //=========================funciones para Personas============================
+function appDesembBuscar(e){ if(e.keyCode === 13) { appDesembGrid(); } }
+
 async function appDesembGrid(){
-  document.querySelector('#grdDatos').innerHTML = ('<tr><td colspan="9"><div class="progress progress-xs active"><div class="progress-bar progress-bar-success progress-bar-striped" style="width:100%"></div></td></tr>');
-  document.querySelector("#chk_All").disabled = (menu.caja.submenu.desemb.cmdDelete===1) ? false : true;
+  $('#grdDatos').html('<tr><td colspan="9"><div class="progress progress-xs active"><div class="progress-bar progress-bar-success progress-bar-striped" style="width:100%"></div></td></tr>');
+  $("#chk_All").prop("disabled", !(menu.caja.submenu.desemb.cmdDelete === 1));
   const disabledDelete = (menu.caja.submenu.desemb.cmdDelete===1) ? "" : "disabled";
-  const txtBuscar = document.querySelector("#txtBuscar").value;
+  const txtBuscar = $("#txtBuscar").val();
   try{
-    const resp = await appAsynFetch({
-      TipoQuery: 'selDesembolsos',
-      buscar: txtBuscar
-    }, rutaSQL);
+    const resp = await appAsynFetch({ TipoQuery:'selDesembolsos', buscar:txtBuscar }, rutaSQL);
 
     //respuesta
     if(resp.tabla.length>0){
@@ -41,22 +40,17 @@ async function appDesembGrid(){
 
 async function appDesembReset(){
   desemb = null;
-  document.querySelector("#txtBuscar").value = ("");
-  document.querySelector("#grdDatos").innerHTML = ("");
+  $("#txtBuscar").val("");
+  $("#grdDatos").html("");
   try{
     const resp = await appAsynFetch({ TipoQuery:'selDataUser' },"includes/sess_interfaz.php");
     menu = JSON.parse(resp.menu);
-    document.querySelector("#btn_DEL").style.display = (menu.caja.submenu.desemb.cmdDelete==1)?('inline'):('none');
-    document.querySelector("#div_PersAuditoria").style.display = ((resp.rolID==101)?('block'):('none'));
+    $("#btn_DEL").toggle(menu.caja.submenu.desemb.cmdDelete==1);
+    $("#div_PersAuditoria").toggle(resp.rolID == 101);
     appDesembGrid();
   } catch(err){
     console.error('Error al cargar datos:'+err);
   }
-}
-
-function appDesembBuscar(e){
-  let code = (e.keyCode ? e.keyCode : e.which);
-  if(code == 13) { load_flag = 0; $('#grdDatos').html(""); appDesembGrid(); }
 }
 
 function appDesembBotonCancel(){
@@ -66,13 +60,6 @@ function appDesembBotonCancel(){
 }
 
 async function appDesembBotonDesembolsar(){
-  // //obliga a desembolsar en la fecha actual
-  // let desemb = appConvertToFecha(document.querySelector("#txt_DesembFecha").value,"-");
-  // let inicio = appConvertToFecha(document.querySelector("#lbl_DesembFechaIniCred").innerHTML,"-");
-  // console.log("desemb: "+desemb);
-  // console.log("inicio: "+inicio);
-  // console.log("resta: "+(moment(desemb).diff(moment(inicio),"days")));
-
   if(confirm("¿Esta seguro de continuar?")) {
     try{
       const resp = await appAsynFetch({
@@ -84,15 +71,15 @@ async function appDesembBotonDesembolsar(){
         tipopagoID : desemb.tipopagoID,
         tipocredID : desemb.tipocredID,
         productoID : desemb.productoID,
-        cod_prod : document.querySelector("#lbl_DesembCodigo").innerHTML,
-        fecha_desemb : appConvertToFecha(document.querySelector("#txt_DesembFecha").value,""),
-        fecha_otorga : appConvertToFecha(document.querySelector("#lbl_DesembFechaOtorga").innerHTML),
-        importe : appConvertToNumero(document.querySelector("#lbl_DesembImporte").innerHTML),
-        tasa_cred : appConvertToNumero(document.querySelector("#lbl_DesembTasaCred").innerHTML),
-        tasa_desgr : appConvertToNumero(document.querySelector("#lbl_DesembTasaDesgr").innerHTML),
-        nrocuotas : document.querySelector("#lbl_DesembNrocuotas").innerHTML,
-        pivot : (desemb.tipocredID==1)?(appConvertToFecha(document.querySelector("#lbl_DesembFechaPriCuota").innerHTML)):(document.querySelector("#lbl_DesembFrecuencia").innerHTML),
-        observac: document.querySelector("#lbl_DesembObservac").innerHTML
+        cod_prod : $("#lbl_DesembCodigo").html(),
+        fecha_desemb : appConvertToFecha($("#txt_DesembFecha").val(),""),
+        fecha_otorga : appConvertToFecha($("#lbl_DesembFechaOtorga").html()),
+        importe : appConvertToNumero($("#lbl_DesembImporte").html()),
+        tasa_cred : appConvertToNumero($("#lbl_DesembTasaCred").html()),
+        tasa_desgr : appConvertToNumero($("#lbl_DesembTasaDesgr").html()),
+        nrocuotas : $("#lbl_DesembNrocuotas").html(),
+        pivot : (desemb.tipocredID==1)?(appConvertToFecha($("#lbl_DesembFechaPriCuota").html())):($("#lbl_DesembFrecuencia").html()),
+        observac: $("#lbl_DesembObservac").html()
       }, rutaSQL);
       
       //respuesta
@@ -111,7 +98,7 @@ async function appDesembBotonDesembolsar(){
 }
 
 async function appDesembBotonBorrar(){
-  let arr = Array.from(document.querySelectorAll('[name="chk_Borrar"]:checked')).map(function(obj){return obj.attributes[2].nodeValue});
+  const arr = $('[name="chk_Borrar"]:checked').map(function() { return this.value}).get();
   if(arr.length>0){
     if(confirm("¿Esta seguro de continuar?")) {
       try{
@@ -132,7 +119,7 @@ async function appDesembView(solicredID){
   $('.tab-content .tab-pane').removeClass('active');
   $('a[href="#datosSoliCred"]').closest('li').addClass('active');
   $('#datosSoliCred').addClass('active');
-  document.querySelector("#btnInsert").style.display = (menu.caja.submenu.desemb.cmdUpdate==1)?('inline'):('none');
+  $("#btnInsert").toggle(menu.caja.submenu.desemb.cmdUpdate==1);
 
   try{
     const resp = await appAsynFetch({
@@ -141,8 +128,8 @@ async function appDesembView(solicredID){
     }, rutaSQL);
 
     //respuesta
-    document.querySelector('#grid').style.display = 'none';
-    document.querySelector('#edit').style.display = 'block';
+    $('#grid').hide();
+    $('#edit').show();
 
     appDesembSetData(resp.tablaDesembolso);  //pestaña Solicitud de credito
     appPersonaSetData(resp.tablaPers);
@@ -162,79 +149,73 @@ function appDesembSetData(data){
     socioID : data.socioID,
     agenciaID : data.agenciaID
   }
-  document.querySelector("#lbl_FormAprueba").style.color = (data.aprueba=="")?("#D00"):("#777");
-  document.querySelector("#txt_DesembFecha").disabled = (data.rolUser==data.rolROOT) ? (false):(true);
+  $("#lbl_FormAprueba").css("color", data.aprueba === "" ? "#D00" : "#777");
+  $("#txt_DesembFecha").prop("disabled", data.rolUser != data.rolROOT);
   $('#txt_DesembFecha').datepicker("setDate",moment(data.fecha_desemb).format("DD/MM/YYYY"));
 
-  document.querySelector('#lbl_DesembSocio').innerHTML = (data.socio);
-  document.querySelector('#lbl_DesembFechaSoliCred').innerHTML = (moment(data.fecha_solicred).format("DD/MM/YYYY"));
-  document.querySelector("#lbl_DesembCodigo").innerHTML = (data.codigo);
-  document.querySelector("#lbl_DesembMoneda").innerHTML = (data.moneda);
-  document.querySelector("#lbl_DesembClasifi").innerHTML = (data.clasifica);
-  document.querySelector("#lbl_DesembCondicion").innerHTML = (data.condicion);
-  document.querySelector("#lbl_DesembAgencia").innerHTML = (data.agencia);
-  document.querySelector("#lbl_DesembPromotor").innerHTML = (data.promotor);
-  document.querySelector("#lbl_DesembAnalista").innerHTML = (data.analista);
-  document.querySelector("#lbl_DesembAprueba").innerHTML = (data.aprueba);
-  document.querySelector("#lbl_DesembTipoSBS").innerHTML = (data.tiposbs);
-  document.querySelector("#lbl_DesembDestSBS").innerHTML = (data.destsbs);
-  document.querySelector("#lbl_DesembPrestamoID").innerHTML = (data.ID);
-  document.querySelector("#lbl_DesembTipoCred").innerHTML = (data.tipocred);
-  document.querySelector("#lbl_DesembProducto").innerHTML = (data.producto);
-  document.querySelector("#lbl_DesembImporte").innerHTML = (appFormatMoney(data.importe,2));
-  document.querySelector("#lbl_DesembNrocuotas").innerHTML = (data.nrocuotas);
-  document.querySelector("#lbl_DesembTasaCred").innerHTML = (appFormatMoney(data.tasa_cred,2));
-  document.querySelector("#lbl_DesembTasaMora").innerHTML = (appFormatMoney(data.tasa_mora,2));
-  document.querySelector("#lbl_DesembTasaDesgr").innerHTML = (appFormatMoney(data.tasa_desgr,2));
-  document.querySelector("#lbl_DesembFechaOtorga").innerHTML = (moment(data.fecha_otorga).format("DD/MM/YYYY"));
-  document.querySelector("#lbl_DesembFechaPriCuota").innerHTML = (moment(data.fecha_pricuota).format("DD/MM/YYYY"));
-  document.querySelector("#lbl_DesembEtqFrecuencia").style.display = (data.tipocredID=="1")?("none"):("inherit");
-  document.querySelector("#lbl_DesembFrecuencia").innerHTML = (data.frecuencia);
-  document.querySelector("#lbl_DesembCuota").innerHTML = ("&nbsp;<small style='font-size:10px;'>"+data.mon_abrevia+"</small>&nbsp;&nbsp;"+data.cuota+"&nbsp;");
-  document.querySelector("#lbl_DesembObservac").innerHTML = (data.observac);
+  $('#lbl_DesembSocio').html(data.socio);
+  $('#lbl_DesembFechaSoliCred').html(moment(data.fecha_solicred).format("DD/MM/YYYY"));
+  $("#lbl_DesembCodigo").html(data.codigo);
+  $("#lbl_DesembMoneda").html(data.moneda);
+  $("#lbl_DesembClasifi").html(data.clasifica);
+  $("#lbl_DesembCondicion").html(data.condicion);
+  $("#lbl_DesembAgencia").html(data.agencia);
+  $("#lbl_DesembPromotor").html(data.promotor);
+  $("#lbl_DesembAnalista").html(data.analista);
+  $("#lbl_DesembAprueba").html(data.aprueba);
+  $("#lbl_DesembTipoSBS").html(data.tiposbs);
+  $("#lbl_DesembDestSBS").html(data.destsbs);
+  $("#lbl_DesembPrestamoID").html(data.ID);
+  $("#lbl_DesembTipoCred").html(data.tipocred);
+  $("#lbl_DesembProducto").html(data.producto);
+  $("#lbl_DesembImporte").html(appFormatMoney(data.importe,2));
+  $("#lbl_DesembNrocuotas").html(data.nrocuotas);
+  $("#lbl_DesembTasaCred").html(appFormatMoney(data.tasa_cred,2));
+  $("#lbl_DesembTasaMora").html(appFormatMoney(data.tasa_mora,2));
+  $("#lbl_DesembTasaDesgr").html(appFormatMoney(data.tasa_desgr,2));
+  $("#lbl_DesembFechaOtorga").html(moment(data.fecha_otorga).format("DD/MM/YYYY"));
+  $("#lbl_DesembFechaPriCuota").html(moment(data.fecha_pricuota).format("DD/MM/YYYY"));
+  $("#lbl_DesembEtqFrecuencia").toggle(data.tipocredID=="1");
+  $("#lbl_DesembFrecuencia").html(data.frecuencia);
+  $("#lbl_DesembCuota").html("&nbsp;<small style='font-size:10px;'>"+data.mon_abrevia+"</small>&nbsp;&nbsp;"+data.cuota+"&nbsp;");
+  $("#lbl_DesembObservac").html(data.observac);
 }
 
 function appPersonaSetData(data){
   //pestaña datos personales
   if(data.tipoPersona==2){ //persona juridica
-    document.querySelector("#lbl_PersTipoNombres").innerHTML = ("Razon Social");
-    document.querySelector("#lbl_PersTipoProfesion").innerHTML = ("Rubro");
-    document.querySelector("#lbl_PersTipoApellidos").style.display = 'none';
-    document.querySelector("#lbl_PersTipoSexo").style.display = 'none';
-    document.querySelector("#lbl_PersTipoECivil").style.display = 'none';
-    document.querySelector("#lbl_PersTipoGIntruc").style.display = 'none';
+    $("#lbl_PersTipoNombres").html("Razon Social");
+    $("#lbl_PersTipoProfesion").html("Rubro");
+    $("#lbl_PersTipoApellidos, #lbl_PersTipoSexo, #lbl_PersTipoECivil, #lbl_PersTipoGIntruc").hide();
   }else{
-    document.querySelector("#lbl_PersTipoNombres").innerHTML = ("Nombres");
-    document.querySelector("#lbl_PersTipoProfesion").innerHTML = ("Profesion");
-    document.querySelector("#lbl_PersTipoApellidos").style.display = 'block';
-    document.querySelector("#lbl_PersTipoSexo").style.display = 'block';
-    document.querySelector("#lbl_PersTipoECivil").style.display = 'block';
-    document.querySelector("#lbl_PersTipoGIntruc").style.display = 'block';
+    $("#lbl_PersTipoNombres").html("Nombres");
+    $("#lbl_PersTipoProfesion").html("Profesion");
+    $("#lbl_PersTipoApellidos, #lbl_PersTipoSexo, #lbl_PersTipoECivil, #lbl_PersTipoGIntruc").show();
   }
-  document.querySelector("#hid_PersID").value = (data.ID);
-  document.querySelector("#lbl_PersNombres").innerHTML = (data.nombres);
-  document.querySelector("#lbl_PersApellidos").innerHTML = (data.ap_paterno+" "+data.ap_materno);
-  document.querySelector("#lbl_PersTipoDNI").innerHTML = (data.tipoDUI);
-  document.querySelector("#lbl_PersNroDNI").innerHTML = (data.nroDUI);
-  document.querySelector("#lbl_PersFechaNac").innerHTML = (moment(data.fechanac).format("DD/MM/YYYY"));
-  document.querySelector("#lbl_PersEdad").innerHTML = (moment().diff(moment(data.fechanac),"years")+" años");
-  document.querySelector("#lbl_PersPaisNac").innerHTML = (data.paisnac);
-  document.querySelector("#lbl_PersLugarNac").innerHTML = (data.lugarnac);
-  document.querySelector("#lbl_PersSexo").innerHTML = (data.sexo);
-  document.querySelector("#lbl_PersEcivil").innerHTML = (data.ecivil);
-  document.querySelector("#lbl_PersCelular").innerHTML = (data.celular);
-  document.querySelector("#lbl_PersTelefijo").innerHTML = (data.telefijo);
-  document.querySelector("#lbl_PersEmail").innerHTML = (data.correo);
-  document.querySelector("#lbl_PersGInstruccion").innerHTML = (data.ginstruc);
-  document.querySelector("#lbl_PersProfesion").innerHTML = (data.profesion);
-  document.querySelector("#lbl_PersOcupacion").innerHTML = (data.ocupacion);
-  document.querySelector("#lbl_PersUbicacion").innerHTML = (data.region+" - "+data.provincia+" - "+data.distrito);
-  document.querySelector("#lbl_PersDireccion").innerHTML = (data.direccion);
-  document.querySelector("#lbl_PersReferencia").innerHTML = (data.referencia);
-  document.querySelector("#lbl_PersMedidorluz").innerHTML = (data.medidorluz);
-  document.querySelector("#lbl_PersMedidorAgua").innerHTML = (data.medidoragua);
-  document.querySelector("#lbl_PersTipovivienda").innerHTML = (data.tipovivienda);
-  document.querySelector("#lbl_PersObservac").innerHTML = (data.observPers);
-  document.querySelector("#lbl_PersSysFecha").innerHTML = (moment(data.sysfechaPers).format("DD/MM/YYYY HH:mm:ss"));
-  document.querySelector("#lbl_PersSysUser").innerHTML = (data.sysuserPers);
+  $("#hid_PersID").val(data.ID);
+  $("#lbl_PersNombres").html(data.nombres);
+  $("#lbl_PersApellidos").html(data.ap_paterno+" "+data.ap_materno);
+  $("#lbl_PersTipoDNI").html(data.tipoDUI);
+  $("#lbl_PersNroDNI").html(data.nroDUI);
+  $("#lbl_PersFechaNac").html(moment(data.fechanac).format("DD/MM/YYYY"));
+  $("#lbl_PersEdad").html(moment().diff(moment(data.fechanac),"years")+" años");
+  $("#lbl_PersPaisNac").html(data.paisnac);
+  $("#lbl_PersLugarNac").html(data.lugarnac);
+  $("#lbl_PersSexo").html(data.sexo);
+  $("#lbl_PersEcivil").html(data.ecivil);
+  $("#lbl_PersCelular").html(data.celular);
+  $("#lbl_PersTelefijo").html(data.telefijo);
+  $("#lbl_PersEmail").html(data.correo);
+  $("#lbl_PersGInstruccion").html(data.ginstruc);
+  $("#lbl_PersProfesion").html(data.profesion);
+  $("#lbl_PersOcupacion").html(data.ocupacion);
+  $("#lbl_PersUbicacion").html(data.region+" - "+data.provincia+" - "+data.distrito);
+  $("#lbl_PersDireccion").html(data.direccion);
+  $("#lbl_PersReferencia").html(data.referencia);
+  $("#lbl_PersMedidorluz").html(data.medidorluz);
+  $("#lbl_PersMedidorAgua").html(data.medidoragua);
+  $("#lbl_PersTipovivienda").html(data.tipovivienda);
+  $("#lbl_PersObservac").html(data.observPers);
+  $("#lbl_PersSysFecha").html(moment(data.sysfechaPers).format("DD/MM/YYYY HH:mm:ss"));
+  $("#lbl_PersSysUser").html(data.sysuserPers);
 }

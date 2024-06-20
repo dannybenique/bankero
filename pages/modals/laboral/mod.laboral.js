@@ -16,45 +16,31 @@
             Laboral.commandSQL = "INS";
             Laboral.ID = 0;
             Laboral.personaID = personaID;
-            document.querySelector('#hid_modLaboPermisoID').value = ("");
-            document.querySelector("#cbo_LaboCondicion").value = (0);
-            document.querySelector("#txt_LaboEmpresa").value = ("");
-            document.querySelector("#txt_LaboEmprRUC").value = ("");
-            document.querySelector("#txt_LaboEmprFono").value = ("");
-            document.querySelector("#txt_LaboEmprRubro").value = ("");
-            document.querySelector("#txt_LaboEmprDireccion").value = ("");
-            document.querySelector("#txt_LaboEmprCargo").value = ("");
-            document.querySelector("#txt_LaboEmprIngreso").value = (appFormatMoney(0,2));
-            document.querySelector("#txt_LaboObservac").value = ("");
+            $("#cbo_LaboCondicion").val(0);
+            $("#txt_LaboEmprIngreso").val(appFormatMoney(0,2));
+            $('#hid_modLaboPermisoID, #txt_LaboEmpresa, #txt_LaboEmprRUC, #txt_LaboEmprFono, #txt_LaboEmprRubro, #txt_LaboEmprDireccion, #txt_LaboEmprCargo, #txt_LaboObservac').val("");
             appLlenarDataEnComboBox(resp.comboRegiones,"#cbo_LaboEmprRegion",1014);
             appLlenarDataEnComboBox(resp.comboProvincias,"#cbo_LaboEmprProvincia",1401);
             appLlenarDataEnComboBox(resp.comboDistritos,"#cbo_LaboEmprDistrito",140101);
             $('#date_LaboInicio').datepicker("setDate",moment(resp.fecha).format("DD/MM/YYYY"));
 
-            document.querySelector("#modLaboTitulo").innerHTML = ("Datos Laborales");
-            document.querySelector("#modLaboFormEdit").style.display = 'block';
-            document.querySelector("#btn_modLaboInsert").style.display = 'inline';
-            document.querySelector("#btn_modLaboUpdate").style.display = 'none';
-            $("#modalLabo").modal({keyboard:true});
-            $('#modalLabo').on('shown.bs.modal', function() { document.querySelector("#txt_LaboEmpresa").focus(); });
+            $("#modLaboTitulo").html("Datos Laborales");
+            $("#modLaboFormEdit, #btn_modLaboInsert").show();
+            $("#btn_modLaboUpdate").hide();
+            $("#modalLabo").modal({keyboard:true}).on('shown.bs.modal', function() { $("#txt_LaboEmpresa").focus(); });
           } catch(err){
             console.error('Error al cargar datos:', err);
           }
         },
         editar : async function(laboralID){
           try{
-            const resp = await appAsynFetch({
-              TipoQuery : 'selLaboral',
-              ID : laboralID
-            },Laboral.rutaSQL);
+            const resp = await appAsynFetch({ TipoQuery:'selLaboral', ID:laboralID },Laboral.rutaSQL);
 
             Laboral.datosToForm(resp);
-            document.querySelector("#modLaboTitulo").innerHTML = ("Editar Datos Laborales");
-            document.querySelector("#modLaboFormEdit").style.display = 'block';
-            document.querySelector("#btn_modLaboUpdate").style.display = 'inline';
-            document.querySelector("#btn_modLaboInsert").style.display = 'none';
-            $("#modalLabo").modal({keyboard:true});
-            $('#modalLabo').on('shown.bs.modal', function() { document.querySelector("#txt_LaboEmpresa").focus(); });
+            $("#modLaboTitulo").html("Editar Datos Laborales");
+            $("#modLaboFormEdit, #btn_modLaboUpdate").show();
+            $("#btn_modLaboInsert").hide();
+            $("#modalLabo").modal({keyboard:true}).on('shown.bs.modal', function() { $("#txt_LaboEmpresa").focus(); });
           } catch(err){
             console.error('Error al cargar datos:', err);
           }
@@ -77,7 +63,7 @@
             const resp = await appAsynFetch({
               TipoQuery : "comboUbigeo",
               tipoID  : 3,
-              padreID : document.querySelector("#cbo_LaboEmprRegion").value
+              padreID : $("#cbo_LaboEmprRegion").val()
             }, Laboral.rutaSQL);
 
             appLlenarDataEnComboBox(resp.provincias,"#cbo_LaboEmprProvincia",0); //provincia
@@ -91,7 +77,7 @@
             const resp = await appAsynFetch({
               TipoQuery : "comboUbigeo",
               tipoID  : 4,
-              padreID : document.querySelector("#cbo_LaboEmprProvincia").value
+              padreID : $("#cbo_LaboEmprProvincia").val()
             }, Laboral.rutaSQL);
 
             appLlenarDataEnComboBox(resp.distritos,"#cbo_LaboEmprDistrito",0); //distrito
@@ -103,11 +89,11 @@
           let Error = true;
           $('.form-group').removeClass('has-error');
 
-          if(document.querySelector("#txt_LaboEmpresa").value.trim()=="") { document.querySelector("#div_LaboEmpresa").className = "form-group has-error"; Error = false; }
-          if(document.querySelector("#txt_LaboEmprRubro").value.trim()=="") { document.querySelector("#div_LaboEmprRubro").className = "form-group has-error"; Error = false; }
-          if(document.querySelector("#date_LaboInicio").value.trim()=="") { document.querySelector("#div_LaboEmprInicio").className = "form-group has-error"; Error = false; }
-          if(document.querySelector("#txt_LaboEmprIngreso").value.trim()=="") { document.querySelector("#div_LaboEmprIngreso").className = "form-group has-error"; Error = false; }
-          if(document.querySelector("#txt_LaboEmprDireccion").value.trim()=="") { document.querySelector("#div_LaboEmprDireccion").className = "form-group has-error"; Error = false; }
+          if($("#txt_LaboEmpresa").val().trim()=="") { $("#div_LaboEmpresa").addClass("has-error"); Error = false; }
+          if($("#txt_LaboEmprRubro").val().trim()=="") { $("#div_LaboEmprRubro").addClass("has-error"); Error = false; }
+          if($("#date_LaboInicio").val().trim()=="") { $("#div_LaboEmprInicio").addClass("has-error"); Error = false; }
+          if($("#txt_LaboEmprIngreso").val().trim()=="") { $("#div_LaboEmprIngreso").addClass("has-error"); Error = false; }
+          if($("#txt_LaboEmprDireccion").val().trim()=="") { $("#div_LaboEmprDireccion").addClass("has-error"); Error = false; }
 
           return Error;
         },
@@ -117,18 +103,18 @@
             commandSQL : Laboral.commandSQL,
             ID : Laboral.ID,
             personaID : Laboral.personaID,
-            condicion : document.querySelector("#cbo_LaboCondicion").value,
-            empresa : document.querySelector("#txt_LaboEmpresa").value.trim().toUpperCase(),
-            ruc : document.querySelector("#txt_LaboEmprRUC").value,
-            telefono : document.querySelector("#txt_LaboEmprFono").value,
-            rubro : document.querySelector("#txt_LaboEmprRubro").value.trim().toUpperCase(),
-            distritoID : document.querySelector("#cbo_LaboEmprDistrito").value,
-            direccion : document.querySelector("#txt_LaboEmprDireccion").value.trim().toUpperCase(),
-            cargo : document.querySelector("#txt_LaboEmprCargo").value.trim().toUpperCase(),
-            ingreso : appConvertToNumero(document.querySelector("#txt_LaboEmprIngreso").value),
-            fechaini : appConvertToFecha(document.querySelector("#date_LaboInicio").value,""),
+            condicion : $("#cbo_LaboCondicion").val(),
+            empresa : $("#txt_LaboEmpresa").val().trim().toUpperCase(),
+            ruc : $("#txt_LaboEmprRUC").val(),
+            telefono : $("#txt_LaboEmprFono").val(),
+            rubro : $("#txt_LaboEmprRubro").val().trim().toUpperCase(),
+            distritoID : $("#cbo_LaboEmprDistrito").val(),
+            direccion : $("#txt_LaboEmprDireccion").val().trim().toUpperCase(),
+            cargo : $("#txt_LaboEmprCargo").val().trim().toUpperCase(),
+            ingreso : appConvertToNumero($("#txt_LaboEmprIngreso").val()),
+            fechaini : appConvertToFecha($("#date_LaboInicio").val(),""),
             estado: 1,
-            observac : document.querySelector("#txt_LaboObservac").value.trim().toUpperCase()
+            observac : $("#txt_LaboObservac").val().trim().toUpperCase()
           };
           return data;
         },
@@ -136,19 +122,19 @@
           Laboral.commandSQL = "UPD";
           Laboral.ID = data.ID;
           Laboral.personaID = data.id_persona;
-          document.querySelector("#cbo_LaboCondicion").value = (data.condicion);
-          document.querySelector("#txt_LaboEmpresa").value = (data.empresa);
-          document.querySelector("#txt_LaboEmprRUC").value = (data.ruc);
-          document.querySelector("#txt_LaboEmprFono").value = (data.telefono);
-          document.querySelector("#txt_LaboEmprRubro").value = (data.rubro);
+          $("#cbo_LaboCondicion").val(data.condicion);
+          $("#txt_LaboEmpresa").val(data.empresa);
+          $("#txt_LaboEmprRUC").val(data.ruc);
+          $("#txt_LaboEmprFono").val(data.telefono);
+          $("#txt_LaboEmprRubro").val(data.rubro);
           appLlenarDataEnComboBox(data.comboRegiones,"#cbo_LaboEmprRegion",data.id_region);
           appLlenarDataEnComboBox(data.comboProvincias,"#cbo_LaboEmprProvincia",data.id_provincia);
           appLlenarDataEnComboBox(data.comboDistritos,"#cbo_LaboEmprDistrito",data.id_distrito);
-          document.querySelector("#txt_LaboEmprDireccion").value = (data.direccion);
+          $("#txt_LaboEmprDireccion").val(data.direccion);
           $('#date_LaboInicio').datepicker("setDate",moment(data.fechaIni).format("DD/MM/YYYY"));
-          document.querySelector("#txt_LaboEmprCargo").value = (data.cargo);
-          document.querySelector("#txt_LaboEmprIngreso").value = (appFormatMoney(data.ingreso,2));
-          document.querySelector("#txt_LaboObservac").value = (data.observLabo);
+          $("#txt_LaboEmprCargo").val(data.cargo);
+          $("#txt_LaboEmprIngreso").val(appFormatMoney(data.ingreso,2));
+          $("#txt_LaboObservac").val(data.observLabo);
         },
         ejecutaSQL : async function(){
           try{

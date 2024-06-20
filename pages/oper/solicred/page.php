@@ -41,8 +41,8 @@
                   <th style="width:30px;" title="Aprobacion de Solicitud"><i class="fa fa-thumbs-up"></i></th>
                   <th style="width:85px;text-align:center;" title="Fecha de Solicitud">Solicitud</th>
                   <th style="width:110px;" title="Documento Unico de Identidad = DNI, RUC">DUI</th>
-                  <th style="">Socio <i class="fa fa-sort"></i></th>
-                  <th style="" title="Producto + TEA%">Producto</th>
+                  <th>Socio <i class="fa fa-sort"></i></th>
+                  <th title="Producto + TEA%">Producto</th>
                   <th style="width:180px;">Tipo Credito</th>
                   <th style="width:85px;text-align:center;" title="Fecha Tentativa del Desembolso">Inicio</th>
                   <th style="width:90px;text-align:right;">Importe</th>

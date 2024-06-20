@@ -47,14 +47,14 @@ async function inicioAPP(){
   const resp = await appAsynFetch({ TipoQuery:'selDataUser' },"includes/sess_interfaz.php");
   resp.menu = JSON.parse(resp.menu);
   
-  document.querySelector("#ifaz_menu_imagen").src = (resp.urlfoto);
-  document.querySelector("#ifaz_menu_nombrecorto").innerHTML = (resp.nombrecorto);
-  document.querySelector("#ifaz_menu_login").innerHTML = (resp.login);
-  document.querySelector("#ifaz_barra_imagen").src = (resp.urlfoto);
-  document.querySelector("#ifaz_barra_nombrecorto").innerHTML = (resp.nombrecorto);
-  document.querySelector("#ifaz_perfil_imagen").src = (resp.urlfoto);
-  document.querySelector("#ifaz_perfil_nombrecorto").innerHTML = (resp.nombrecorto);
-  document.querySelector("#ifaz_perfil_cargo").innerHTML = (resp.cargo);
+  $("#ifaz_menu_imagen").attr("src", resp.urlfoto);
+  $("#ifaz_menu_nombrecorto").html(resp.nombrecorto);
+  $("#ifaz_menu_login").html(resp.login);
+  $("#ifaz_barra_imagen").attr("src", resp.urlfoto);
+  $("#ifaz_barra_nombrecorto").html(resp.nombrecorto);
+  $("#ifaz_perfil_imagen").attr("src", resp.urlfoto);
+  $("#ifaz_perfil_nombrecorto").html(resp.nombrecorto);
+  $("#ifaz_perfil_cargo").html(resp.cargo);
 
   /*if(resp.rolID>102){ //oncontextmenu="return false;" ondragstart="return false;" onselectstart="return false;"
     $(document.body).attr("oncontextmenu","return false;");

@@ -160,10 +160,10 @@
       case "mttoSocios"    : $menuMtto = 'active menu-open'; $appPage = "pages/mtto/socios/page.php"; break;
       case "mttoEmpleados" : $menuMtto = 'active menu-open'; $appPage = "pages/mtto/empleados/page.php"; break;
       case "mttoAgencias"  : $menuMtto = 'active menu-open'; $appPage = "pages/mtto/agencias/page.php"; break;
-      case "masterPersonas": $menuMaster = 'active menu-open'; $appPage = "pages/master/personas/page.php"; break;
-      case "masterTipos"   : $menuMaster = 'active menu-open'; $appPage = "pages/master/tipos/page.php"; break;
-      case "masterMovim"   : $menuMaster = 'active menu-open'; $appPage = "pages/master/movim/page.php"; break;
-      case "repoMovim"       : $menuRepo = 'active menu-open'; $appPage = "pages/repo/movim/page.php"; break;
+      case "masterPersonas" : $menuMaster = 'active menu-open'; $appPage = "pages/master/personas/page.php"; break;
+      case "masterTipos"    : $menuMaster = 'active menu-open'; $appPage = "pages/master/tipos/page.php"; break;
+      case "masterMovim"    : $menuMaster = 'active menu-open'; $appPage = "pages/master/movim/page.php"; break;
+      case "repoMovim"         : $menuRepo = 'active menu-open'; $appPage = "pages/repo/movim/page.php"; break;
       case "repoExtractoBanca" : $menuRepo = 'active menu-open'; $appPage = "pages/repo/extractobanca/page.php"; break;
     }
   } else{
@@ -207,6 +207,6 @@
 </html>
 <?php
   } else {
-    header('location:index.php');
+    header('location:./');
   }
 ?>

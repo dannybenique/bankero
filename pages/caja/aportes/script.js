@@ -7,16 +7,13 @@ var tipoOperAporte = null;
 var aporte = null;
 
 //=========================funciones para Personas============================
-async function appPagosReset(){
-  document.querySelector('#lbl_aporteSocio').innerHTML = ("");
-  document.querySelector('#lbl_aporteTipoDUI').innerHTML = ("DUI");
-  document.querySelector('#lbl_aporteNroDUI').innerHTML = ("");
-  document.querySelector('#lbl_aporteSaldo').innerHTML = ("");
+function modalAporte_keyBuscar(e){ if(e.keyCode === 13) { modalAporteBuscar(); } }
 
-  document.querySelector('#txt_aporteFecha').value = ("");
-  document.querySelector('#txt_aporteImporte').value = ("");
-  document.querySelector('#cbo_aporteMedioPago').innerHTML = ("");
-  document.querySelector('#cbo_aporteMonedas').innerHTML = ("");
+async function appPagosReset(){
+  $('#lbl_aporteTipoDUI').text("DUI");
+  $('#lbl_aporteSocio, #lbl_aporteNroDUI, #lbl_aporteSaldo').text("");
+  $('#txt_aporteFecha, #txt_aporteImporte').val("");
+  $('#cbo_aporteMedioPago, #cbo_aporteMonedas').empty("");
   
   try{
     const resp = await appAsynFetch({ TipoQuery:'selDataUser' },"includes/sess_interfaz.php");
@@ -30,9 +27,9 @@ async function appPagosReset(){
       productoID : null,
       esObligatorio : null
     }
-    document.querySelector("#btn_NEW").style.display = (menu.caja.submenu.aportes.cmdInsert==1)?('inline'):('none');
-    document.querySelector("#btn_RET").style.display = (menu.caja.submenu.aportes.cmdInsert==1)?('inline'):('none');
-    document.querySelector("#btn_EXEC").disabled = true;
+    $("#btn_NEW").toggle(menu.caja.submenu.aportes.cmdInsert==1);
+    $("#btn_RET").toggle(menu.caja.submenu.aportes.cmdInsert==1);
+    $("#btn_EXEC").prop('disabled', true);
   } catch(err){
     console.error('Error al cargar datos:'+err);
   }
@@ -49,7 +46,7 @@ function appAportesBotonRetiro(){
 }
 
 async function appAportesBotonExec(){
-  let importe = appConvertToNumero(document.querySelector("#txt_aporteImporte").value);
+  let importe = appConvertToNumero($("#txt_aporteImporte").val());
   if(isNaN(importe)){
     alert("el IMPORTE debe ser una cantidad valida");
   } else {
@@ -70,11 +67,12 @@ async function appAportesBotonExec(){
                 saldoID : aporte.id,
                 socioID : aporte.socioID,
                 productoID : aporte.productoID,
-                medioPagoID : document.querySelector("#cbo_aporteMedioPago").value*1,
-                monedaID : document.querySelector("#cbo_aporteMonedas").value*1,
+                medioPagoID : $("#cbo_aporteMedioPago").val()*1,
+                monedaID : $("#cbo_aporteMonedas").val()*1,
                 tipoOperAporte : tipoOperAporte,
                 importe : importe
               }, rutaSQL);
+
               //respuesta
               if (!resp.error) { 
                 if(confirm("¿Desea Imprimir el pago?")){
@@ -94,27 +92,22 @@ async function appAportesBotonExec(){
   }
 }
 
-function modalAporte_keyBuscar(e){
-  let code = (e.keyCode ? e.keyCode : e.which);
-  if(code == 13) { modalAporteBuscar(); }
-}
-
 function modalAporteBuscar(){
-  document.querySelector("#modalAporte_Grid").style.display = 'none';
-  if(document.querySelector("#modalAporte_TxtBuscar").value.length>=3){ 
+  $("#modalAporte_Grid").hide();
+  if($("#modalAporte_TxtBuscar").val().length>=3){ 
     modalAporteGrid();
   } else { 
-    document.querySelector('#modalAporte_Wait').innerHTML = ('<div class="callout callout-warning"><h4>Demasiado Corto</h4><p>El NRO de documento de Identidad debe tener como minimo <b>4 numeros</b></p></div>'); 
+    $('#modalAporte_Wait').html('<div class="callout callout-warning"><h4>Demasiado Corto</h4><p>El NRO de documento de Identidad debe tener como minimo <b>4 numeros</b></p></div>'); 
   }
 }
 
 async function modalAporteGrid(){
-  document.querySelector('#modalAporte_Wait').innerHTML = ('<div class="progress progress-xs active"><div class="progress-bar progress-bar-success progress-bar-striped" style="width:100%"></div></div>');
-  const txtBuscar = document.querySelector("#modalAporte_TxtBuscar").value;
+  $('#modalAporte_Wait').html('<div class="progress progress-xs active"><div class="progress-bar progress-bar-success progress-bar-striped" style="width:100%"></div></div>');
+  const txtBuscar = $("#modalAporte_TxtBuscar").val();
   try{
     const resp = await appAsynFetch({ TipoQuery:'selAportes', buscar:txtBuscar }, rutaSQL);
-    document.querySelector('#modalAporte_Wait').innerHTML = "";
-    document.querySelector("#modalAporte_Grid").style.display = 'block';
+    $('#modalAporte_Wait').html("");
+    $("#modalAporte_Grid").show();
     if(resp.aportes.length>0){
       let fila = "";
       resp.aportes.forEach((valor,key)=>{
@@ -125,9 +118,9 @@ async function modalAporteGrid(){
                 '<td style="text-align:right;">'+(appFormatMoney(valor.saldo,2))+'</td>'+
                 '</tr>';
       });
-      document.querySelector('#modalAporte_GridBody').innerHTML = (fila);
+      $('#modalAporte_GridBody').html(fila);
     }else{
-      document.querySelector('#modalAporte_GridBody').innerHTML = ('<tr><td colspan="5" style="text-align:center;color:red;">Sin Resultados para '+txtBuscar+'</td></tr>');
+      $('#modalAporte_GridBody').html('<tr><td colspan="5" style="text-align:center;color:red;">Sin Resultados para '+txtBuscar+'</td></tr>');
     }
   } catch(err){
     console.error('Error al cargar datos:'+err);
@@ -137,10 +130,7 @@ async function modalAporteGrid(){
 async function appAportesOperView(saldoID){
   $('#modalAporte').modal('hide');
   try{
-    const resp = await appAsynFetch({
-      TipoQuery : 'viewAporte',
-      saldoID : saldoID
-    }, rutaSQL);
+    const resp = await appAsynFetch({ TipoQuery:'viewAporte', saldoID }, rutaSQL);
     
     //respuesta
     aporte.id = (saldoID);
@@ -149,25 +139,23 @@ async function appAportesOperView(saldoID){
     aporte.productoID = (resp.aporte.productoID);
     aporte.esObligatorio = (resp.aporte.obliga);
 
-    document.querySelector('#lbl_aporteSocio').innerHTML = (resp.aporte.socio);
-    document.querySelector('#lbl_aporteTipoDUI').innerHTML = (resp.aporte.DUI);
-    document.querySelector('#lbl_aporteNroDUI').innerHTML = (resp.aporte.nro_dui);
-    document.querySelector('#lbl_aporteSaldo').innerHTML = appFormatMoney(resp.aporte.saldo,2);
+    $('#lbl_aporteSocio').text(resp.aporte.socio);
+    $('#lbl_aporteTipoDUI').text(resp.aporte.DUI);
+    $('#lbl_aporteNroDUI').text(resp.aporte.nro_dui);
+    $('#lbl_aporteSaldo').html(appFormatMoney(resp.aporte.saldo,2));
     appLlenarDataEnComboBox(resp.comboTipoPago,"#cbo_aporteMedioPago",0); //medios de pago
     appLlenarDataEnComboBox(resp.comboMonedas,"#cbo_aporteMonedas",0); //monedas
-    document.querySelector('#txt_aporteFecha').value = (moment(resp.fecha).format("DD/MM/YYYY"));
-    document.querySelector("#btn_EXEC").disabled = false;
-    document.querySelector("#btn_EXEC").innerHTML = (tipoOperAporte==cIngreso) ? '<i class="fa fa-plus"></i> Aplicar Ingreso' : '<i class="fa fa-minus"></i> Aplicar Retiro';
+    $('#txt_aporteFecha').val(moment(resp.fecha).format("DD/MM/YYYY"));
+    $("#btn_EXEC").prop('disabled',false).html((tipoOperAporte==cIngreso) ? '<i class="fa fa-plus"></i> Aplicar Ingreso' : '<i class="fa fa-minus"></i> Aplicar Retiro');
   } catch(err){
     console.error('Error al cargar datos:'+err);
   }
 }
 
 function appPreparaModalPersonas(){
-  document.querySelector("#modalAporte_Titulo").innerHTML = ("Verificar Aportes por Doc. Identidad");
-  document.querySelector("#modalAporte_Grid").style.display = 'none';
-  document.querySelector("#modalAporte_Wait").innerHTML = ("");
-  document.querySelector("#modalAporte_TxtBuscar").value = ("");
-  $('#modalAporte').modal({keyboard:true});
-  $('#modalAporte').on('shown.bs.modal', ()=> { document.querySelector("#modalAporte_TxtBuscar").focus(); });
+  $("#modalAporte_Grid").hide();
+  $("#modalAporte_Titulo").html("Verificar Aportes por Doc. Identidad");
+  $("#modalAporte_Wait").html("");
+  $("#modalAporte_TxtBuscar").val("");
+  $('#modalAporte').modal({keyboard:true}).on('shown.bs.modal', ()=> { $("#modalAporte_TxtBuscar").focus(); });
 }

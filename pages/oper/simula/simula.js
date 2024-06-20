@@ -2,12 +2,12 @@ const rutaSQL = "pages/oper/simula/sql.php";
 
 //=========================funciones para Simulacion Ahorros============================
 function appAhorrosFechaFin(){
-  let tiempo = document.querySelector("#txt_TiempoMeses").value;
-  let fechaIni = appConvertToFecha(document.querySelector("#date_FechaIni").value,"-");
+  let tiempo = $("#txt_TiempoMeses").val();
+  let fechaIni = appConvertToFecha($("#date_FechaIni").val(),"-");
   let fechaFin = moment(fechaIni).add(tiempo,'months');
 
-  document.querySelector("#date_FechaFin").innerHTML = (fechaFin.format("DD/MM/YYYY"));
-  document.querySelector("#dias_FechaFin").innerHTML = (fechaFin.diff(fechaIni,'days'));
+  $("#date_FechaFin").html(fechaFin.format("DD/MM/YYYY"));
+  $("#dias_FechaFin").html(fechaFin.diff(fechaIni,'days'));
 }
 
 async function appAhorrosReset(){
@@ -22,10 +22,10 @@ async function appAhorrosReset(){
 }
 
 async function appAhorrosGenerarIntereses(){
-  let tiempo = document.querySelector("#txt_TiempoMeses").value;
-  let productoID = document.querySelector("#cbo_Productos").value;
-  let fecha = appConvertToFecha(document.querySelector("#date_FechaIni").value,"-");
-  let capital = appConvertToNumero(document.querySelector("#txt_Importe").value);
+  let tiempo = $("#txt_TiempoMeses").val();
+  let productoID = $("#cbo_Productos").val();
+  let fecha = appConvertToFecha($("#date_FechaIni").val(),"-");
+  let capital = appConvertToNumero($("#txt_Importe").val());
   try{
     const resp = await appAsynFetch({
       TipoQuery : 'simulaAhorro',
@@ -74,7 +74,7 @@ async function appAhorrosGenerarIntereses(){
                 '</tr>';
         break;
     }
-    document.querySelector('#grdDatos').innerHTML = (fila);
+    $('#grdDatos').html(fila);
   } catch(err){
     console.error('Error al cargar datos:'+err);
   }
@@ -85,43 +85,43 @@ async function appAhorrosGenerarIntereses(){
 function appCreditosReset(){
   $('#txt_FechaSimula').datepicker("setDate",moment().format("DD/MM/YYYY"));
   $('#txt_FechaPriCuota').datepicker("setDate",moment().add(1,'M').format("DD/MM/YYYY"));
-  document.querySelector('#txt_TEA').value = (30);
-  document.querySelector('#txt_NroCuotas').value = (12);
-  document.querySelector('#txt_Importe').value = (1000);
-  document.querySelector('#txt_SegDesgr').value = (0.1);
-  document.querySelector('#txt_Frecuencia').value = (14);
-  document.querySelector('#grdDatos').innerHTML = ("");
-  document.querySelector('#lbl_TEA').innerHTML = ("0.00 %");
-  document.querySelector('#lbl_TEM').innerHTML = ("0.00 %");
-  document.querySelector('#lbl_TED').innerHTML = ("0.00 %");
+  $('#txt_TEA').val(30);
+  $('#txt_NroCuotas').val(12);
+  $('#txt_Importe').val(1000);
+  $('#txt_SegDesgr').val(0.1);
+  $('#txt_Frecuencia').val(14);
+  $('#grdDatos').html("");
+  $('#lbl_TEA').html("0.00 %");
+  $('#lbl_TEM').html("0.00 %");
+  $('#lbl_TED').html("0.00 %");
 }
 
 function appCreditosCambiarTipoCredito(){
-  switch(document.querySelector("#cbo_TipoCredito").value){
+  switch($("#cbo_TipoCredito").val()){
     case "1":
-      document.querySelector("#div_FechaPriCuota").style.display = 'block';
-      document.querySelector("#div_Frecuencia").style.display = 'none';
+      $("#div_FechaPriCuota").show();
+      $("#div_Frecuencia").hide();
       break;
     case "2":
-      document.querySelector("#div_Frecuencia").style.display = 'block';
-      document.querySelector("#div_FechaPriCuota").style.display = 'none';
+      $("#div_Frecuencia").show();
+      $("#div_FechaPriCuota").hide();
       break;
   }
 }
 
 async function appCreditosGenerarPlanPagos(){
-  document.querySelector('#grdDatos').innerHTML = ('<tr><td colspan="9"><div class="progress progress-xs active"><div class="progress-bar progress-bar-success progress-bar-striped" style="width:100%"></div></td></tr>');
+  $('#grdDatos').html('<tr><td colspan="9"><div class="progress progress-xs active"><div class="progress-bar progress-bar-success progress-bar-striped" style="width:100%"></div></td></tr>');
   try{
     const resp = await appAsynFetch({
       TipoQuery : 'simulaCredito',
-      TipoCredito : document.querySelector("#cbo_TipoCredito").value,
-      importe : appConvertToNumero(document.querySelector("#txt_Importe").value),
-      TEA : document.querySelector("#txt_TEA").value,
-      segDesgr : document.querySelector("#txt_SegDesgr").value,
-      nroCuotas: document.querySelector("#txt_NroCuotas").value,
-      fecha : appConvertToFecha(document.querySelector("#txt_FechaSimula").value,""),
-      pricuota : appConvertToFecha(document.querySelector("#txt_FechaPriCuota").value,""),
-      frecuencia : document.querySelector("#txt_Frecuencia").value
+      TipoCredito : $("#cbo_TipoCredito").val(),
+      importe : appConvertToNumero($("#txt_Importe").val()),
+      TEA : $("#txt_TEA").val(),
+      segDesgr : $("#txt_SegDesgr").val(),
+      nroCuotas: $("#txt_NroCuotas").val(),
+      fecha : appConvertToFecha($("#txt_FechaSimula").val(),""),
+      pricuota : appConvertToFecha($("#txt_FechaPriCuota").val(),""),
+      frecuencia : $("#txt_Frecuencia").val()
     }, rutaSQL);
 
     //respuesta
@@ -160,12 +160,12 @@ async function appCreditosGenerarPlanPagos(){
               '<td style="" colspan="2"></td>'+
               '</tr>';
 
-      document.querySelector('#grdDatos').innerHTML = (fila);
-      document.querySelector('#lbl_TEA').innerHTML = (appFormatMoney(resp.tea,2)+" %");
-      document.querySelector('#lbl_TEM').innerHTML = (resp.tem+" %");
-      document.querySelector('#lbl_TED').innerHTML = (resp.ted+" %");
+      $('#grdDatos').html(fila);
+      $('#lbl_TEA').html(appFormatMoney(resp.tea,2)+" %");
+      $('#lbl_TEM').html(resp.tem+" %");
+      $('#lbl_TED').html(resp.ted+" %");
     }else{
-      document.querySelector('#grdDatos').innerHTML = ("");
+      $('#grdDatos').html("");
     }
   } catch(err){
     console.error('Error al cargar datos:'+err);

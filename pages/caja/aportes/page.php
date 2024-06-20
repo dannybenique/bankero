@@ -105,8 +105,8 @@
                   <table class="table table-hover">
                     <tr>
                       <th style="width:110px;">DUI</th>
-                      <th style="">Socio</th>
-                      <th style="">Producto</th>
+                      <th>Socio</th>
+                      <th>Producto</th>
                       <th style="width:100px;text-align:right;">Saldo</th>
                     </tr>
                     <tbody id="modalAporte_GridBody"></tbody>

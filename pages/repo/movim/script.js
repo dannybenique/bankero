@@ -3,14 +3,14 @@ var menu = "";
 
 //=========================funciones para Personas============================
 async function appMovimGrid(){
-  document.querySelector('#grdDatos').innerHTML = ('<tr><td colspan="7"><div class="progress progress-xs active"><div class="progress-bar progress-bar-success progress-bar-striped" style="width:100%"></div></td></tr>');
+  $('#grdDatos').html('<tr><td colspan="7"><div class="progress progress-xs active"><div class="progress-bar progress-bar-success progress-bar-striped" style="width:100%"></div></td></tr>');
   try{
     const resp = await appAsynFetch({ 
       TipoQuery: 'selMovim',
-      agenciaID: document.querySelector('#cboAgencias').value,
-      usuarioID: document.querySelector('#cboUsuarios').value,
-      monedaID: document.querySelector('#cboMonedas').value,
-      fecha: appConvertToFecha(document.querySelector('#txtFecha').value,'')
+      agenciaID: $('#cboAgencias').val(),
+      usuarioID: $('#cboUsuarios').val(),
+      monedaID: $('#cboMonedas').val(),
+      fecha: appConvertToFecha($('#txtFecha').val(),'')
     }, rutaSQL);
 
     //respuesta
@@ -38,12 +38,12 @@ async function appMovimGrid(){
               '<td style="text-align:right;border-bottom-style:double;"><b>'+(appFormatMoney(totSalidas,2))+'</b></td>'+
               '</tr>'+
               '<tr><td colspan="7"></td></tr>';
-      document.querySelector('#grdDatos').innerHTML = (fila);
+      $('#grdDatos').html(fila);
       
     }else{
-      document.querySelector('#grdDatos').innerHTML = ('<tr><td colspan="7" style="text-align:center;color:red;">Sin Resultados</td></tr>');
+      $('#grdDatos').html('<tr><td colspan="7" style="text-align:center;color:red;">Sin Resultados</td></tr>');
     }
-    document.querySelector('#grdCount').innerHTML = (resp.movim.length);
+    $('#grdCount').html(resp.movim.length);
   } catch(err){
     console.error('Error al cargar datos:', err);
   }
@@ -71,8 +71,8 @@ function appMovimBuscar(e){
 
 async function appMovimView(voucherID){
   $(".form-group").removeClass("has-error");
-  document.querySelector('#grid').style.display = 'none';
-  document.querySelector('#edit').style.display = 'block';
+  $('#grid').hide();
+  $('#edit').show();
 
   try{
     const resp = await appAsynFetch({
@@ -81,16 +81,16 @@ async function appMovimView(voucherID){
     },rutaSQL);
     
     //cabecera
-    document.querySelector("#hid_movimID").value = resp.cab.ID;
-    document.querySelector("#lbl_pagoAgencia").innerHTML = (resp.cab.agencia);
-    document.querySelector("#lbl_pagoTipoOper").innerHTML = (resp.cab.tipo_oper+" / "+resp.cab.moneda);
-    document.querySelector("#lbl_pagoCodigo").innerHTML = (resp.cab.codigo);
-    document.querySelector("#lbl_pagoFecha").innerHTML = (resp.cab.fecha+" <small style='font-size:10px;'>"+resp.cab.hora+"</small>");
-    document.querySelector("#lbl_pagoSocio").innerHTML = (resp.cab.socio);
-    document.querySelector("#lbl_tipodui").innerHTML = (resp.cab.tipodui+":");
-    document.querySelector("#lbl_pagoNroDUI").innerHTML = (resp.cab.nrodui);
-    document.querySelector("#lbl_pagoCajera").innerHTML = (resp.cab.cajera);
-    document.querySelector("#lbl_pagoImporte").innerHTML = "<small style='font-size:10px;'>"+resp.cab.mon_abrevia+"</small> "+appFormatMoney(resp.cab.importe,2);
+    $("#hid_movimID").val(resp.cab.ID);
+    $("#lbl_pagoAgencia").html(resp.cab.agencia);
+    $("#lbl_pagoTipoOper").html(resp.cab.tipo_oper+" / "+resp.cab.moneda);
+    $("#lbl_pagoCodigo").html(resp.cab.codigo);
+    $("#lbl_pagoFecha").html(resp.cab.fecha+" <small style='font-size:10px;'>"+resp.cab.hora+"</small>");
+    $("#lbl_pagoSocio").html(resp.cab.socio);
+    $("#lbl_tipodui").html(resp.cab.tipodui+":");
+    $("#lbl_pagoNroDUI").html(resp.cab.nrodui);
+    $("#lbl_pagoCajera").html(resp.cab.cajera);
+    $("#lbl_pagoImporte").html("<small style='font-size:10px;'>"+resp.cab.mon_abrevia+"</small> "+appFormatMoney(resp.cab.importe,2));
       
     //detalle
     if(resp.deta.length>0){
@@ -103,24 +103,24 @@ async function appMovimView(voucherID){
                 '<td style="text-align:right;">'+(appFormatMoney(valor.importe,2))+'</td>'+
                 '</tr>';
       });
-      document.querySelector('#grdDetalleDatos').innerHTML = (fila);
+      $('#grdDetalleDatos').html(fila);
     }else{
-      document.querySelector('#grdDetalleDatos').innerHTML = ('<tr><td colspan="4" style="text-align:center;color:red;">Sin DETALLE</td></tr>');
+      $('#grdDetalleDatos').html('<tr><td colspan="4" style="text-align:center;color:red;">Sin DETALLE</td></tr>');
     }
-    document.querySelector('#grid').style.display = 'none';
-    document.querySelector('#edit').style.display = 'block';
+    $('#grid').hide();
+    $('#edit').show();
   } catch(err){
     console.error('Error al cargar datos:', err);
   }
 }
 
 function appMovimRefresh(){
-  let codigo = document.querySelector("#hid_movimID").value;
+  const codigo = $("#hid_movimID").val();
   appMovimView(codigo);
 }
 
 function appMovimCancel(){
   appMovimGrid();
-  document.querySelector('#grid').style.display = 'block';
-  document.querySelector('#edit').style.display = 'none';
+  $('#grid').show();
+  $('#edit').hide();
 }
